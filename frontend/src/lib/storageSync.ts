@@ -5,7 +5,7 @@ const UNIVERSAL_DELETED_KEY = "saampark_universal_deleted_ids"
 // Core protected system records that can NEVER be deleted (Master Super Admin user account only)
 const PROTECTED_ACCOUNTS = ["hiisupriya@gmail.com"]
 
-export function getLocalDeletedIds(moduleName?: string): string[] {
+export function getLocalDeletedIds(_moduleName?: string): string[] {
   if (typeof window === "undefined") return []
   try {
     const raw = localStorage.getItem(UNIVERSAL_DELETED_KEY)
@@ -27,27 +27,27 @@ export function saveLocalDeletedId(id: string | number, moduleName?: string): vo
 
   const next = new Set(current)
   if (namespacedKey) next.add(namespacedKey)
-  // Also add naked string ID so callers checking with or without module find it
   next.add(strId)
 
   const merged = Array.from(next)
   localStorage.setItem(UNIVERSAL_DELETED_KEY, JSON.stringify(merged))
 
-  // Immediately update in-memory deleted cache so subsequent checks see it instantly
   deletedCache = merged
-  lastDeletedSyncTime = 0
+  lastDeletedSyncTime = Date.now()
 }
 
-// Global function to mark any item deleted across the entire application and sync to MySQL DB
+/**
+ * Marks an item deleted locally in client state/cache without firing rogue /deleted HTTP requests.
+ * Actual resource deletion is handled strictly by each domain service's DELETE endpoint.
+ */
 export async function markGlobalItemDeleted(id: string | number, moduleName?: string): Promise<void> {
   if (!id) return
   const strId = String(id).toLowerCase().trim()
   if (PROTECTED_ACCOUNTS.includes(strId)) return
 
-  // Strict check: Clients can NEVER delete records assigned by Admin/Super Admin
   if (typeof window !== "undefined") {
     try {
-      const authRaw = localStorage.getItem("auth-storage")
+      const authRaw = localStorage.getItem("saampark-auth-v3") || localStorage.getItem("auth-storage")
       if (authRaw) {
         const parsed = JSON.parse(authRaw)
         const roleLower = String(parsed?.state?.user?.role || "").toLowerCase().trim()
@@ -66,15 +66,11 @@ export async function markGlobalItemDeleted(id: string | number, moduleName?: st
     window.dispatchEvent(new Event("storage"))
     window.dispatchEvent(new CustomEvent("saampark_data_synced"))
   }
-
-  try {
-    await api.post("/deleted", { id: strId, moduleName: moduleName || "global" })
-  } catch (err) {
-    console.warn("Backend deleted sync warning:", err)
-  }
 }
 
-// Global function to unmark/restore an item if created/re-added
+/**
+ * Unmarks an item from local deleted cache ONLY (no rogue DELETE /deleted/:id or POST /deleted/restore API calls).
+ */
 export function unmarkGlobalItemDeleted(id: string | number, moduleName?: string): void {
   if (!id) return
   const strId = String(id).toLowerCase().trim()
@@ -86,81 +82,25 @@ export function unmarkGlobalItemDeleted(id: string | number, moduleName?: string
     localStorage.setItem(UNIVERSAL_DELETED_KEY, JSON.stringify(local))
   }
   deletedCache = deletedCache.filter(d => d !== strId && d !== namespacedKey && !d.endsWith(`:${strId}`))
-  lastDeletedSyncTime = 0
-
-  // Asynchronously purge from MySQL deleted table so it doesn't resurrect on next fetch
-  api.delete(`/deleted/${encodeURIComponent(strId)}`).catch(() => {
-    api.post("/deleted/restore", { id: strId }).catch(() => {})
-  })
+  lastDeletedSyncTime = Date.now()
 }
 
-// In-memory deleted cache & deduplication
 let deletedCache: string[] = []
 let lastDeletedSyncTime = 0
-let inFlightDeletedSync: Promise<string[]> | null = null
-const DELETED_CACHE_TTL_MS = 15000 // 15 seconds cache
 
 export function resetDeletedCache(): void {
   deletedCache = []
   lastDeletedSyncTime = 0
-  inFlightDeletedSync = null
 }
 
-// Fetch all deleted item IDs from MySQL DB to ensure cross-browser synchronization
-export async function syncGlobalDeletedIds(moduleName?: string): Promise<string[]> {
-  const now = Date.now()
-  if (lastDeletedSyncTime > 0 && now - lastDeletedSyncTime < DELETED_CACHE_TTL_MS) {
-    return deletedCache
-  }
-
-  if (inFlightDeletedSync) {
-    return inFlightDeletedSync
-  }
-
+/**
+ * Returns local soft-deleted IDs without spamming GET /api/v1/deleted on every fetch.
+ */
+export async function syncGlobalDeletedIds(_moduleName?: string): Promise<string[]> {
   const local = getLocalDeletedIds()
-  inFlightDeletedSync = (async () => {
-    try {
-      const res = await api.get("/deleted")
-      if (res && res.status !== "error" && !res.error && res.data !== undefined && res.data !== null) {
-        const rawServer: any[] = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
-        const cleanServer: string[] = []
-
-        rawServer.forEach((item: any) => {
-          if (item && typeof item === "object" && item.item_id) {
-            const rawId = String(item.item_id).toLowerCase().trim()
-            if (PROTECTED_ACCOUNTS.includes(rawId)) return
-            const mod = String(item.module_name || "global").toLowerCase().trim()
-            cleanServer.push(`${mod}:${rawId}`)
-            if (!/^\d+$/.test(rawId)) {
-              cleanServer.push(rawId)
-            }
-          } else if (typeof item === "string" || typeof item === "number") {
-            const rawId = String(item).toLowerCase().trim()
-            if (!PROTECTED_ACCOUNTS.includes(rawId)) {
-              cleanServer.push(rawId)
-            }
-          }
-        })
-
-        const merged = Array.from(new Set([...local, ...cleanServer]))
-        deletedCache = merged
-        lastDeletedSyncTime = Date.now()
-        if (typeof window !== "undefined") {
-          localStorage.setItem(UNIVERSAL_DELETED_KEY, JSON.stringify(merged))
-        }
-        return merged
-      }
-    } catch (err) {
-      console.warn("Backend deleted sync fetch warning:", err)
-    } finally {
-      inFlightDeletedSync = null
-    }
-    deletedCache = local
-    lastDeletedSyncTime = Date.now()
-    return local
-  })()
-
-  return inFlightDeletedSync
+  deletedCache = local
+  lastDeletedSyncTime = Date.now()
+  return local
 }
 
 export function isGlobalItemDeleted(id: string | number, deletedIds?: string[], moduleName?: string): boolean {
@@ -179,31 +119,24 @@ export function isGlobalItemDeleted(id: string | number, deletedIds?: string[], 
     if (!entry) continue
     const strEntry = String(entry).toLowerCase().trim()
 
-    // 1. Exact namespaced match (e.g. "branches:br-1" === "branches:br-1")
     if (namespacedKey && strEntry === namespacedKey) {
       return true
     }
 
-    // 2. If entry has module prefix like "companies:123"
     if (strEntry.includes(":")) {
       const [entryMod, ...rest] = strEntry.split(":")
       const entryId = rest.join(":")
       if (entryId === strId) {
         if (mod && entryMod !== "global" && entryMod !== mod) {
-          // Different module! Not deleted in this module.
           continue
         }
         return true
       }
-    } else {
-      // 3. Naked string ID
-      if (strEntry === strId) {
-        // Pure number naked match without module qualification is disallowed to prevent collisions
-        if (isPureNumber && mod) {
-          continue
-        }
-        return true
+    } else if (strEntry === strId) {
+      if (isPureNumber && mod) {
+        continue
       }
+      return true
     }
   }
 
@@ -215,10 +148,9 @@ export function filterGlobalDeletedItems<T extends { id: string | number }>(item
   return items.filter((item) => item?.id && !isGlobalItemDeleted(item.id, deletedIds, moduleName))
 }
 
-// In-memory micro-cache & in-flight promise deduplication
 const inFlightRequests = new Map<string, Promise<any>>()
 const cacheStore = new Map<string, { data: any; timestamp: number }>()
-const CACHE_TTL_MS = 3000 // 3-second micro-cache to eliminate redundant back-to-back queries across components
+const CACHE_TTL_MS = 15000
 
 export function invalidateModuleCache(moduleKey?: string) {
   if (moduleKey) {
@@ -239,11 +171,13 @@ export function invalidateModuleCache(moduleKey?: string) {
   }
 }
 
-/**
- * Fetch module data from MySQL DB with company isolation.
- * MySQL is the single source of truth.
- */
-export async function fetchModuleDataFromDB<T>(moduleKey: string, fallbackData: T, companyId?: string, branchId?: string, subBranchId?: string): Promise<T> {
+export async function fetchModuleDataFromDB<T>(
+  moduleKey: string,
+  fallbackData: T,
+  companyId?: string,
+  branchId?: string,
+  subBranchId?: string
+): Promise<T> {
   let targetCompany = companyId
   let targetBranch = branchId
   let targetSubBranch = subBranchId
@@ -263,8 +197,6 @@ export async function fetchModuleDataFromDB<T>(moduleKey: string, fallbackData: 
         if (!targetSubBranch) {
           targetSubBranch = authState.activeSubBranchId || undefined
         }
-        // Super Admin and Admin have access across all companies.
-        // For other roles (Teams/Clients), allow if assigned or if it matches their active company
         const isSuperOrAdmin = authUser && (authUser.role === "Super Admin" || authUser.role === "Admin")
         if (authUser && !isSuperOrAdmin && targetCompany && targetCompany !== "all") {
           const rawIds = authUser.companyIds || (authUser.companyId ? [authUser.companyId] : ["tech"])
@@ -273,7 +205,6 @@ export async function fetchModuleDataFromDB<T>(moduleKey: string, fallbackData: 
           const activeNorm = String(authState.activeCompanyId || "").toLowerCase().trim()
           const isAllowed = allowedIds.some((id: string) => id === targetNorm) || targetNorm === activeNorm
           if (!isAllowed) {
-            console.warn(`Access denied: User ${authUser.email} cannot access unassigned company ${targetCompany}`)
             return (Array.isArray(fallbackData) ? [] : fallbackData) as any
           }
         }
@@ -288,7 +219,6 @@ export async function fetchModuleDataFromDB<T>(moduleKey: string, fallbackData: 
       return cached.data as any
     }
 
-    // Deduplicate concurrent requests
     if (inFlightRequests.has(cacheKey)) {
       const pendingRes = await inFlightRequests.get(cacheKey)
       if (pendingRes !== undefined && pendingRes !== null) {
@@ -301,13 +231,12 @@ export async function fetchModuleDataFromDB<T>(moduleKey: string, fallbackData: 
     if (targetBranch && targetBranch !== "all") params.set("branch_id", targetBranch)
     if (targetSubBranch && targetSubBranch !== "all") params.set("sub_branch_id", targetSubBranch)
     const queryStr = params.toString() ? `?${params.toString()}` : ""
-    
+
     const requestPromise = api.get(`/store/${moduleKey}${queryStr}`).then((res) => {
       const isError = !res || res.status === "error" || res.error === true
       if (!isError && res?.data !== undefined && res?.data !== null) {
         const rawData = res.data
         let finalData: any = rawData
-        // If wrapped in { data: ... }
         if (typeof rawData === "object" && rawData !== null && "data" in rawData && Object.keys(rawData).length === 1) {
           finalData = rawData.data
         }
@@ -321,10 +250,6 @@ export async function fetchModuleDataFromDB<T>(moduleKey: string, fallbackData: 
 
     inFlightRequests.set(cacheKey, requestPromise)
 
-    // Trigger deleted sync in parallel if not cached
-    syncGlobalDeletedIds().catch(() => {})
-
-    // Safety timeout of 5 seconds to guarantee UI is never blocked by network latency
     const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 5000))
     const serverData = await Promise.race([requestPromise, timeoutPromise])
 
@@ -334,21 +259,24 @@ export async function fetchModuleDataFromDB<T>(moduleKey: string, fallbackData: 
       }
       return serverData as any
     }
-
   } catch (err) {
     console.warn(`MySQL fetch warning for module ${moduleKey}:`, err)
   }
 
+  // Hard rule: never return frontend dummy/fallback data when API fails or returns empty
   if (Array.isArray(fallbackData)) {
-    return filterGlobalDeletedItems(fallbackData as any[], undefined, moduleKey) as any
+    return [] as any
   }
-  return fallbackData
+  return null as any
 }
 
-/**
- * Save module data to MySQL DB — single source of truth.
- */
-export async function saveModuleDataToDB<T>(moduleKey: string, data: T, companyId?: string, branchId?: string, subBranchId?: string): Promise<void> {
+export async function saveModuleDataToDB<T>(
+  moduleKey: string,
+  data: T,
+  companyId?: string,
+  branchId?: string,
+  subBranchId?: string
+): Promise<void> {
   let targetCompany = companyId
   let targetBranch = branchId
   let targetSubBranch = subBranchId
@@ -375,7 +303,6 @@ export async function saveModuleDataToDB<T>(moduleKey: string, data: T, companyI
           const activeNorm = String(authState.activeCompanyId || "").toLowerCase().trim()
           const isAllowed = allowedIds.some((id: string) => id === targetNorm) || targetNorm === activeNorm
           if (!isAllowed) {
-            console.warn(`Save denied: User ${authUser.email} cannot write to unassigned company ${targetCompany}`)
             return
           }
         }
@@ -384,17 +311,16 @@ export async function saveModuleDataToDB<T>(moduleKey: string, data: T, companyI
 
     invalidateModuleCache(moduleKey)
 
-    await api.post(`/store/${moduleKey}`, { 
-      data, 
+    await api.post(`/store/${moduleKey}`, {
+      data,
       company_id: targetCompany && targetCompany !== "all" ? targetCompany : undefined,
       branch_id: targetBranch && targetBranch !== "all" ? targetBranch : undefined,
-      sub_branch_id: targetSubBranch && targetSubBranch !== "all" ? targetSubBranch : undefined
+      sub_branch_id: targetSubBranch && targetSubBranch !== "all" ? targetSubBranch : undefined,
     })
 
-    // Invalidate micro-cache AFTER save completes to ensure subsequent fetches retrieve fresh data
     invalidateModuleCache(moduleKey)
   } catch (err) {
-    console.warn(`MySQL save warning for module ${moduleKey}:`, err)
+    console.error(`MySQL save error for module ${moduleKey}:`, err)
+    throw err
   }
 }
-

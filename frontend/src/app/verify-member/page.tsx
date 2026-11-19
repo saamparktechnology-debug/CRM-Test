@@ -9,7 +9,7 @@ import {
   ExternalLink, Sparkles, AlertCircle, ArrowLeft, Download, Check
 } from "lucide-react"
 import { fetchModuleDataFromDB } from "@/lib/storageSync"
-import { UserItem } from "@/app/feature/users/types"
+import { UserItem } from "@/features/users/types"
 
 export default function VerifyMemberPage() {
   return (

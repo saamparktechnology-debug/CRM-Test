@@ -7,36 +7,18 @@ import {
   Printer, AlertCircle, Share2,
   CheckCircle2, Check
 } from "lucide-react"
-import { getInvoices, InvoiceItem, clientAcceptInvoice } from "@/app/feature/sales/invoices/service/invoiceService"
-import { getCompanyPaymentSettings, CompanyPaymentSettings, DEFAULT_COMPANY_PAYMENT_SETTINGS } from "@/app/feature/settings/service/companyPaymentService"
-import { getClients } from "@/app/feature/clients/service/clientService"
-import { ClientItem } from "@/app/feature/clients/types"
-import { OfficialInvoiceDocument } from "@/app/feature/sales/invoices/components/OfficialInvoiceDocument"
+import { getInvoices, InvoiceItem, clientAcceptInvoice } from "@/features/invoice/services/invoiceService"
+import { getCompanyPaymentSettings, CompanyPaymentSettings, DEFAULT_COMPANY_PAYMENT_SETTINGS } from "@/features/settings/services/companyPaymentService"
+import { getClients } from "@/features/clients/services/clientService"
+import { ClientItem } from "@/features/clients/types"
+import { OfficialInvoiceDocument } from "@/features/invoice/components/OfficialInvoiceDocument"
 import { fetchModuleDataFromDB } from "@/lib/storageSync"
 import { Company, DEFAULT_COMPANIES } from "@/store/useAuthStore"
-import { api } from "@/lib/api"
 
 function PublicInvoiceContent() {
   const searchParams = useSearchParams()
-  
-  // Safe extraction supporting both useSearchParams and window.location.search fallback
-  const getQueryParam = React.useCallback(() => {
-    let p = searchParams.get("id") || searchParams.get("num") || searchParams.get("number") || searchParams.get("invoiceNumber") || searchParams.get("view") || ""
-    if (!p && typeof window !== "undefined") {
-      try {
-        const sp = new URLSearchParams(window.location.search)
-        p = sp.get("id") || sp.get("num") || sp.get("number") || sp.get("invoiceNumber") || sp.get("view") || ""
-      } catch {}
-    }
-    return (p || "").replace(/^#/, "").trim()
-  }, [searchParams])
-
-  const [invoiceQuery, setInvoiceQuery] = React.useState<string>("")
-
-  React.useEffect(() => {
-    const q = getQueryParam()
-    if (q) setInvoiceQuery(q)
-  }, [getQueryParam])
+  const rawParam = searchParams.get("id") || searchParams.get("num") || searchParams.get("number") || searchParams.get("invoiceNumber") || searchParams.get("view") || ""
+  const invoiceQuery = rawParam.replace(/^#/, "").trim()
 
   const [invoice, setInvoice] = React.useState<InvoiceItem | null>(null)
   const [paySettings, setPaySettings] = React.useState<CompanyPaymentSettings>(DEFAULT_COMPANY_PAYMENT_SETTINGS)
@@ -63,32 +45,9 @@ function PublicInvoiceContent() {
   }
 
   React.useEffect(() => {
-    const activeQuery = invoiceQuery || getQueryParam()
-    if (!activeQuery) {
-      setIsLoading(false)
-      return
-    }
-
     const loadData = async () => {
       setIsLoading(true)
       try {
-        // 1. Instant direct single invoice lookup (< 50ms, tiny 2KB payload)
-        try {
-          const directRes = await api.get(`/store/invoice-lookup/${encodeURIComponent(activeQuery)}`)
-          if (directRes && directRes.status === "success" && directRes.data?.invoice) {
-            const data = directRes.data
-            setInvoice(data.invoice)
-            if (data.company) setResolvedCompany(data.company)
-            if (data.client) setClientDetails(data.client)
-            if (data.paySettings) setPaySettings(data.paySettings)
-            setIsLoading(false)
-            return
-          }
-        } catch (directErr) {
-          console.warn("Direct invoice lookup bypassed, falling back:", directErr)
-        }
-
-        // 2. Comprehensive fallback search
         const [allInvoices, settings, allClients, allCompanies] = await Promise.all([
           getInvoices("all").catch(() => []),
           getCompanyPaymentSettings("all").catch(() => DEFAULT_COMPANY_PAYMENT_SETTINGS),
@@ -98,58 +57,40 @@ function PublicInvoiceContent() {
 
         setPaySettings(settings)
 
-        const queryNorm = activeQuery.toLowerCase()
-        const queryNumOnly = queryNorm.replace(/[^0-9]/g, "")
-        let target = allInvoices.find((i) => {
-          const idNorm = (i.id || "").toLowerCase()
-          const numNorm = ((i as any).invoiceNumber || (i as any).invoice_number || "").toLowerCase()
-          const idNumOnly = idNorm.replace(/[^0-9]/g, "")
-          const numNumOnly = numNorm.replace(/[^0-9]/g, "")
-          return idNorm === queryNorm || numNorm === queryNorm || idNorm.endsWith(queryNorm) || numNorm.endsWith(queryNorm) ||
-                 (queryNumOnly.length >= 4 && (idNumOnly === queryNumOnly || numNumOnly === queryNumOnly || idNumOnly.endsWith(queryNumOnly)))
-        })
-
-        if (!target) {
-          const [techInvoices, consultInvoices] = await Promise.all([
-            fetchModuleDataFromDB<InvoiceItem[]>("invoices", [], "tech").catch(() => []),
-            fetchModuleDataFromDB<InvoiceItem[]>("invoices", [], "consultancy").catch(() => []),
-          ])
-          const fallbackList = [...(techInvoices || []), ...(consultInvoices || [])]
-          target = fallbackList.find((i) => {
+        if (invoiceQuery) {
+          const queryNorm = invoiceQuery.toLowerCase()
+          const target = allInvoices.find((i) => {
             const idNorm = (i.id || "").toLowerCase()
             const numNorm = ((i as any).invoiceNumber || (i as any).invoice_number || "").toLowerCase()
-            const idNumOnly = idNorm.replace(/[^0-9]/g, "")
-            const numNumOnly = numNorm.replace(/[^0-9]/g, "")
-            return idNorm === queryNorm || numNorm === queryNorm || idNorm.endsWith(queryNorm) || numNorm.endsWith(queryNorm) ||
-                   (queryNumOnly.length >= 4 && (idNumOnly === queryNumOnly || numNumOnly === queryNumOnly || idNumOnly.endsWith(queryNumOnly)))
+            return idNorm === queryNorm || numNorm === queryNorm || idNorm.endsWith(queryNorm) || numNorm.endsWith(queryNorm)
           })
-        }
 
-        if (target) {
-          setInvoice(target)
-          const clientTarget = String(target.client || "").toLowerCase().trim()
-          const matchedCli = allClients.find(
-            (c) => String(c.name || "").toLowerCase().trim() === clientTarget
-          )
-          if (matchedCli) setClientDetails(matchedCli)
-
-          const targetCompId = String(target.companyId || (target as any).company || "tech").toLowerCase().trim()
-          const targetCompName = String((target as any).companyName || "").toLowerCase().trim()
-          const compList = Array.isArray(allCompanies) && allCompanies.length > 0 ? allCompanies : DEFAULT_COMPANIES
-          const matchedComp = compList.find(c => {
-            const cId = String(c.id || "").toLowerCase().trim()
-            const cSlug = String(c.slug || "").toLowerCase().trim()
-            const cName = String(c.name || "").toLowerCase().trim()
-            const cBrand = String(c.brand_name || "").toLowerCase().trim()
-            const cDivision = String(c.division_name || "").toLowerCase().trim()
-            return (
-              cId === targetCompId || 
-              cSlug === targetCompId || 
-              cName === targetCompId ||
-              (targetCompName && (cName === targetCompName || cBrand === targetCompName || `${cBrand} ${cDivision}`.trim() === targetCompName))
+          if (target) {
+            setInvoice(target)
+            const clientTarget = String(target.client || "").toLowerCase().trim()
+            const matchedCli = allClients.find(
+              (c) => String(c.name || "").toLowerCase().trim() === clientTarget
             )
-          }) || compList[0] || DEFAULT_COMPANIES[0]
-          setResolvedCompany(matchedComp)
+            if (matchedCli) setClientDetails(matchedCli)
+
+            const targetCompId = String(target.companyId || (target as any).company || "tech").toLowerCase().trim()
+            const targetCompName = String((target as any).companyName || "").toLowerCase().trim()
+            const compList = Array.isArray(allCompanies) && allCompanies.length > 0 ? allCompanies : DEFAULT_COMPANIES
+            const matchedComp = compList.find(c => {
+              const cId = String(c.id || "").toLowerCase().trim()
+              const cSlug = String(c.slug || "").toLowerCase().trim()
+              const cName = String(c.name || "").toLowerCase().trim()
+              const cBrand = String(c.brand_name || "").toLowerCase().trim()
+              const cDivision = String(c.division_name || "").toLowerCase().trim()
+              return (
+                cId === targetCompId || 
+                cSlug === targetCompId || 
+                cName === targetCompId ||
+                (targetCompName && (cName === targetCompName || cBrand === targetCompName || `${cBrand} ${cDivision}`.trim() === targetCompName))
+              )
+            }) || compList[0] || DEFAULT_COMPANIES[0]
+            setResolvedCompany(matchedComp)
+          }
         }
       } catch (err) {
         console.error("Failed to load invoice:", err)
@@ -159,7 +100,7 @@ function PublicInvoiceContent() {
     }
 
     loadData()
-  }, [invoiceQuery, getQueryParam])
+  }, [invoiceQuery])
 
   const handlePrint = () => {
     window.print()

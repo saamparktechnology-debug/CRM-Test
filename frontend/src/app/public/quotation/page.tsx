@@ -8,7 +8,7 @@ import {
   CheckCircle2
 } from "lucide-react"
 import { QuotationService } from "@/services/salesService"
-import { OfficialQuotationDocument, QuotationData } from "@/app/feature/quotations/components/OfficialQuotationDocument"
+import { OfficialQuotationDocument, QuotationData } from "@/features/quotations/components/OfficialQuotationDocument"
 import { fetchModuleDataFromDB } from "@/lib/storageSync"
 import { Company, DEFAULT_COMPANIES } from "@/store/useAuthStore"
 

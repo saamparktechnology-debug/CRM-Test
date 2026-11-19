@@ -1,11 +1,12 @@
-const getBaseUrl = () => {
+import { isMultipartPayload, toFormData } from './axios'
+import { ApiError, handleApiResponse } from './responseHandler'
+
+export const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
     const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-    // If explicitly configured with a remote production API URL (not localhost), use it
     if (envUrl && !envUrl.includes('127.0.0.1') && !envUrl.includes('localhost')) {
       return envUrl
     }
-    // If accessed over a domain or remote host in browser, use relative /api/v1 (routed via Next.js rewrites)
     if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
       return '/api/v1'
     }
@@ -15,9 +16,16 @@ const getBaseUrl = () => {
 }
 
 export interface ApiResponse<T = any> {
+  success?: boolean
   data?: T
   error?: string
   status: number
+  message?: string
+}
+
+export interface ApiRequestOptions extends RequestInit {
+  onUploadProgress?: (progressEvent: { loaded: number; total?: number; progress?: number }) => void
+  params?: Record<string, any>
 }
 
 export function getAuthToken(): string | null {
@@ -59,7 +67,14 @@ export function setAuthToken(token: string | null) {
   }
 }
 
-export function getActiveCompanyScope(): { companyId?: string; branchId?: string; subBranchId?: string; userRole?: string; userId?: string; userEmail?: string } {
+export function getActiveCompanyScope(): {
+  companyId?: string
+  branchId?: string
+  subBranchId?: string
+  userRole?: string
+  userId?: string
+  userEmail?: string
+} {
   if (typeof window === 'undefined') return {}
   try {
     const raw = localStorage.getItem('saampark-auth-v3')
@@ -79,54 +94,103 @@ export function getActiveCompanyScope(): { companyId?: string; branchId?: string
   return {}
 }
 
-async function request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+function prepareBodyAndHeaders(
+  rawBody: any,
+  rawHeaders?: HeadersInit
+): { body?: BodyInit; headers: Record<string, string>; isMultipart: boolean } {
+  const headers: Record<string, string> = {
+    ...((rawHeaders as Record<string, string>) || {}),
+  }
+  const multipart = isMultipartPayload(rawBody, headers)
+
+  if (rawBody === undefined || rawBody === null) {
+    if (!multipart && !headers['Content-Type'] && !headers['content-type']) {
+      headers['Content-Type'] = 'application/json'
+    }
+    return { body: undefined, headers, isMultipart: false }
+  }
+
+  if (multipart) {
+    // Always convert to FormData and omit Content-Type header so browser sets multipart boundary
+    const formData = toFormData(rawBody)
+    delete headers['Content-Type']
+    delete headers['content-type']
+    return { body: formData, headers, isMultipart: true }
+  }
+
+  if (!headers['Content-Type'] && !headers['content-type']) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  const serializedBody = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody)
+  return { body: serializedBody, headers, isMultipart: false }
+}
+
+async function request<T = any>(endpoint: string, options: ApiRequestOptions = {}, rawBody?: any): Promise<T> {
   const token = getAuthToken()
   const scope = getActiveCompanyScope()
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
-  }
+
+  const { body, headers, isMultipart } = prepareBodyAndHeaders(
+    rawBody !== undefined ? rawBody : options.body,
+    options.headers
+  )
 
   if (token && !headers['Authorization']) {
     headers['Authorization'] = `Bearer ${token}`
   }
-
   if (scope.companyId && !headers['x-company-id']) {
     headers['x-company-id'] = String(scope.companyId)
   }
-
   if (scope.branchId && !headers['x-branch-id']) {
     headers['x-branch-id'] = String(scope.branchId)
   }
-
   if (scope.subBranchId && !headers['x-sub-branch-id']) {
     headers['x-sub-branch-id'] = String(scope.subBranchId)
   }
-
   if (scope.userRole && !headers['x-user-role']) {
     headers['x-user-role'] = String(scope.userRole)
   }
-
   if (scope.userId && !headers['x-user-id']) {
     headers['x-user-id'] = String(scope.userId)
   }
-
   if (scope.userEmail && !headers['x-user-email']) {
     headers['x-user-email'] = String(scope.userEmail)
   }
 
   const baseUrl = getBaseUrl()
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
-  const url = `${baseUrl}${cleanEndpoint}`
+  let url = `${baseUrl}${cleanEndpoint}`
 
-  const isMutation = Boolean(options.method && options.method.toUpperCase() !== 'GET')
+  if (options.params && Object.keys(options.params).length > 0) {
+    const sp = new URLSearchParams()
+    Object.entries(options.params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') sp.append(k, String(v))
+    })
+    const qs = sp.toString()
+    if (qs) url += `${url.includes('?') ? '&' : '?'}${qs}`
+  }
+
+  // Use Axios XHR transport for multipart uploads when progress callback is provided
+  if (isMultipart && options.onUploadProgress && typeof window !== 'undefined') {
+    const { axiosInstance } = await import('./axios')
+    const res = await axiosInstance.request<T>({
+      url: cleanEndpoint,
+      method: options.method || 'POST',
+      data: body,
+      headers,
+      onUploadProgress: options.onUploadProgress,
+    })
+    return handleApiResponse<T>(res.data, res.status)
+  }
+
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30000)
+  const timeoutMs = isMultipart ? 30000 : 12000
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
     const response = await fetch(url, {
       ...options,
+      body,
       headers,
       signal: controller.signal,
     })
@@ -134,19 +198,18 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}): Pr
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      const errorMessage = errorData.message || errorData.error || `Request failed with status ${response.status}`
-      console.warn(`API Http Status Warning [${options.method || 'GET'} ${endpoint}]:`, errorMessage)
+      const errorMessage = errorData?.message || errorData?.error || `Request failed with status ${response.status}`
 
       if (response.status === 401 && typeof window !== 'undefined') {
-        const isAuthVerification = endpoint.includes('/auth/me') || endpoint.includes('/auth/check') || endpoint.includes('/auth/verify')
+        const isAuthVerification =
+          endpoint.includes('/auth/me') || endpoint.includes('/auth/check') || endpoint.includes('/auth/verify')
         const isLoginPage = window.location.pathname.includes('/login')
         if (isAuthVerification && !isLoginPage) {
-          // Grace period: do not kick out if user just logged in within last 30 seconds
           const lastLoginTime = Number(localStorage.getItem('saampark_last_activity_time') || 0)
           const justLoggedIn = Date.now() - lastLoginTime < 30000
           if (!justLoggedIn) {
             try {
-              const { useAuthStore } = require("@/store/useAuthStore")
+              const { useAuthStore } = require('@/store/useAuthStore')
               useAuthStore.getState().logout()
             } catch {}
             try {
@@ -161,35 +224,31 @@ async function request<T = any>(endpoint: string, options: RequestInit = {}): Pr
         }
       }
 
-      // If mutating database state, halt execution and raise error so UI never shows false success
-      if (isMutation) {
-        throw new Error(errorMessage)
-      }
-
-      return { status: "error", message: errorMessage, data: null, error: true } as any
+      throw new ApiError(errorMessage, response.status, errorData?.errors, errorData)
     }
 
-    // Refresh last active timestamp on every successful API communication
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('saampark_last_activity_time', String(Date.now()))
       } catch {}
     }
 
-    // Handle 204 No Content
     if (response.status === 204) {
       return {} as T
     }
 
-    return await response.json()
+    const parsed = await response.json()
+    return handleApiResponse<T>(parsed, response.status)
   } catch (error: any) {
     clearTimeout(timeoutId)
-    const errorMsg = error.name === 'AbortError' ? 'Backend request timed out (30s limit)' : (error.message || 'Network / server error')
-    console.warn(`API Error [${options.method || 'GET'} ${endpoint}]:`, errorMsg)
-    if (isMutation) {
-      throw new Error(typeof errorMsg === 'string' ? errorMsg : 'Database persistence failed')
+    if (error instanceof ApiError || error?.isApiError) {
+      throw error
     }
-    return { status: "error", message: error.message || 'Network error', data: null, error: true } as any
+    const msg =
+      error?.name === 'AbortError'
+        ? `Request timed out after ${timeoutMs / 1000}s`
+        : error?.message || 'Network error: unable to reach backend server'
+    throw new ApiError(msg, 0, undefined, error)
   }
 }
 
@@ -202,13 +261,31 @@ export function unwrapList<T = any>(res: any): T[] {
 }
 
 export const api = {
-  get: <T = any>(endpoint: string, options?: RequestInit) => request<T>(endpoint, { method: 'GET', ...options }),
-  post: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
-    request<T>(endpoint, { method: 'POST', body: JSON.stringify(body), ...options }),
-  put: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
-    request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body), ...options }),
-  patch: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
-    request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body), ...options }),
-  delete: <T = any>(endpoint: string, options?: RequestInit) => request<T>(endpoint, { method: 'DELETE', ...options }),
+  get: <T = any>(endpoint: string, options?: ApiRequestOptions) =>
+    request<T>(endpoint, { method: 'GET', ...options }),
+  post: <T = any>(endpoint: string, body?: any, options?: ApiRequestOptions) =>
+    request<T>(endpoint, { method: 'POST', ...options }, body),
+  put: <T = any>(endpoint: string, body?: any, options?: ApiRequestOptions) =>
+    request<T>(endpoint, { method: 'PUT', ...options }, body),
+  patch: <T = any>(endpoint: string, body?: any, options?: ApiRequestOptions) =>
+    request<T>(endpoint, { method: 'PATCH', ...options }, body),
+  delete: <T = any>(endpoint: string, options?: ApiRequestOptions) =>
+    request<T>(endpoint, { method: 'DELETE', ...options }),
+  upload: <T = any>(
+    endpoint: string,
+    formDataOrPayload: FormData | Record<string, any>,
+    options?: ApiRequestOptions
+  ) =>
+    request<T>(
+      endpoint,
+      {
+        method: options?.method || 'POST',
+        ...options,
+        headers: {
+          ...((options?.headers as Record<string, string>) || {}),
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+      toFormData(formDataOrPayload)
+    ),
 }
-

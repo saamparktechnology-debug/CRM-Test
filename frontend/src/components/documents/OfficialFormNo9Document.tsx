@@ -43,8 +43,8 @@ export function OfficialFormNo9Document({
   const { companies, activeCompanyId, branches } = useAuthStore()
   const activeCompany = companies.find(c => c.id === activeCompanyId) || companies[0]
 
-  const branchName = branchInfo?.branchName || "Balichak"
-  const branchCode = branchInfo?.branchCode || "B-2501"
+  const branchName = branchInfo?.branchName || branches[0]?.name || "-"
+  const branchCode = branchInfo?.branchCode || branches[0]?.code || "-"
   const docDate = branchInfo?.date || pkg.startDate || new Date().toLocaleDateString("en-GB")
 
   const handleTogglePosterDone = (index: number) => {
@@ -196,31 +196,31 @@ export function OfficialFormNo9Document({
                 <div className="flex">
                   <span className="w-28 text-zinc-500 font-medium">Business Name :</span>
                   <span className="font-bold text-zinc-900 flex-1">
-                    {clientInfo?.businessName || clientInfo?.name || "Mahaprabhu Enterprise"}
+                    {clientInfo?.businessName || clientInfo?.name || "-"}
                   </span>
                 </div>
                 <div className="flex">
                   <span className="w-28 text-zinc-500 font-medium">Contact Person :</span>
                   <span className="font-semibold text-zinc-800 flex-1">
-                    {clientInfo?.contactPerson || clientInfo?.name || "Asesh"}
+                    {clientInfo?.contactPerson || clientInfo?.name || "-"}
                   </span>
                 </div>
                 <div className="flex">
                   <span className="w-28 text-zinc-500 font-medium">Contact No. :</span>
                   <span className="font-mono font-bold text-zinc-900 flex-1">
-                    {clientInfo?.contactNo || clientInfo?.phone || "9735540209"}
+                    {clientInfo?.contactNo || clientInfo?.phone || "-"}
                   </span>
                 </div>
                 <div className="flex">
                   <span className="w-28 text-zinc-500 font-medium">Address :</span>
                   <span className="text-zinc-800 flex-1">
-                    {clientInfo?.address || "Krishnapalashi, Sabong"}
+                    {clientInfo?.address || "-"}
                   </span>
                 </div>
                 <div className="flex">
                   <span className="w-28 text-zinc-500 font-medium">Category :</span>
                   <span className="font-semibold text-zinc-900 flex-1">
-                    {clientInfo?.category || pkg.category || "Solar & Inverter"}
+                    {clientInfo?.category || pkg.category || "-"}
                   </span>
                 </div>
               </div>

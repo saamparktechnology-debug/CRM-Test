@@ -1,0 +1,540 @@
+"use client";
+
+import * as React from "react";
+import {
+  Tag,
+  Upload,
+  Plus,
+  Filter,
+  FileSpreadsheet,
+  Printer,
+  Search,
+  ArrowDown,
+  Layout,
+  Pencil,
+  X,
+  User,
+  MapPin,
+  Info,
+  Receipt,
+  Megaphone,
+  Clock,
+} from "lucide-react";
+import { Project } from "@/features/projects/types";
+import { ProjectFiltersDropdown } from "@/features/projects/components/ProjectFiltersDropdown";
+import { ProjectCompletionModal } from "@/features/projects/components/ProjectCompletionModal";
+import { useAuthStore } from "@/store/useAuthStore";
+import { usePermissionStore } from "@/store/usePermissionStore";
+import { exportToExcel, printPDFReport } from "@/lib/exportUtils";
+import { getUserAvatar } from "@/features/users/services/userService";
+import { confirmTwoStepDelete } from "@/lib/confirmDialog";
+import { formatDisplayDate } from "@/lib/utils";
+import { type ProjectListProps } from "@/features/projects/components/projectlist-sections/ProjectListHelpers";
+
+export function ProjectListSection1({ ctrl }: { ctrl: any }) {
+  const {
+    filteredProjects,
+    onSelectProjectDetail,
+    isSuperAdmin,
+    user,
+    canEditProject,
+    setCompletionProject,
+    onOpenEditModal,
+    canDeleteProject,
+    onDeleteProject,
+    canAddProject,
+    onOpenAddModal,
+  } = ctrl;
+  return (
+    <>
+      <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-zinc-700 dark:text-zinc-300">
+        {filteredProjects.map((p: any) => {
+          const isOverdueOrNear =
+            p.deadline === "08-08-2026" || p.deadline === "12-08-2026";
+
+          return (
+            <tr
+              key={p.id}
+              className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors group"
+            >
+              {/* Title & Badges */}
+              <td className="py-3.5 px-4">
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => onSelectProjectDetail(p)}
+                    className="font-semibold text-blue-600 dark:text-blue-400 hover:underline text-left text-xs"
+                  >
+                    {p.title}
+                  </button>
+
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Glass-effect Creator Info Circle Icon with Tooltip */}
+                    {((p as any).createdByName ||
+                      (p as any).createdBy ||
+                      (p as any).billedBy) && (
+                      <div className="relative group/projectcreator inline-flex items-center">
+                        <button
+                          type="button"
+                          className="w-5 h-5 rounded-full backdrop-blur-md bg-white/80 dark:bg-zinc-800/80 hover:bg-indigo-50/90 dark:hover:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-500/30 flex items-center justify-center cursor-pointer transition-all duration-200 shadow-xs hover:shadow-md hover:shadow-indigo-500/20 hover:scale-110 active:scale-95"
+                          title="Added by Details"
+                        >
+                          <Info size={11} className="stroke-[2.2]" />
+                        </button>
+                        <div className="absolute left-0 top-full mt-2 hidden group-hover/projectcreator:block z-50 w-56 p-3 bg-zinc-900/95 dark:bg-zinc-900/95 text-white rounded-2xl shadow-2xl border border-white/10 text-[11px] pointer-events-none space-y-1.5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+                          <div className="text-[9.5px] font-bold uppercase tracking-wider text-indigo-400 border-b border-white/10 pb-1 flex items-center justify-between">
+                            <span>Project Creator</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                          </div>
+                          <div className="flex items-center gap-1.5 text-zinc-100 font-semibold">
+                            <User
+                              size={12}
+                              className="text-indigo-400 shrink-0"
+                            />
+                            <span>
+                              Added by:{" "}
+                              <strong className="text-indigo-300 font-bold">
+                                {(p as any).createdByName ||
+                                  (p as any).createdBy ||
+                                  (p as any).billedBy}
+                              </strong>
+                            </span>
+                          </div>
+                          {(p as any).branchName && (
+                            <div className="flex items-center gap-1.5 text-zinc-300">
+                              <MapPin
+                                size={12}
+                                className="text-amber-400 shrink-0"
+                              />
+                              <span>
+                                Branch:{" "}
+                                <strong className="text-white font-medium">
+                                  {(p as any).branchName}
+                                </strong>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Branch Badge (Only if non-empty) */}
+                    {(p as any).branchName && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/70 text-[9.5px] font-semibold">
+                        <MapPin size={9} />
+                        <span>Branch: {(p as any).branchName}</span>
+                      </span>
+                    )}
+
+                    {/* Digital Marketing Project Badge (Strictly for genuine marketing campaigns, never for tech projects) */}
+                    {(() => {
+                      const cat = String(
+                        (p as any).category || "",
+                      ).toLowerCase();
+                      const pTitle = String(p.title || "").toLowerCase();
+                      const isTech =
+                        cat.includes("website") ||
+                        cat.includes("software") ||
+                        cat.includes("app") ||
+                        cat.includes("android") ||
+                        cat.includes("ios") ||
+                        pTitle.includes("cab booking") ||
+                        pTitle.includes("website") ||
+                        pTitle.includes("app");
+                      const isMarketing =
+                        !isTech &&
+                        (cat === "digital marketing" ||
+                          (p.projectType === "Digital Marketing Campaign" &&
+                            !isTech) ||
+                          ((p as any).marketingPackage?.enabled && !isTech));
+                      if (!isMarketing) return null;
+                      return (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/70 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800 text-[9.5px] font-bold">
+                          <Megaphone size={9} />
+                          <span>Digital Marketing Retainer</span>
+                        </span>
+                      );
+                    })()}
+
+                    {Array.isArray(p.labels) &&
+                      p.labels.length > 0 &&
+                      p.labels
+                        .filter((lbl: any) => {
+                          const cat = String(
+                            (p as any).category || "",
+                          ).toLowerCase();
+                          const pTitle = String(p.title || "").toLowerCase();
+                          const isTech =
+                            cat.includes("website") ||
+                            cat.includes("software") ||
+                            cat.includes("app") ||
+                            cat.includes("android") ||
+                            cat.includes("ios") ||
+                            pTitle.includes("cab booking") ||
+                            pTitle.includes("website") ||
+                            pTitle.includes("app");
+                          if (
+                            isTech &&
+                            (lbl.toLowerCase() === "digital marketing" ||
+                              lbl.toLowerCase().includes("marketing retainer"))
+                          ) {
+                            return false;
+                          }
+                          return true;
+                        })
+                        .map((lbl: any) => (
+                          <span
+                            key={lbl}
+                            className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                              lbl === "Urgent"
+                                ? "bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300"
+                                : "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                            }`}
+                          >
+                            {lbl}
+                          </span>
+                        ))}
+                  </div>
+                </div>
+              </td>
+
+              {/* Client */}
+              <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400">
+                {p.client}
+              </td>
+
+              {/* Price */}
+              <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400">
+                <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  {p.price}
+                </div>
+                {Number(p.advanceAmount || 0) > 0 &&
+                Number(p.dueAmount || 0) > 0 ? (
+                  <div className="text-[10px] flex items-center gap-1 font-medium mt-0.5">
+                    <span className="text-emerald-600 dark:text-emerald-400">
+                      Adv: ₹{Number(p.advanceAmount).toLocaleString("en-IN")}
+                    </span>
+                    <span className="text-zinc-400">•</span>
+                    <span className="text-amber-600 dark:text-amber-400">
+                      Due: ₹{Number(p.dueAmount).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                ) : null}
+              </td>
+
+              {/* Assigned Team Profile Pictures */}
+              <td className="py-3.5 px-4">
+                {Array.isArray(p.members) && p.members.length > 0 ? (
+                  <div className="flex items-center gap-1">
+                    <div className="flex -space-x-2 overflow-hidden hover:space-x-1 transition-all py-1">
+                      {p.members.slice(0, 4).map((m: any, idx: number) => {
+                        const mName =
+                          typeof m === "string" ? m : m.name || "Member";
+                        const mRole =
+                          typeof m === "string"
+                            ? "Developer"
+                            : m.role || "Developer";
+                        const mAvatar =
+                          (m as any).avatarUrl ||
+                          (m as any).avatar ||
+                          getUserAvatar(mName, undefined, mName);
+                        return (
+                          <div
+                            key={idx}
+                            className="relative group/avatar cursor-pointer shrink-0"
+                            title={`${mName} (${mRole})`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectProjectDetail(p);
+                            }}
+                          >
+                            <img
+                              src={mAvatar}
+                              alt={mName}
+                              className="w-7 h-7 rounded-full object-cover border-2 border-white dark:border-zinc-900 bg-surface shadow-2xs hover:scale-115 hover:z-20 transition-transform"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {p.members.length > 4 && (
+                      <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full border border-zinc-200 dark:border-zinc-700">
+                        +{p.members.length - 4}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectProjectDetail(p);
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  >
+                    <Plus size={12} />
+                    <span>Assign</span>
+                  </button>
+                )}
+              </td>
+
+              {/* Start date */}
+              <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400">
+                {formatDisplayDate(p.startDate)}
+              </td>
+
+              {/* Deadline */}
+              <td className="py-3.5 px-4">
+                <span className="text-red-600 dark:text-red-400 font-bold font-mono text-xs">
+                  {p.deadline ? formatDisplayDate(p.deadline) : "-"}
+                </span>
+              </td>
+
+              {/* Progress Bar & Interactive Team Completion Slider */}
+              <td className="py-3.5 px-4 min-w-[130px]">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                    <span>{p.progress}%</span>
+                    {p.status === "In Progress" && (
+                      <span className="text-[10px] text-blue-600 font-normal">
+                        Team Slider
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-28 bg-zinc-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden relative">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        p.status === "Completed" || p.status === "Finished"
+                          ? "bg-emerald-500"
+                          : "bg-blue-600"
+                      }`}
+                      style={{ width: `${p.progress}%` }}
+                    />
+                  </div>
+                  {p.status === "In Progress" && (
+                    <input
+                      type="range"
+                      min="1"
+                      max="100"
+                      value={p.progress || 1}
+                      onChange={async (e) => {
+                        const val = Number(e.target.value);
+                        const { updateProject } =
+                          await import("@/features/projects/services/projectService");
+                        await updateProject(p.id, { progress: val });
+                        p.progress = val;
+                      }}
+                      className="w-28 h-1 accent-blue-600 cursor-pointer block"
+                      title="Adjust completion percentage (1% - 100%)"
+                    />
+                  )}
+                </div>
+              </td>
+
+              {/* Status & Payment Approval Controls */}
+              <td className="py-3.5 px-4">
+                {p.status === "Payment Pending" ||
+                p.paymentStatus === "Payment Pending" ? (
+                  <div className="space-y-1">
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300">
+                      Payment Pending
+                    </span>
+                    {(isSuperAdmin ||
+                      (user?.role || "").toLowerCase().includes("admin") ||
+                      canEditProject) && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const { updateProject } =
+                            await import("@/features/projects/services/projectService");
+                          const { updateInvoiceStatus } =
+                            await import("@/features/invoice/services/invoiceService");
+                          await updateProject(p.id, {
+                            status: "In Progress",
+                            paymentStatus: "Paid",
+                          });
+                          await updateInvoiceStatus(
+                            p.title,
+                            "Fully paid",
+                          ).catch(() => {});
+                          window.location.reload();
+                        }}
+                        className="block px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px] hover:bg-emerald-700 shadow-2xs cursor-pointer"
+                        title="Approve payment and mark project active"
+                      >
+                        Approve Payment & Activate
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <select
+                      value={p.status || "Open"}
+                      disabled={
+                        !(
+                          isSuperAdmin ||
+                          (user?.role || "").toLowerCase().includes("admin") ||
+                          canEditProject
+                        )
+                      }
+                      onChange={async (e) => {
+                        const newStatus = e.target.value as any;
+                        if (
+                          newStatus === "Finished" ||
+                          newStatus === "Completed"
+                        ) {
+                          setCompletionProject(p);
+                          return;
+                        }
+                        const { updateProject } =
+                          await import("@/features/projects/services/projectService");
+                        const newProgress =
+                          newStatus === "Open"
+                            ? 0
+                            : p.progress === 100
+                              ? 50
+                              : p.progress;
+                        p.status = newStatus;
+                        p.progress = newProgress;
+                        await updateProject(p.id, {
+                          status: newStatus,
+                          progress: newProgress,
+                        });
+                        window.dispatchEvent(
+                          new CustomEvent("saampark_projects_updated"),
+                        );
+                      }}
+                      className={`px-2 py-1 rounded text-xs font-semibold border bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 cursor-pointer ${
+                        p.status === "Completed" || p.status === "Finished"
+                          ? "text-emerald-600 border-emerald-300"
+                          : p.status === "Cancelled"
+                            ? "text-rose-600 border-rose-300"
+                            : p.status === "Under Review"
+                              ? "text-purple-600 border-purple-300"
+                              : p.status === "Hold"
+                                ? "text-amber-600 border-amber-300"
+                                : "text-blue-600 border-blue-300"
+                      }`}
+                    >
+                      <option value="Open">Open</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Under Review">Under Review</option>
+                      <option value="Hold">Hold</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Finished">Finished</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+
+                    {(p.status === "Completed" || p.status === "Finished") && (
+                      <div className="mt-1">
+                        {(p as any).countdownEndDate ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                            <Clock size={10} />
+                            <span>
+                              Till{" "}
+                              {formatDisplayDate((p as any).countdownEndDate)}
+                            </span>
+                          </span>
+                        ) : (p as any).firstPostDate ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800">
+                            <Clock size={10} />
+                            <span>
+                              From {formatDisplayDate((p as any).firstPostDate)}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-zinc-400">
+                            Completed
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </td>
+
+              {/* Row Action Icons matching Image 1 */}
+              <td className="py-3.5 px-4 text-right">
+                <div className="flex items-center justify-end gap-1.5 opacity-80 group-hover:opacity-100">
+                  {/* View detail button */}
+                  <button
+                    type="button"
+                    onClick={() => onSelectProjectDetail(p)}
+                    className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors"
+                    title="View project details"
+                  >
+                    <Layout size={14} />
+                  </button>
+
+                  {/* Quick jump to project invoices & billing */}
+                  <button
+                    type="button"
+                    onClick={() => onSelectProjectDetail(p, "Invoices")}
+                    className="p-1 text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded transition-colors"
+                    title="Project Invoices & Billing"
+                  >
+                    <Receipt size={14} />
+                  </button>
+
+                  {canEditProject && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenEditModal(p)}
+                      className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors"
+                      title="Edit project"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
+
+                  {canDeleteProject && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (await confirmTwoStepDelete(p.title, "project")) {
+                          onDeleteProject(p.id);
+                        }
+                      }}
+                      className="p-1 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded transition-colors"
+                      title="Delete project"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+
+        {filteredProjects.length === 0 && (
+          <tr>
+            <td colSpan={9} className="py-12 text-center text-zinc-400">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center text-xl shadow-xs">
+                  🚀
+                </div>
+                <p className="font-semibold text-sm text-zinc-700 dark:text-zinc-200">
+                  No projects found
+                </p>
+                <p className="text-xs text-zinc-400 max-w-xs">
+                  No projects match the active filters or search terms.
+                </p>
+                {canAddProject && (
+                  <button
+                    type="button"
+                    onClick={onOpenAddModal}
+                    className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-blue-600 text-white rounded-lg shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                  >
+                    <Plus size={13} />
+                    <span>Add New Project</span>
+                  </button>
+                )}
+              </div>
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </>
+  );
+}

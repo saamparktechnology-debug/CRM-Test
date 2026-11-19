@@ -79,179 +79,387 @@ import {
   isMatchingCompany,
 } from "@/store/useAuthStore";
 import { usePermissionStore } from "@/store/usePermissionStore";
+import { SidebarSection1 } from "@/components/layout/components/sidebar-sections/SidebarSection1";
 
-export function SaamparkVortexLogo({
-  className = "w-8 h-8",
-}: {
-  className?: string;
-}) {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <circle
-        cx="50"
-        cy="50"
-        r="46"
-        stroke="rgba(255,255,255,0.08)"
-        strokeWidth="2"
-      />
-      <g transform="translate(50,50)">
-        {[
-          { angle: 0, color: "#2563EB" },
-          { angle: 45, color: "#06B6D4" },
-          { angle: 90, color: "#10B981" },
-          { angle: 135, color: "#84CC16" },
-          { angle: 180, color: "#EAB308" },
-          { angle: 225, color: "#F97316" },
-          { angle: 270, color: "#EF4444" },
-          { angle: 315, color: "#8B5CF6" },
-        ].map((petal, i) => (
-          <path
-            key={i}
-            d="M 0 -10 C 12 -28, 24 -34, 32 -20 C 38 -8, 28 0, 0 0 Z"
-            fill={petal.color}
-            transform={`rotate(${petal.angle})`}
-            opacity="0.95"
-          />
-        ))}
-        <circle
-          cx="0"
-          cy="0"
-          r="8"
-          fill="#0B132B"
-          stroke="#ffffff"
-          strokeWidth="2"
-        />
-      </g>
-    </svg>
-  );
-}
-
-export interface SubNavItem {
-  name: string;
-  href: string;
-  icon: any;
-}
-
-export interface NavItem {
-  name: string;
-  href: string;
-  icon: any;
-  badge?: number;
-  subItems?: SubNavItem[];
-}
-
-const ALL_NAV_ITEMS: NavItem[] = [
-  { name: "Dashboard", href: "/feature/dashboard", icon: LayoutDashboard },
-  { name: "Users", href: "/feature/users", icon: Users },
-  {
-    name: "CRM",
-    href: "/feature/leads",
-    icon: Target,
-    subItems: [
-      { name: "Leads", href: "/feature/leads", icon: Target },
-      { name: "Clients", href: "/feature/clients", icon: Briefcase },
-    ],
-  },
-  {
-    name: "Projects",
-    href: "/feature/projects",
-    icon: KanbanSquare,
-  },
-  { name: "Tasks", href: "/feature/tasks", icon: CheckSquare },
-  {
-    name: "Digital Marketing",
-    href: "/feature/marketing",
-    icon: BarChart3,
-  },
-  {
-    name: "Sales",
-    href: "/feature/sales/invoices",
-    icon: ShoppingCart,
-    subItems: [
-      { name: "Quotations", href: "/feature/quotations", icon: FileOutput },
-      { name: "Estimates", href: "/feature/estimates", icon: Calculator },
-      { name: "Invoices", href: "/feature/sales/invoices", icon: FileText },
-      { name: "Payments", href: "/feature/sales/payments", icon: CreditCard },
-    ],
-  },
-  { name: "Approvals", href: "/feature/approvals", icon: ShieldCheck },
-  {
-    name: "Subscriptions",
-    href: "/feature/subscriptions",
-    icon: CreditCard,
-    subItems: [
-      {
-        name: "Packages & Retainers",
-        href: "/feature/subscriptions",
-        icon: CreditCard,
-      },
-      { name: "EMI Milestone Plans", href: "/feature/emi", icon: Receipt },
-    ],
-  },
-  {
-    name: "HR & Employees",
-    href: "/feature/team/members",
-    icon: UserCheck,
-    subItems: [
-      { name: "Team Members", href: "/feature/team/members", icon: UserCheck },
-      {
-        name: "Payments & Payroll",
-        href: "/feature/team/payments",
-        icon: DollarSign,
-      },
-      { name: "Leave Management", href: "/feature/team/leave", icon: Calendar },
-      {
-        name: "Attendance & Timecards",
-        href: "/feature/team/timecards",
-        icon: Clock,
-      },
-    ],
-  },
-  {
-    name: "Support",
-    href: "/feature/tickets",
-    icon: HeadphonesIcon,
-    subItems: [
-      { name: "Tickets", href: "/feature/tickets", icon: HeadphonesIcon },
-      {
-        name: "Knowledge Base",
-        href: "/feature/knowledge-base",
-        icon: LifeBuoy,
-      },
-    ],
-  },
-  { name: "Events", href: "/feature/events", icon: Calendar },
-  { name: "Notes", href: "/feature/notes", icon: Book },
-  { name: "Messages", href: "/feature/messages", icon: MessageSquare },
-  { name: "Files", href: "/feature/files", icon: Folder },
-  { name: "Expenses", href: "/feature/expenses", icon: Calculator },
-  { name: "Reports", href: "/feature/reports", icon: BarChart3 },
-  {
-    name: "Settings",
-    href: "/feature/settings",
-    icon: Settings,
-    subItems: [
-      { name: "General Settings", href: "/feature/settings", icon: Settings },
-      { name: "Companies", href: "/feature/companies", icon: Building2 },
-      { name: "Branches", href: "/feature/branches", icon: GitBranch },
-      { name: "Departments", href: "/feature/departments", icon: Briefcase },
-      { name: "Teams", href: "/feature/teams", icon: UserCheck },
-      { name: "Permissions", href: "/feature/permissions", icon: Shield },
-    ],
-  },
-  {
-    name: "Activity Logs",
-    href: "/feature/activity-logs",
-    icon: ClipboardList,
-  },
-];
+import {
+  SaamparkVortexLogo,
+  type SubNavItem,
+  type NavItem,
+  ALL_NAV_ITEMS,
+} from "@/components/layout/components/sidebar-sections/SidebarHelpers";
+export * from "@/components/layout/components/sidebar-sections/SidebarHelpers";
+import { createSidebarAction20 } from "@/components/layout/hooks/sidebar-hooks/createSidebarAction20.hooks";
 
 export function Sidebar() {
+  const __ctrl: any = {
+    get pathname() {
+      try {
+        return pathname;
+      } catch {
+        return undefined;
+      }
+    },
+    get isSidebarCollapsed() {
+      try {
+        return isSidebarCollapsed;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSidebarCollapsed() {
+      try {
+        return setSidebarCollapsed;
+      } catch {
+        return undefined;
+      }
+    },
+    get user() {
+      try {
+        return user;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeCompanyId() {
+      try {
+        return activeCompanyId;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeBranchId() {
+      try {
+        return activeBranchId;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeSubBranchId() {
+      try {
+        return activeSubBranchId;
+      } catch {
+        return undefined;
+      }
+    },
+    get switchCompany() {
+      try {
+        return switchCompany;
+      } catch {
+        return undefined;
+      }
+    },
+    get switchBranch() {
+      try {
+        return switchBranch;
+      } catch {
+        return undefined;
+      }
+    },
+    get switchSubBranch() {
+      try {
+        return switchSubBranch;
+      } catch {
+        return undefined;
+      }
+    },
+    get logout() {
+      try {
+        return logout;
+      } catch {
+        return undefined;
+      }
+    },
+    get companies() {
+      try {
+        return companies;
+      } catch {
+        return undefined;
+      }
+    },
+    get branches() {
+      try {
+        return branches;
+      } catch {
+        return undefined;
+      }
+    },
+    get subBranches() {
+      try {
+        return subBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get fetchCompanies() {
+      try {
+        return fetchCompanies;
+      } catch {
+        return undefined;
+      }
+    },
+    get fetchBranches() {
+      try {
+        return fetchBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get fetchSubBranches() {
+      try {
+        return fetchSubBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get allowedCompanies() {
+      try {
+        return allowedCompanies;
+      } catch {
+        return undefined;
+      }
+    },
+    get allowedBranches() {
+      try {
+        return allowedBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get isAllCompanies() {
+      try {
+        return isAllCompanies;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeCompany() {
+      try {
+        return activeCompany;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeCompanyName() {
+      try {
+        return activeCompanyName;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeCompanyLogo() {
+      try {
+        return activeCompanyLogo;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeBranch() {
+      try {
+        return activeBranch;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeSubBranch() {
+      try {
+        return activeSubBranch;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeEntityLogo() {
+      try {
+        return activeEntityLogo;
+      } catch {
+        return undefined;
+      }
+    },
+    get isModuleAllowed() {
+      try {
+        return isModuleAllowed;
+      } catch {
+        return undefined;
+      }
+    },
+    get isCompanyModuleAllowed() {
+      try {
+        return isCompanyModuleAllowed;
+      } catch {
+        return undefined;
+      }
+    },
+    get isEntityModuleAllowed() {
+      try {
+        return isEntityModuleAllowed;
+      } catch {
+        return undefined;
+      }
+    },
+    get userActionPermissions() {
+      try {
+        return userActionPermissions;
+      } catch {
+        return undefined;
+      }
+    },
+    get userPermissions() {
+      try {
+        return userPermissions;
+      } catch {
+        return undefined;
+      }
+    },
+    get rolePermissions() {
+      try {
+        return rolePermissions;
+      } catch {
+        return undefined;
+      }
+    },
+    get roleActionPermissions() {
+      try {
+        return roleActionPermissions;
+      } catch {
+        return undefined;
+      }
+    },
+    get companyEnabledModules() {
+      try {
+        return companyEnabledModules;
+      } catch {
+        return undefined;
+      }
+    },
+    get rawCounts() {
+      try {
+        return rawCounts;
+      } catch {
+        return undefined;
+      }
+    },
+    get setRawCounts() {
+      try {
+        return setRawCounts;
+      } catch {
+        return undefined;
+      }
+    },
+    get visitedCounts() {
+      try {
+        return visitedCounts;
+      } catch {
+        return undefined;
+      }
+    },
+    get setVisitedCounts() {
+      try {
+        return setVisitedCounts;
+      } catch {
+        return undefined;
+      }
+    },
+    get queryClient() {
+      try {
+        return queryClient;
+      } catch {
+        return undefined;
+      }
+    },
+    get setAvatarUpdateTick() {
+      try {
+        return setAvatarUpdateTick;
+      } catch {
+        return undefined;
+      }
+    },
+    get NAV_TO_MODULE_MAP() {
+      try {
+        return NAV_TO_MODULE_MAP;
+      } catch {
+        return undefined;
+      }
+    },
+    get GROUP_GOVERNANCE_MODULES() {
+      try {
+        return GROUP_GOVERNANCE_MODULES;
+      } catch {
+        return undefined;
+      }
+    },
+    get checkNavAllowed() {
+      try {
+        return checkNavAllowed;
+      } catch {
+        return undefined;
+      }
+    },
+    get allowedNavItems() {
+      try {
+        return allowedNavItems;
+      } catch {
+        return undefined;
+      }
+    },
+    get isMobile() {
+      try {
+        return isMobile;
+      } catch {
+        return undefined;
+      }
+    },
+    get setIsMobile() {
+      try {
+        return setIsMobile;
+      } catch {
+        return undefined;
+      }
+    },
+    get openSubmenus() {
+      try {
+        return openSubmenus;
+      } catch {
+        return undefined;
+      }
+    },
+    get setOpenSubmenus() {
+      try {
+        return setOpenSubmenus;
+      } catch {
+        return undefined;
+      }
+    },
+    get toggleSubmenu() {
+      try {
+        return toggleSubmenu;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleLinkClick() {
+      try {
+        return handleLinkClick;
+      } catch {
+        return undefined;
+      }
+    },
+    get getScopedHref() {
+      try {
+        return getScopedHref;
+      } catch {
+        return undefined;
+      }
+    },
+    get isDrawerOpen() {
+      try {
+        return isDrawerOpen;
+      } catch {
+        return undefined;
+      }
+    },
+  };
+  const __ctrlRef = React.useRef<any>(__ctrl);
+  __ctrlRef.current = __ctrl;
+
   const pathname = usePathname();
   const { isSidebarCollapsed, setSidebarCollapsed } = useUIStore();
   const {
@@ -271,11 +479,7 @@ export function Sidebar() {
     fetchSubBranches,
   } = useAuthStore();
 
-  React.useEffect(() => {
-    fetchCompanies?.().catch(() => {});
-    fetchBranches?.().catch(() => {});
-    fetchSubBranches?.().catch(() => {});
-  }, [fetchCompanies, fetchBranches, fetchSubBranches]);
+  // Initial company/branch/sub-branch hydration is handled centrally by Topbar (with store deduplication).
 
   const allowedCompanies = React.useMemo(() => {
     if (!user) return [];
@@ -530,79 +734,7 @@ export function Sidebar() {
   ]);
 
   // Check permission for any nav or sub-nav item strictly and individually
-  const checkNavAllowed = React.useCallback(
-    (u: any, name: string): boolean => {
-      if (!u) return false;
-      if (name === "Dashboard") return true;
-
-      if (name === "Approvals") {
-        return u.role === "Super Admin" || u.role === "Admin";
-      }
-
-      const targetModule = NAV_TO_MODULE_MAP[name] || name;
-
-      const isGroupLevel =
-        !activeCompanyId ||
-        activeCompanyId === "all" ||
-        activeCompanyId === "group" ||
-        activeCompanyId === "saampark-group";
-
-      // When at SAAMPARK Group holding level, show only necessary executive governance modules for Super Admin.
-      // Operational business modules (Projects, Tasks, Marketing, Invoices, Quotations, Leads, Subscriptions, etc.)
-      // belong to operating companies and will appear when switching to that specific operating company.
-      if (isGroupLevel && u.role === "Super Admin") {
-        if (
-          !GROUP_GOVERNANCE_MODULES.has(name) &&
-          !GROUP_GOVERNANCE_MODULES.has(targetModule)
-        ) {
-          return false;
-        }
-      }
-
-      // Super Admin has unrestricted access when viewing an operating company
-      if (u.role === "Super Admin") return true;
-
-      // Entity-level module visibility restriction (Company -> Branch -> Sub-Branch)
-      const isEntityAllowed = isEntityModuleAllowed(
-        activeCompanyId,
-        activeBranchId,
-        activeSubBranchId,
-        targetModule,
-      );
-      if (!isEntityAllowed) {
-        // If Super Admin, let them see system governance (Dashboard, Companies, Branches, Settings, Permissions, Users, Activity Logs)
-        if (
-          u.role === "Super Admin" &&
-          [
-            "Dashboard",
-            "Companies",
-            "Branches",
-            "Settings",
-            "Permissions",
-            "Users",
-            "Activity Logs",
-          ].includes(targetModule)
-        ) {
-          return true;
-        }
-        return false;
-      }
-
-      if (name === "Activity Logs") {
-        return u.role === "Super Admin" || u.role === "Admin";
-      }
-      if (u.role === "Super Admin") return true;
-
-      return isModuleAllowed(u, targetModule);
-    },
-    [
-      isModuleAllowed,
-      isEntityModuleAllowed,
-      activeCompanyId,
-      activeBranchId,
-      activeSubBranchId,
-    ],
-  );
+  const checkNavAllowed: any = createSidebarAction20(() => __ctrlRef.current);
 
   // Filter items strictly by individual module permissions
   const allowedNavItems = React.useMemo(() => {
@@ -744,6 +876,7 @@ export function Sidebar() {
   // Sidebar visibility on mobile
   const isDrawerOpen = !isSidebarCollapsed;
 
+  __ctrlRef.current = __ctrl;
   return (
     <>
       {/* ── MOBILE BACKDROP OVERLAY ── */}
@@ -761,354 +894,7 @@ export function Sidebar() {
       </AnimatePresence>
 
       {/* ── SIDEBAR DRAWER ── */}
-      <motion.aside
-        initial={false}
-        animate={
-          isMobile
-            ? {
-                x: isDrawerOpen ? 0 : -320,
-                width: 280,
-                opacity: isDrawerOpen ? 1 : 0,
-              }
-            : {
-                x: 0,
-                width: isSidebarCollapsed ? 64 : 256,
-                opacity: 1,
-              }
-        }
-        transition={{ duration: 0.25, ease: "easeInOut" }}
-        className={cn(
-          "fixed top-0 left-0 h-screen bg-[#0A1128] text-slate-300 border-r border-slate-800/80 flex flex-col overflow-hidden shadow-2xl z-40",
-          isMobile ? "z-50" : "z-40",
-        )}
-      >
-        {/* Header - Selected Active Company Name & Logo */}
-        <div className="h-16 flex items-center justify-between px-3.5 border-b border-slate-800/80 shrink-0">
-          <Link
-            href="/feature/dashboard"
-            onClick={handleLinkClick}
-            className="flex items-center gap-2.5 group min-w-0 flex-1"
-          >
-            <div className="w-10 h-10 min-w-[40px] rounded-xl bg-slate-800/80 border border-slate-700/60 p-1 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-              {isAllCompanies ? (
-                <SaamparkVortexLogo className="w-8 h-8" />
-              ) : activeEntityLogo ? (
-                <img
-                  key={activeEntityLogo || activeCompany?.id}
-                  src={activeEntityLogo}
-                  alt={activeCompanyName}
-                  className="w-full h-full object-contain"
-                />
-              ) : activeCompany?.logo ? (
-                <span className="text-xl">{activeCompany.logo}</span>
-              ) : (
-                <SaamparkVortexLogo className="w-8 h-8" />
-              )}
-            </div>
-
-            <AnimatePresence mode="wait">
-              {(!isSidebarCollapsed || isMobile) && (
-                <motion.div
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 6 }}
-                  transition={{ duration: 0.2 }}
-                  className="min-w-0 flex-1 overflow-hidden text-left"
-                >
-                  {isAllCompanies ? (
-                    <div>
-                      <span
-                        className="font-black text-xs sm:text-sm tracking-wide text-white block truncate uppercase"
-                        title="SAAMPARK GROUP"
-                      >
-                        SAAMPARK
-                      </span>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block truncate -mt-0.5">
-                        GROUP
-                      </span>
-                    </div>
-                  ) : (
-                    <div>
-                      <span
-                        className="font-black text-xs sm:text-sm tracking-wider text-white block truncate uppercase"
-                        title={activeCompany?.brand_name || "SAAMPARK"}
-                      >
-                        {activeCompany?.brand_name || "SAAMPARK"}
-                      </span>
-                      <span
-                        className="text-[9.5px] font-bold text-slate-400 uppercase tracking-tight block truncate -mt-0.5"
-                        title={activeCompany?.name || activeCompanyName}
-                      >
-                        {activeCompany?.name || activeCompanyName}
-                      </span>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Link>
-
-          {/* Close X button on mobile */}
-          {isMobile && (
-            <button
-              type="button"
-              onClick={() => setSidebarCollapsed(true)}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors shrink-0"
-              title="Close menu"
-            >
-              <X size={18} />
-            </button>
-          )}
-        </div>
-
-        {/* Navigation list */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-1 scrollbar-hide px-2">
-          {allowedNavItems.map((item) => {
-            const hasSubItems = Boolean(
-              item.subItems && item.subItems.length > 0,
-            );
-            const isSubActive =
-              hasSubItems &&
-              item.subItems?.some(
-                (sub) =>
-                  pathname === sub.href ||
-                  pathname.startsWith(sub.href + "/") ||
-                  pathname.includes(sub.href),
-              );
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/feature/dashboard" &&
-                pathname.startsWith(item.href + "/")) ||
-              pathname.includes(item.href) ||
-              isSubActive;
-            const isDropdownOpen = Boolean(openSubmenus[item.name]);
-            const getItemBadge = (name: string) => {
-              const raw =
-                rawCounts[name] !== undefined
-                  ? rawCounts[name]
-                  : typeof item.badge === "number"
-                    ? item.badge
-                    : 0;
-              const visited = visitedCounts[name] || 0;
-              const unread = raw - visited;
-              return unread > 0 ? unread : null;
-            };
-            const itemBadge = getItemBadge(item.name);
-
-            return (
-              <div key={item.name}>
-                {hasSubItems && (!isSidebarCollapsed || isMobile) ? (
-                  <button
-                    type="button"
-                    onClick={(e) => toggleSubmenu(item.name, e)}
-                    className="w-full block text-left"
-                  >
-                    <div
-                      className={cn(
-                        "flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all relative group cursor-pointer text-xs font-semibold",
-                        isActive
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-md shadow-blue-600/30 ring-1 ring-white/20"
-                          : "text-slate-100 hover:text-white hover:bg-slate-800/90 font-bold hover:translate-x-0.5",
-                      )}
-                    >
-                      <item.icon
-                        size={17}
-                        className={cn(
-                          "shrink-0 transition-colors",
-                          isActive
-                            ? "text-white drop-shadow-xs"
-                            : "text-slate-200 group-hover:text-white",
-                        )}
-                        strokeWidth={isActive ? 2.5 : 2}
-                      />
-
-                      <div className="flex items-center justify-between w-full overflow-hidden">
-                        <span className="whitespace-nowrap overflow-hidden text-[12.5px] tracking-wide">
-                          {item.name}
-                        </span>
-                        <div className="flex items-center gap-1.5 ml-auto">
-                          {itemBadge && (
-                            <span className="text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-xs bg-indigo-500 ring-1 ring-white/20">
-                              {itemBadge}
-                            </span>
-                          )}
-                          <ChevronDown
-                            size={14}
-                            className={cn(
-                              "text-slate-300 transition-transform duration-200 shrink-0",
-                              isDropdownOpen &&
-                                "rotate-180 text-white font-bold",
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ) : (
-                  <Link
-                    href={getScopedHref(item.href)}
-                    onClick={handleLinkClick}
-                    className="block"
-                  >
-                    <div
-                      className={cn(
-                        "flex items-center gap-3 py-2.5 rounded-xl transition-all relative group text-xs font-semibold",
-                        isSidebarCollapsed && !isMobile
-                          ? "justify-center px-0"
-                          : "px-3",
-                        isActive
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-md shadow-blue-600/30 ring-1 ring-white/20"
-                          : "text-slate-100 hover:text-white hover:bg-slate-800/90 font-bold hover:translate-x-0.5",
-                      )}
-                      title={
-                        isSidebarCollapsed && !isMobile ? item.name : undefined
-                      }
-                    >
-                      <item.icon
-                        size={17}
-                        className={cn(
-                          "shrink-0 transition-colors",
-                          isActive
-                            ? "text-white drop-shadow-xs"
-                            : "text-slate-200 group-hover:text-white",
-                        )}
-                        strokeWidth={isActive ? 2.5 : 2}
-                      />
-
-                      <AnimatePresence>
-                        {(!isSidebarCollapsed || isMobile) && (
-                          <div className="flex items-center justify-between w-full overflow-hidden">
-                            <span className="whitespace-nowrap overflow-hidden text-[12.5px] tracking-wide">
-                              {item.name}
-                            </span>
-                            {itemBadge && (
-                              <span
-                                className={`ml-auto text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shadow-xs shrink-0 ring-1 ring-white/20 ${
-                                  item.name === "Projects" ||
-                                  item.name === "Leads"
-                                    ? "bg-rose-600 animate-pulse"
-                                    : "bg-blue-600"
-                                }`}
-                              >
-                                {itemBadge}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </Link>
-                )}
-
-                {/* Sub-items dropdown */}
-                <AnimatePresence>
-                  {hasSubItems &&
-                    isDropdownOpen &&
-                    (!isSidebarCollapsed || isMobile) && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.18, ease: "easeInOut" }}
-                        className="space-y-1 mt-1 pl-4 pr-1 overflow-hidden"
-                      >
-                        {item.subItems?.map((sub) => {
-                          const isSubActiveItem =
-                            pathname === sub.href ||
-                            pathname.startsWith(sub.href + "/") ||
-                            pathname.includes(sub.href);
-
-                          return (
-                            <Link
-                              key={sub.name}
-                              href={getScopedHref(sub.href)}
-                              onClick={handleLinkClick}
-                              className="block"
-                            >
-                              <div
-                                className={cn(
-                                  "flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
-                                  isSubActiveItem
-                                    ? "text-white bg-blue-600/35 border-l-2 border-blue-400 font-bold shadow-xs pl-2.5"
-                                    : "text-slate-200 hover:text-white hover:bg-slate-800/80 hover:translate-x-0.5",
-                                )}
-                              >
-                                <sub.icon
-                                  size={13}
-                                  className={cn(
-                                    "shrink-0 transition-colors",
-                                    isSubActiveItem
-                                      ? "text-blue-300"
-                                      : "text-slate-300 group-hover:text-white",
-                                  )}
-                                />
-                                <span className="truncate">{sub.name}</span>
-                              </div>
-                            </Link>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* User Profile Section in Sidebar */}
-        {user && (
-          <div className="p-3 border-t border-slate-800/80 bg-slate-900/50 shrink-0">
-            <div className="flex items-center justify-between gap-2">
-              <Link
-                href="/feature/settings"
-                onClick={handleLinkClick}
-                className="flex items-center gap-2.5 min-w-0 flex-1 p-1 rounded-xl hover:bg-slate-800/60 transition-colors"
-                title="View Profile & Settings"
-              >
-                <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 border border-slate-700 shadow-xs">
-                  <img
-                    key={
-                      (user as any)?.avatarUrl ||
-                      user?.avatar ||
-                      user?.name ||
-                      "sidebar_avatar"
-                    }
-                    src={
-                      (user as any).avatarUrl ||
-                      user.avatar ||
-                      `https://api.dicebear.com/7.x/notionists/svg?seed=${user.name}`
-                    }
-                    alt={user.name}
-                    className="w-full h-full object-cover bg-slate-800"
-                  />
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#0A1128]" />
-                </div>
-                {(!isSidebarCollapsed || isMobile) && (
-                  <div className="min-w-0 flex-1 text-left">
-                    <p className="text-xs font-bold text-white truncate">
-                      {user.name}
-                    </p>
-                    <p className="text-[10px] text-emerald-400 flex items-center gap-1 font-medium truncate">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                      Online
-                    </p>
-                  </div>
-                )}
-              </Link>
-              {(!isSidebarCollapsed || isMobile) && (
-                <Link
-                  href="/feature/settings"
-                  onClick={handleLinkClick}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
-                  title="Settings"
-                >
-                  <Settings size={15} />
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
-      </motion.aside>
+      <SidebarSection1 ctrl={__ctrl} />
     </>
   );
 }

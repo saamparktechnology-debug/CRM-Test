@@ -1,58 +1,98 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { 
-  X, Check, DollarSign, Calculator, UserCheck, Users, Calendar, Briefcase, FileText, 
-  Coins, RefreshCw, Layers, CreditCard, Building2, Mail, Phone, MapPin, 
-  Plus, Trash2, Tag, ChevronDown, ChevronUp, Sparkles, Search, Receipt,
-  ShieldCheck, AlertCircle, Eye, Landmark, QrCode, Award, Clock, CheckCircle2, ListChecks
-} from "lucide-react"
+import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X,
+  Check,
+  DollarSign,
+  Calculator,
+  UserCheck,
+  Users,
+  Calendar,
+  Briefcase,
+  FileText,
+  Coins,
+  RefreshCw,
+  Layers,
+  CreditCard,
+  Building2,
+  Mail,
+  Phone,
+  MapPin,
+  Plus,
+  Trash2,
+  Tag,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Search,
+  Receipt,
+  ShieldCheck,
+  AlertCircle,
+  Eye,
+  Landmark,
+  QrCode,
+  Award,
+  Clock,
+  CheckCircle2,
+  ListChecks,
+} from "lucide-react";
 
-import { useAuthStore, Company, Branch, SubBranch, getCompanyLogoUrl, getCanonicalCompanyId, getSelectableCompanies, getUserEntityScope, isMatchingCompany } from "@/store/useAuthStore"
-import { getClients, saveStoredClient } from "@/app/feature/clients/service/clientService"
-import { ClientItem } from "@/app/feature/clients/types"
-import { 
-  InvoiceItem, 
-  InvoiceLineItem, 
+import {
+  useAuthStore,
+  Company,
+  Branch,
+  SubBranch,
+  getCompanyLogoUrl,
+  getCanonicalCompanyId,
+  getSelectableCompanies,
+  getUserEntityScope,
+  isMatchingCompany,
+} from "@/store/useAuthStore";
+import {
+  getClients,
+  saveStoredClient,
+} from "@/features/clients/services/clientService";
+import { ClientItem } from "@/features/clients/types";
+import {
+  InvoiceItem,
+  InvoiceLineItem,
   AppliedDiscount,
   AssignedMemberAttribution,
-  addInvoice, 
-  updateInvoice, 
-  generateInvoiceNumber, 
-  getInvoices 
-} from "@/app/feature/sales/invoices/service/invoiceService"
-import { UserService } from "@/services/apiServices"
-import { QuotationService, EstimateService } from "@/services/salesService"
-import { numberToIndianWords } from "@/app/feature/sales/invoices/components/OfficialInvoiceDocument"
-import { lookupPincode } from "@/lib/pincodeService"
-import { addSubscription, saveInstallmentRecord } from "@/app/feature/subscriptions/service/subscriptionService"
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
-import { executeWithFeedback } from "@/store/useActionFeedbackStore"
-import { DigitalMarketingPackageBuilder } from "@/components/documents/DigitalMarketingPackageBuilder"
-import { DigitalMarketingPackage, createDefaultMarketingPackage } from "@/types/digitalMarketing"
+  addInvoice,
+  updateInvoice,
+  generateInvoiceNumber,
+  getInvoices,
+} from "@/features/invoice/services/invoiceService";
+import { UserService } from "@/services/apiServices";
+import { QuotationService, EstimateService } from "@/services/salesService";
+import { numberToIndianWords } from "@/features/invoice/components/OfficialInvoiceDocument";
+import { lookupPincode } from "@/lib/pincodeService";
+import {
+  addSubscription,
+  saveInstallmentRecord,
+} from "@/features/subscriptions/services/subscriptionService";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { executeWithFeedback } from "@/store/useActionFeedbackStore";
+import { DigitalMarketingPackageBuilder } from "@/components/documents/DigitalMarketingPackageBuilder";
+import {
+  DigitalMarketingPackage,
+  createDefaultMarketingPackage,
+} from "@/types/digitalMarketing";
+import { DocumentStudioModalSection1 } from "@/components/documents/components/documentstudiomodal-sections/DocumentStudioModalSection1";
+import { DocumentStudioModalSection2 } from "@/components/documents/components/documentstudiomodal-sections/DocumentStudioModalSection2";
 
-export interface DocumentStudioModalProps {
-  isOpen: boolean
-  mode?: "invoice" | "quotation" | "estimate"
-  initialData?: any
-  prefilledClient?: ClientItem | null
-  isMarketingMode?: boolean
-  onClose: () => void
-  onSaveSuccess?: (savedData: any) => void
-}
-
-const SERVICE_PRESETS = [
-  { name: "Website Development", sac: "998313", gst: 18, unit: "Project", rate: 25000 },
-  { name: "Custom Software Application", sac: "998314", gst: 18, unit: "Project", rate: 45000 },
-  { name: "Android / iOS Mobile App", sac: "998314", gst: 18, unit: "Project", rate: 55000 },
-  { name: "Cloud Infrastructure & Hosting", sac: "998315", gst: 18, unit: "Month", rate: 3500 },
-  { name: "UI/UX & Brand Identity", sac: "998312", gst: 18, unit: "Design", rate: 15000 },
-  { name: "Database & Backend API", sac: "998314", gst: 18, unit: "Project", rate: 20000 },
-  { name: "Printing & Media Collateral", sac: "998912", gst: 12, unit: "Job", rate: 8000 },
-  { name: "Enterprise Consultation", sac: "998319", gst: 18, unit: "Nos", rate: 10000 },
-]
+import {
+  type DocumentStudioModalProps,
+  SERVICE_PRESETS,
+} from "@/components/documents/components/documentstudiomodal-sections/DocumentStudioModalHelpers";
+export * from "@/components/documents/components/documentstudiomodal-sections/DocumentStudioModalHelpers";
+import { createDocumentStudioModalAction20 } from "@/components/documents/hooks/documentstudiomodal-hooks/createDocumentStudioModalAction20.hooks";
+import { createDocumentStudioModalFn50 } from "@/components/documents/hooks/documentstudiomodal-hooks/createDocumentStudioModalFn50.hooks";
+import { runDocumentStudioModalEffect51 } from "@/components/documents/hooks/documentstudiomodal-hooks/runDocumentStudioModalEffect51.hooks";
+import { createDocumentStudioModalFn52 } from "@/components/documents/hooks/documentstudiomodal-hooks/createDocumentStudioModalFn52.hooks";
 
 export function DocumentStudioModal({
   isOpen,
@@ -63,156 +103,1689 @@ export function DocumentStudioModal({
   onClose,
   onSaveSuccess,
 }: DocumentStudioModalProps) {
-  const { 
-    user, 
-    companies, 
-    branches, 
-    subBranches, 
-    activeCompanyId, 
+  const __ctrl: any = {
+    get isOpen() {
+      try {
+        return isOpen;
+      } catch {
+        return undefined;
+      }
+    },
+    get mode() {
+      try {
+        return mode;
+      } catch {
+        return undefined;
+      }
+    },
+    get initialData() {
+      try {
+        return initialData;
+      } catch {
+        return undefined;
+      }
+    },
+    get prefilledClient() {
+      try {
+        return prefilledClient;
+      } catch {
+        return undefined;
+      }
+    },
+    get isMarketingMode() {
+      try {
+        return isMarketingMode;
+      } catch {
+        return undefined;
+      }
+    },
+    get onClose() {
+      try {
+        return onClose;
+      } catch {
+        return undefined;
+      }
+    },
+    get onSaveSuccess() {
+      try {
+        return onSaveSuccess;
+      } catch {
+        return undefined;
+      }
+    },
+    get user() {
+      try {
+        return user;
+      } catch {
+        return undefined;
+      }
+    },
+    get companies() {
+      try {
+        return companies;
+      } catch {
+        return undefined;
+      }
+    },
+    get branches() {
+      try {
+        return branches;
+      } catch {
+        return undefined;
+      }
+    },
+    get subBranches() {
+      try {
+        return subBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeCompanyId() {
+      try {
+        return activeCompanyId;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeBranchId() {
+      try {
+        return activeBranchId;
+      } catch {
+        return undefined;
+      }
+    },
+    get fetchCompanies() {
+      try {
+        return fetchCompanies;
+      } catch {
+        return undefined;
+      }
+    },
+    get fetchBranches() {
+      try {
+        return fetchBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get fetchSubBranches() {
+      try {
+        return fetchSubBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get docScheme() {
+      try {
+        return docScheme;
+      } catch {
+        return undefined;
+      }
+    },
+    get setDocScheme() {
+      try {
+        return setDocScheme;
+      } catch {
+        return undefined;
+      }
+    },
+    get isMarketing() {
+      try {
+        return isMarketing;
+      } catch {
+        return undefined;
+      }
+    },
+    get selectableCompanies() {
+      try {
+        return selectableCompanies;
+      } catch {
+        return undefined;
+      }
+    },
+    get availableProjects() {
+      try {
+        return availableProjects;
+      } catch {
+        return undefined;
+      }
+    },
+    get setAvailableProjects() {
+      try {
+        return setAvailableProjects;
+      } catch {
+        return undefined;
+      }
+    },
+    get availableInvoices() {
+      try {
+        return availableInvoices;
+      } catch {
+        return undefined;
+      }
+    },
+    get setAvailableInvoices() {
+      try {
+        return setAvailableInvoices;
+      } catch {
+        return undefined;
+      }
+    },
+    get selectedLinkedProject() {
+      try {
+        return selectedLinkedProject;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSelectedLinkedProject() {
+      try {
+        return setSelectedLinkedProject;
+      } catch {
+        return undefined;
+      }
+    },
+    get selectedLinkedInvoice() {
+      try {
+        return selectedLinkedInvoice;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSelectedLinkedInvoice() {
+      try {
+        return setSelectedLinkedInvoice;
+      } catch {
+        return undefined;
+      }
+    },
+    get projectFilterQuery() {
+      try {
+        return projectFilterQuery;
+      } catch {
+        return undefined;
+      }
+    },
+    get setProjectFilterQuery() {
+      try {
+        return setProjectFilterQuery;
+      } catch {
+        return undefined;
+      }
+    },
+    get invoiceFilterQuery() {
+      try {
+        return invoiceFilterQuery;
+      } catch {
+        return undefined;
+      }
+    },
+    get setInvoiceFilterQuery() {
+      try {
+        return setInvoiceFilterQuery;
+      } catch {
+        return undefined;
+      }
+    },
+    get filteredProjects() {
+      try {
+        return filteredProjects;
+      } catch {
+        return undefined;
+      }
+    },
+    get filteredInvoices() {
+      try {
+        return filteredInvoices;
+      } catch {
+        return undefined;
+      }
+    },
+    get companyId() {
+      try {
+        return companyId;
+      } catch {
+        return undefined;
+      }
+    },
+    get setCompanyId() {
+      try {
+        return setCompanyId;
+      } catch {
+        return undefined;
+      }
+    },
+    get branchId() {
+      try {
+        return branchId;
+      } catch {
+        return undefined;
+      }
+    },
+    get setBranchId() {
+      try {
+        return setBranchId;
+      } catch {
+        return undefined;
+      }
+    },
+    get subBranchId() {
+      try {
+        return subBranchId;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSubBranchId() {
+      try {
+        return setSubBranchId;
+      } catch {
+        return undefined;
+      }
+    },
+    get marketingObjective() {
+      try {
+        return marketingObjective;
+      } catch {
+        return undefined;
+      }
+    },
+    get setMarketingObjective() {
+      try {
+        return setMarketingObjective;
+      } catch {
+        return undefined;
+      }
+    },
+    get marketingPlatforms() {
+      try {
+        return marketingPlatforms;
+      } catch {
+        return undefined;
+      }
+    },
+    get setMarketingPlatforms() {
+      try {
+        return setMarketingPlatforms;
+      } catch {
+        return undefined;
+      }
+    },
+    get marketingGeography() {
+      try {
+        return marketingGeography;
+      } catch {
+        return undefined;
+      }
+    },
+    get setMarketingGeography() {
+      try {
+        return setMarketingGeography;
+      } catch {
+        return undefined;
+      }
+    },
+    get creativeDriveUrl() {
+      try {
+        return creativeDriveUrl;
+      } catch {
+        return undefined;
+      }
+    },
+    get setCreativeDriveUrl() {
+      try {
+        return setCreativeDriveUrl;
+      } catch {
+        return undefined;
+      }
+    },
+    get currentStep() {
+      try {
+        return currentStep;
+      } catch {
+        return undefined;
+      }
+    },
+    get setCurrentStep() {
+      try {
+        return setCurrentStep;
+      } catch {
+        return undefined;
+      }
+    },
+    get isSubmitting() {
+      try {
+        return isSubmitting;
+      } catch {
+        return undefined;
+      }
+    },
+    get setIsSubmitting() {
+      try {
+        return setIsSubmitting;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeCompany() {
+      try {
+        return activeCompany;
+      } catch {
+        return undefined;
+      }
+    },
+    get companyBranches() {
+      try {
+        return companyBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get branchSubBranches() {
+      try {
+        return branchSubBranches;
+      } catch {
+        return undefined;
+      }
+    },
+    get availableTeamMembers() {
+      try {
+        return availableTeamMembers;
+      } catch {
+        return undefined;
+      }
+    },
+    get setAvailableTeamMembers() {
+      try {
+        return setAvailableTeamMembers;
+      } catch {
+        return undefined;
+      }
+    },
+    get assignedMembers() {
+      try {
+        return assignedMembers;
+      } catch {
+        return undefined;
+      }
+    },
+    get setAssignedMembers() {
+      try {
+        return setAssignedMembers;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleAddAssignedMember() {
+      try {
+        return handleAddAssignedMember;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleUpdateAssignedMember() {
+      try {
+        return handleUpdateAssignedMember;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleRemoveAssignedMember() {
+      try {
+        return handleRemoveAssignedMember;
+      } catch {
+        return undefined;
+      }
+    },
+    get allClients() {
+      try {
+        return allClients;
+      } catch {
+        return undefined;
+      }
+    },
+    get setAllClients() {
+      try {
+        return setAllClients;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientMode() {
+      try {
+        return clientMode;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientMode() {
+      try {
+        return setClientMode;
+      } catch {
+        return undefined;
+      }
+    },
+    get selectedClient() {
+      try {
+        return selectedClient;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSelectedClient() {
+      try {
+        return setSelectedClient;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientSearchQuery() {
+      try {
+        return clientSearchQuery;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientSearchQuery() {
+      try {
+        return setClientSearchQuery;
+      } catch {
+        return undefined;
+      }
+    },
+    get isClientSearchOpen() {
+      try {
+        return isClientSearchOpen;
+      } catch {
+        return undefined;
+      }
+    },
+    get setIsClientSearchOpen() {
+      try {
+        return setIsClientSearchOpen;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientName() {
+      try {
+        return clientName;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientName() {
+      try {
+        return setClientName;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientDesignation() {
+      try {
+        return clientDesignation;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientDesignation() {
+      try {
+        return setClientDesignation;
+      } catch {
+        return undefined;
+      }
+    },
+    get customDesignation() {
+      try {
+        return customDesignation;
+      } catch {
+        return undefined;
+      }
+    },
+    get setCustomDesignation() {
+      try {
+        return setCustomDesignation;
+      } catch {
+        return undefined;
+      }
+    },
+    get contactPersonName() {
+      try {
+        return contactPersonName;
+      } catch {
+        return undefined;
+      }
+    },
+    get setContactPersonName() {
+      try {
+        return setContactPersonName;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientEmail() {
+      try {
+        return clientEmail;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientEmail() {
+      try {
+        return setClientEmail;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientPhone() {
+      try {
+        return clientPhone;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientPhone() {
+      try {
+        return setClientPhone;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientAddress() {
+      try {
+        return clientAddress;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientAddress() {
+      try {
+        return setClientAddress;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientPincode() {
+      try {
+        return clientPincode;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientPincode() {
+      try {
+        return setClientPincode;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientDistrict() {
+      try {
+        return clientDistrict;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientDistrict() {
+      try {
+        return setClientDistrict;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientCity() {
+      try {
+        return clientCity;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientCity() {
+      try {
+        return setClientCity;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientState() {
+      try {
+        return clientState;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientState() {
+      try {
+        return setClientState;
+      } catch {
+        return undefined;
+      }
+    },
+    get clientGst() {
+      try {
+        return clientGst;
+      } catch {
+        return undefined;
+      }
+    },
+    get setClientGst() {
+      try {
+        return setClientGst;
+      } catch {
+        return undefined;
+      }
+    },
+    get pincodePlaces() {
+      try {
+        return pincodePlaces;
+      } catch {
+        return undefined;
+      }
+    },
+    get setPincodePlaces() {
+      try {
+        return setPincodePlaces;
+      } catch {
+        return undefined;
+      }
+    },
+    get pincodeDistricts() {
+      try {
+        return pincodeDistricts;
+      } catch {
+        return undefined;
+      }
+    },
+    get setPincodeDistricts() {
+      try {
+        return setPincodeDistricts;
+      } catch {
+        return undefined;
+      }
+    },
+    get pincodeStates() {
+      try {
+        return pincodeStates;
+      } catch {
+        return undefined;
+      }
+    },
+    get setPincodeStates() {
+      try {
+        return setPincodeStates;
+      } catch {
+        return undefined;
+      }
+    },
+    get isPincodeLoading() {
+      try {
+        return isPincodeLoading;
+      } catch {
+        return undefined;
+      }
+    },
+    get setIsPincodeLoading() {
+      try {
+        return setIsPincodeLoading;
+      } catch {
+        return undefined;
+      }
+    },
+    get availableCredit() {
+      try {
+        return availableCredit;
+      } catch {
+        return undefined;
+      }
+    },
+    get setAvailableCredit() {
+      try {
+        return setAvailableCredit;
+      } catch {
+        return undefined;
+      }
+    },
+    get applyCredit() {
+      try {
+        return applyCredit;
+      } catch {
+        return undefined;
+      }
+    },
+    get setApplyCredit() {
+      try {
+        return setApplyCredit;
+      } catch {
+        return undefined;
+      }
+    },
+    get creditToDeduct() {
+      try {
+        return creditToDeduct;
+      } catch {
+        return undefined;
+      }
+    },
+    get setCreditToDeduct() {
+      try {
+        return setCreditToDeduct;
+      } catch {
+        return undefined;
+      }
+    },
+    get marketingPackage() {
+      try {
+        return marketingPackage;
+      } catch {
+        return undefined;
+      }
+    },
+    get setMarketingPackage() {
+      try {
+        return setMarketingPackage;
+      } catch {
+        return undefined;
+      }
+    },
+    get primaryCategory() {
+      try {
+        return primaryCategory;
+      } catch {
+        return undefined;
+      }
+    },
+    get setPrimaryCategory() {
+      try {
+        return setPrimaryCategory;
+      } catch {
+        return undefined;
+      }
+    },
+    get customPrimaryCategory() {
+      try {
+        return customPrimaryCategory;
+      } catch {
+        return undefined;
+      }
+    },
+    get setCustomPrimaryCategory() {
+      try {
+        return setCustomPrimaryCategory;
+      } catch {
+        return undefined;
+      }
+    },
+    get paymentPlan() {
+      try {
+        return paymentPlan;
+      } catch {
+        return undefined;
+      }
+    },
+    get setPaymentPlan() {
+      try {
+        return setPaymentPlan;
+      } catch {
+        return undefined;
+      }
+    },
+    get advanceAmount() {
+      try {
+        return advanceAmount;
+      } catch {
+        return undefined;
+      }
+    },
+    get setAdvanceAmount() {
+      try {
+        return setAdvanceAmount;
+      } catch {
+        return undefined;
+      }
+    },
+    get emiAdvanceAmount() {
+      try {
+        return emiAdvanceAmount;
+      } catch {
+        return undefined;
+      }
+    },
+    get setEmiAdvanceAmount() {
+      try {
+        return setEmiAdvanceAmount;
+      } catch {
+        return undefined;
+      }
+    },
+    get emiTenureMonths() {
+      try {
+        return emiTenureMonths;
+      } catch {
+        return undefined;
+      }
+    },
+    get setEmiTenureMonths() {
+      try {
+        return setEmiTenureMonths;
+      } catch {
+        return undefined;
+      }
+    },
+    get isCustomEmi() {
+      try {
+        return isCustomEmi;
+      } catch {
+        return undefined;
+      }
+    },
+    get setIsCustomEmi() {
+      try {
+        return setIsCustomEmi;
+      } catch {
+        return undefined;
+      }
+    },
+    get subscriptionCycle() {
+      try {
+        return subscriptionCycle;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSubscriptionCycle() {
+      try {
+        return setSubscriptionCycle;
+      } catch {
+        return undefined;
+      }
+    },
+    get subscriptionDurationMonths() {
+      try {
+        return subscriptionDurationMonths;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSubscriptionDurationMonths() {
+      try {
+        return setSubscriptionDurationMonths;
+      } catch {
+        return undefined;
+      }
+    },
+    get subscriptionRate() {
+      try {
+        return subscriptionRate;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSubscriptionRate() {
+      try {
+        return setSubscriptionRate;
+      } catch {
+        return undefined;
+      }
+    },
+    get subscriptionAdvance() {
+      try {
+        return subscriptionAdvance;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSubscriptionAdvance() {
+      try {
+        return setSubscriptionAdvance;
+      } catch {
+        return undefined;
+      }
+    },
+    get subscriptionMonths() {
+      try {
+        return subscriptionMonths;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSubscriptionMonths() {
+      try {
+        return setSubscriptionMonths;
+      } catch {
+        return undefined;
+      }
+    },
+    get docNumber() {
+      try {
+        return docNumber;
+      } catch {
+        return undefined;
+      }
+    },
+    get setDocNumber() {
+      try {
+        return setDocNumber;
+      } catch {
+        return undefined;
+      }
+    },
+    get issueDate() {
+      try {
+        return issueDate;
+      } catch {
+        return undefined;
+      }
+    },
+    get setIssueDate() {
+      try {
+        return setIssueDate;
+      } catch {
+        return undefined;
+      }
+    },
+    get dueDate() {
+      try {
+        return dueDate;
+      } catch {
+        return undefined;
+      }
+    },
+    get setDueDate() {
+      try {
+        return setDueDate;
+      } catch {
+        return undefined;
+      }
+    },
+    get projectTitle() {
+      try {
+        return projectTitle;
+      } catch {
+        return undefined;
+      }
+    },
+    get setProjectTitle() {
+      try {
+        return setProjectTitle;
+      } catch {
+        return undefined;
+      }
+    },
+    get projectOverview() {
+      try {
+        return projectOverview;
+      } catch {
+        return undefined;
+      }
+    },
+    get setProjectOverview() {
+      try {
+        return setProjectOverview;
+      } catch {
+        return undefined;
+      }
+    },
+    get projectTimeline() {
+      try {
+        return projectTimeline;
+      } catch {
+        return undefined;
+      }
+    },
+    get setProjectTimeline() {
+      try {
+        return setProjectTimeline;
+      } catch {
+        return undefined;
+      }
+    },
+    get turnaroundTime() {
+      try {
+        return turnaroundTime;
+      } catch {
+        return undefined;
+      }
+    },
+    get setTurnaroundTime() {
+      try {
+        return setTurnaroundTime;
+      } catch {
+        return undefined;
+      }
+    },
+    get deliverables() {
+      try {
+        return deliverables;
+      } catch {
+        return undefined;
+      }
+    },
+    get setDeliverables() {
+      try {
+        return setDeliverables;
+      } catch {
+        return undefined;
+      }
+    },
+    get scopeInclusions() {
+      try {
+        return scopeInclusions;
+      } catch {
+        return undefined;
+      }
+    },
+    get setScopeInclusions() {
+      try {
+        return setScopeInclusions;
+      } catch {
+        return undefined;
+      }
+    },
+    get scopeExclusions() {
+      try {
+        return scopeExclusions;
+      } catch {
+        return undefined;
+      }
+    },
+    get setScopeExclusions() {
+      try {
+        return setScopeExclusions;
+      } catch {
+        return undefined;
+      }
+    },
+    get paymentMilestones() {
+      try {
+        return paymentMilestones;
+      } catch {
+        return undefined;
+      }
+    },
+    get setPaymentMilestones() {
+      try {
+        return setPaymentMilestones;
+      } catch {
+        return undefined;
+      }
+    },
+    get items() {
+      try {
+        return items;
+      } catch {
+        return undefined;
+      }
+    },
+    get setItems() {
+      try {
+        return setItems;
+      } catch {
+        return undefined;
+      }
+    },
+    get discountType() {
+      try {
+        return discountType;
+      } catch {
+        return undefined;
+      }
+    },
+    get setDiscountType() {
+      try {
+        return setDiscountType;
+      } catch {
+        return undefined;
+      }
+    },
+    get discountValue() {
+      try {
+        return discountValue;
+      } catch {
+        return undefined;
+      }
+    },
+    get setDiscountValue() {
+      try {
+        return setDiscountValue;
+      } catch {
+        return undefined;
+      }
+    },
+    get setupCharge() {
+      try {
+        return setupCharge;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSetupCharge() {
+      try {
+        return setSetupCharge;
+      } catch {
+        return undefined;
+      }
+    },
+    get notes() {
+      try {
+        return notes;
+      } catch {
+        return undefined;
+      }
+    },
+    get setNotes() {
+      try {
+        return setNotes;
+      } catch {
+        return undefined;
+      }
+    },
+    get terms() {
+      try {
+        return terms;
+      } catch {
+        return undefined;
+      }
+    },
+    get setTerms() {
+      try {
+        return setTerms;
+      } catch {
+        return undefined;
+      }
+    },
+    get generateDocNumber() {
+      try {
+        return generateDocNumber;
+      } catch {
+        return undefined;
+      }
+    },
+    get handlePincodeChange() {
+      try {
+        return handlePincodeChange;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleSelectClient() {
+      try {
+        return handleSelectClient;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleSchemeChange() {
+      try {
+        return handleSchemeChange;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleAddItem() {
+      try {
+        return handleAddItem;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleRemoveItem() {
+      try {
+        return handleRemoveItem;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleUpdateItem() {
+      try {
+        return handleUpdateItem;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleAddDeliverable() {
+      try {
+        return handleAddDeliverable;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleUpdateDeliverable() {
+      try {
+        return handleUpdateDeliverable;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleRemoveDeliverable() {
+      try {
+        return handleRemoveDeliverable;
+      } catch {
+        return undefined;
+      }
+    },
+    get calculatedSubtotal() {
+      try {
+        return calculatedSubtotal;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleDiscountTypeChange() {
+      try {
+        return handleDiscountTypeChange;
+      } catch {
+        return undefined;
+      }
+    },
+    get calculatedDiscount() {
+      try {
+        return calculatedDiscount;
+      } catch {
+        return undefined;
+      }
+    },
+    get numSetupCharge() {
+      try {
+        return numSetupCharge;
+      } catch {
+        return undefined;
+      }
+    },
+    get taxableBase() {
+      try {
+        return taxableBase;
+      } catch {
+        return undefined;
+      }
+    },
+    get calculatedGst() {
+      try {
+        return calculatedGst;
+      } catch {
+        return undefined;
+      }
+    },
+    get grandTotal() {
+      try {
+        return grandTotal;
+      } catch {
+        return undefined;
+      }
+    },
+    get effectiveCreditDeduction() {
+      try {
+        return effectiveCreditDeduction;
+      } catch {
+        return undefined;
+      }
+    },
+    get netPayable() {
+      try {
+        return netPayable;
+      } catch {
+        return undefined;
+      }
+    },
+    get calculateCycleFutureDate() {
+      try {
+        return calculateCycleFutureDate;
+      } catch {
+        return undefined;
+      }
+    },
+    get numEmiAdvance() {
+      try {
+        return numEmiAdvance;
+      } catch {
+        return undefined;
+      }
+    },
+    get effectiveEmiAdvance() {
+      try {
+        return effectiveEmiAdvance;
+      } catch {
+        return undefined;
+      }
+    },
+    get emiRemainingBalance() {
+      try {
+        return emiRemainingBalance;
+      } catch {
+        return undefined;
+      }
+    },
+    get emiMonthlyAmount() {
+      try {
+        return emiMonthlyAmount;
+      } catch {
+        return undefined;
+      }
+    },
+    get defaultSubRate() {
+      try {
+        return defaultSubRate;
+      } catch {
+        return undefined;
+      }
+    },
+    get activeSubRate() {
+      try {
+        return activeSubRate;
+      } catch {
+        return undefined;
+      }
+    },
+    get subContractTotal() {
+      try {
+        return subContractTotal;
+      } catch {
+        return undefined;
+      }
+    },
+    get numSubAdvance() {
+      try {
+        return numSubAdvance;
+      } catch {
+        return undefined;
+      }
+    },
+    get effectiveSubAdvance() {
+      try {
+        return effectiveSubAdvance;
+      } catch {
+        return undefined;
+      }
+    },
+    get subPrepaidCycles() {
+      try {
+        return subPrepaidCycles;
+      } catch {
+        return undefined;
+      }
+    },
+    get subRemainingCycles() {
+      try {
+        return subRemainingCycles;
+      } catch {
+        return undefined;
+      }
+    },
+    get subBalanceDue() {
+      try {
+        return subBalanceDue;
+      } catch {
+        return undefined;
+      }
+    },
+    get subNextBillingDate() {
+      try {
+        return subNextBillingDate;
+      } catch {
+        return undefined;
+      }
+    },
+    get handleSaveDocument() {
+      try {
+        return handleSaveDocument;
+      } catch {
+        return undefined;
+      }
+    },
+    get modalTitle() {
+      try {
+        return modalTitle;
+      } catch {
+        return undefined;
+      }
+    },
+    get totalSteps() {
+      try {
+        return totalSteps;
+      } catch {
+        return undefined;
+      }
+    },
+  };
+  const __ctrlRef = React.useRef<any>(__ctrl);
+  __ctrlRef.current = __ctrl;
+
+  const {
+    user,
+    companies,
+    branches,
+    subBranches,
+    activeCompanyId,
     activeBranchId,
     fetchCompanies,
     fetchBranches,
-    fetchSubBranches
-  } = useAuthStore()
+    fetchSubBranches,
+  } = useAuthStore();
 
   // 1. Core Document Setup
   const [docScheme, setDocScheme] = React.useState<"gst" | "nongst">(() => {
-    if (initialData?.taxType === "nongst" || initialData?.isNonGst) return "nongst"
-    if (initialData?.taxType === "gst") return "gst"
-    return "gst"
-  })
+    if (initialData?.taxType === "nongst" || initialData?.isNonGst)
+      return "nongst";
+    if (initialData?.taxType === "gst") return "gst";
+    return "gst";
+  });
   // Marketing is selected via Category in the Items Settlement step
-  const isMarketing = false
+  const isMarketing = false;
 
   const selectableCompanies = React.useMemo(() => {
-    return getSelectableCompanies(companies, activeCompanyId, user, branches, subBranches)
-  }, [companies, activeCompanyId, user, branches, subBranches])
+    return getSelectableCompanies(
+      companies,
+      activeCompanyId,
+      user,
+      branches,
+      subBranches,
+    );
+  }, [companies, activeCompanyId, user, branches, subBranches]);
 
-  const [availableProjects, setAvailableProjects] = React.useState<any[]>([])
-  const [availableInvoices, setAvailableInvoices] = React.useState<any[]>([])
-  const [selectedLinkedProject, setSelectedLinkedProject] = React.useState<string>(initialData?.projectId || initialData?.project || "")
-  const [selectedLinkedInvoice, setSelectedLinkedInvoice] = React.useState<string>(initialData?.invoiceId || initialData?.invoiceNumber || "")
-  const [projectFilterQuery, setProjectFilterQuery] = React.useState("")
-  const [invoiceFilterQuery, setInvoiceFilterQuery] = React.useState("")
+  const [availableProjects, setAvailableProjects] = React.useState<any[]>([]);
+  const [availableInvoices, setAvailableInvoices] = React.useState<any[]>([]);
+  const [selectedLinkedProject, setSelectedLinkedProject] =
+    React.useState<string>(
+      initialData?.projectId || initialData?.project || "",
+    );
+  const [selectedLinkedInvoice, setSelectedLinkedInvoice] =
+    React.useState<string>(
+      initialData?.invoiceId || initialData?.invoiceNumber || "",
+    );
+  const [projectFilterQuery, setProjectFilterQuery] = React.useState("");
+  const [invoiceFilterQuery, setInvoiceFilterQuery] = React.useState("");
 
   const filteredProjects = React.useMemo(() => {
-    if (!projectFilterQuery.trim()) return availableProjects
-    const q = projectFilterQuery.toLowerCase().trim()
-    return availableProjects.filter(p => 
-      (p.name && p.name.toLowerCase().includes(q)) ||
-      (p.clientName && p.clientName.toLowerCase().includes(q)) ||
-      (p.category && p.category.toLowerCase().includes(q))
-    )
-  }, [availableProjects, projectFilterQuery])
+    if (!projectFilterQuery.trim()) return availableProjects;
+    const q = projectFilterQuery.toLowerCase().trim();
+    return availableProjects.filter(
+      (p) =>
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.clientName && p.clientName.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q)),
+    );
+  }, [availableProjects, projectFilterQuery]);
 
   const filteredInvoices = React.useMemo(() => {
-    if (!invoiceFilterQuery.trim()) return availableInvoices
-    const q = invoiceFilterQuery.toLowerCase().trim()
-    return availableInvoices.filter(inv => 
-      (inv.invoiceNumber && inv.invoiceNumber.toLowerCase().includes(q)) ||
-      (inv.client && inv.client.toLowerCase().includes(q)) ||
-      (inv.clientName && inv.clientName.toLowerCase().includes(q)) ||
-      (inv.project && inv.project.toLowerCase().includes(q))
-    )
-  }, [availableInvoices, invoiceFilterQuery])
+    if (!invoiceFilterQuery.trim()) return availableInvoices;
+    const q = invoiceFilterQuery.toLowerCase().trim();
+    return availableInvoices.filter(
+      (inv) =>
+        (inv.invoiceNumber && inv.invoiceNumber.toLowerCase().includes(q)) ||
+        (inv.client && inv.client.toLowerCase().includes(q)) ||
+        (inv.clientName && inv.clientName.toLowerCase().includes(q)) ||
+        (inv.project && inv.project.toLowerCase().includes(q)),
+    );
+  }, [availableInvoices, invoiceFilterQuery]);
 
   React.useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) return;
     try {
-      import("@/app/feature/projects/service/projectService").then(mod => {
-        if (mod && mod.getProjects) {
-          mod.getProjects().then((res: any) => setAvailableProjects(res || [])).catch(() => {})
-        }
-      }).catch(() => {})
-      getInvoices().then((res: any) => setAvailableInvoices(res || [])).catch(() => {})
+      import("@/features/projects/services/projectService")
+        .then((mod) => {
+          if (mod && mod.getProjects) {
+            mod
+              .getProjects()
+              .then((res: any) => setAvailableProjects(res || []))
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+      getInvoices()
+        .then((res: any) => setAvailableInvoices(res || []))
+        .catch(() => {});
     } catch (_) {}
-  }, [isOpen])
+  }, [isOpen]);
 
   const [companyId, setCompanyId] = React.useState<string>(() => {
-    if (initialData?.companyId) return initialData.companyId
-    if (activeCompanyId && activeCompanyId !== "all") return activeCompanyId
-    return "tech"
-  })
-  const [branchId, setBranchId] = React.useState<string>(activeBranchId || "")
-  const [subBranchId, setSubBranchId] = React.useState<string>("")
+    if (initialData?.companyId) return initialData.companyId;
+    if (activeCompanyId && activeCompanyId !== "all") return activeCompanyId;
+    return "tech";
+  });
+  const [branchId, setBranchId] = React.useState<string>(activeBranchId || "");
+  const [subBranchId, setSubBranchId] = React.useState<string>("");
 
   // Marketing-specific state variables
-  const [marketingObjective, setMarketingObjective] = React.useState<string>(() => {
-    return initialData?.marketingObjective || "Brand Awareness & High-Impact Social Reach"
-  })
-  const [marketingPlatforms, setMarketingPlatforms] = React.useState<string[]>(() => {
-    if (initialData?.marketingPlatforms && Array.isArray(initialData.marketingPlatforms)) return initialData.marketingPlatforms
-    return ["Instagram", "Facebook", "Google Ads"]
-  })
-  const [marketingGeography, setMarketingGeography] = React.useState<string>(() => {
-    return initialData?.marketingGeography || initialData?.marketingPackage?.targetLocations || "Pan India & Regional Focus"
-  })
+  const [marketingObjective, setMarketingObjective] = React.useState<string>(
+    () => {
+      return (
+        initialData?.marketingObjective ||
+        "Brand Awareness & High-Impact Social Reach"
+      );
+    },
+  );
+  const [marketingPlatforms, setMarketingPlatforms] = React.useState<string[]>(
+    () => {
+      if (
+        initialData?.marketingPlatforms &&
+        Array.isArray(initialData.marketingPlatforms)
+      )
+        return initialData.marketingPlatforms;
+      return ["Instagram", "Facebook", "Google Ads"];
+    },
+  );
+  const [marketingGeography, setMarketingGeography] = React.useState<string>(
+    () => {
+      return (
+        initialData?.marketingGeography ||
+        initialData?.marketingPackage?.targetLocations ||
+        "Pan India & Regional Focus"
+      );
+    },
+  );
   const [creativeDriveUrl, setCreativeDriveUrl] = React.useState<string>(() => {
-    return initialData?.creativeDriveUrl || initialData?.metaUrl || ""
-  })
+    return initialData?.creativeDriveUrl || initialData?.metaUrl || "";
+  });
 
   // Keep companyId in sync with selectableCompanies if locked
   React.useEffect(() => {
-    if (selectableCompanies.length > 0 && !selectableCompanies.some(c => c.id === companyId || c.slug === companyId)) {
-      setCompanyId(selectableCompanies[0].id || selectableCompanies[0].slug || "tech")
+    if (
+      selectableCompanies.length > 0 &&
+      !selectableCompanies.some(
+        (c) => c.id === companyId || c.slug === companyId,
+      )
+    ) {
+      setCompanyId(
+        selectableCompanies[0].id || selectableCompanies[0].slug || "tech",
+      );
     }
-  }, [selectableCompanies, companyId])
+  }, [selectableCompanies, companyId]);
 
   // Tab State depending on mode:
   // Quotation: "q_setup" (1. Project & Client), "q_scope" (2. Scope & Milestones), "q_commercial" (3. Pricing & Payment Terms)
   // Estimate: "e_setup" (1. Estimate & Client), "e_pricing" (2. Services & Notes)
   // Invoice: "inv_entity" (1. Entity & Tax Scheme), "inv_client" (2. Client & Dates), "inv_items" (3. Line Items & Tax)
-  const [currentStep, setCurrentStep] = React.useState<number>(1)
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [currentStep, setCurrentStep] = React.useState<number>(1);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Resolve selected company & issuing branch
   const activeCompany = React.useMemo(() => {
-    const canonTarget = getCanonicalCompanyId(companyId || activeCompanyId || "tech")
-    return companies.find(c => {
-      const canonC = getCanonicalCompanyId(c.id || c.slug)
-      return (canonTarget && canonC && canonTarget === canonC) || c.id === companyId || c.slug === companyId
-    }) || selectableCompanies[0] || companies[0]
-  }, [companies, companyId, activeCompanyId, selectableCompanies])
+    const canonTarget = getCanonicalCompanyId(
+      companyId || activeCompanyId || "tech",
+    );
+    return (
+      companies.find((c) => {
+        const canonC = getCanonicalCompanyId(c.id || c.slug);
+        return (
+          (canonTarget && canonC && canonTarget === canonC) ||
+          c.id === companyId ||
+          c.slug === companyId
+        );
+      }) ||
+      selectableCompanies[0] ||
+      companies[0]
+    );
+  }, [companies, companyId, activeCompanyId, selectableCompanies]);
 
   const companyBranches = React.useMemo(() => {
-    if (!branches || branches.length === 0) return []
-    const canonTarget = getCanonicalCompanyId(companyId || activeCompanyId || "tech")
-    const filtered = branches.filter(b => {
-      const bComp = String((b as any).companyId || (b as any).company_id || "").toLowerCase().trim()
-      const canonB = getCanonicalCompanyId(bComp)
-      if (canonTarget && canonB) return canonTarget === canonB
-      return bComp === canonTarget || (!bComp && canonTarget === "tech")
-    })
-    return filtered.length > 0 ? filtered : branches
-  }, [branches, companyId, activeCompanyId])
+    if (!branches || branches.length === 0) return [];
+    const canonTarget = getCanonicalCompanyId(
+      companyId || activeCompanyId || "tech",
+    );
+    const filtered = branches.filter((b) => {
+      const bComp = String((b as any).companyId || (b as any).company_id || "")
+        .toLowerCase()
+        .trim();
+      const canonB = getCanonicalCompanyId(bComp);
+      if (canonTarget && canonB) return canonTarget === canonB;
+      return bComp === canonTarget || (!bComp && canonTarget === "tech");
+    });
+    return filtered.length > 0 ? filtered : branches;
+  }, [branches, companyId, activeCompanyId]);
 
   const branchSubBranches = React.useMemo(() => {
-    return subBranches.filter(sb => String((sb as any).branch_id || (sb as any).branchId || (sb as any).parentBranchId) === String(branchId))
-  }, [subBranches, branchId])
+    return subBranches.filter(
+      (sb) =>
+        String(
+          (sb as any).branch_id ||
+            (sb as any).branchId ||
+            (sb as any).parentBranchId,
+        ) === String(branchId),
+    );
+  }, [subBranches, branchId]);
 
   // Team Member Attribution (For Invoices)
-  const [availableTeamMembers, setAvailableTeamMembers] = React.useState<any[]>([])
-  const [assignedMembers, setAssignedMembers] = React.useState<AssignedMemberAttribution[]>(() => {
-    if (initialData?.assignedMembers && Array.isArray(initialData.assignedMembers) && initialData.assignedMembers.length > 0) {
-      return initialData.assignedMembers
+  const [availableTeamMembers, setAvailableTeamMembers] = React.useState<any[]>(
+    [],
+  );
+  const [assignedMembers, setAssignedMembers] = React.useState<
+    AssignedMemberAttribution[]
+  >(() => {
+    if (
+      initialData?.assignedMembers &&
+      Array.isArray(initialData.assignedMembers) &&
+      initialData.assignedMembers.length > 0
+    ) {
+      return initialData.assignedMembers;
     }
     if (initialData?.assignedMemberId) {
-      return [{
-        memberId: initialData.assignedMemberId,
-        memberName: initialData.assignedMemberName || "Team Member",
-        memberRole: initialData.assignedMemberRole || "Team Member",
-        memberAvatar: initialData.assignedMemberAvatar,
-        payoutType: initialData.memberPayoutType || "percentage",
-        payoutValue: initialData.memberPayoutValue !== undefined ? initialData.memberPayoutValue : (initialData.memberSharePct !== undefined ? initialData.memberSharePct : 50),
-      }]
+      return [
+        {
+          memberId: initialData.assignedMemberId,
+          memberName: initialData.assignedMemberName || "Team Member",
+          memberRole: initialData.assignedMemberRole || "Team Member",
+          memberAvatar: initialData.assignedMemberAvatar,
+          payoutType: initialData.memberPayoutType || "percentage",
+          payoutValue:
+            initialData.memberPayoutValue !== undefined
+              ? initialData.memberPayoutValue
+              : initialData.memberSharePct !== undefined
+                ? initialData.memberSharePct
+                : 50,
+        },
+      ];
     }
-    return []
-  })
+    return [];
+  });
 
   const handleAddAssignedMember = () => {
-    const unassigned = availableTeamMembers.find(m => !assignedMembers.some(am => String(am.memberId) === String(m.id))) || availableTeamMembers[0]
-    if (!unassigned) return
-    setAssignedMembers(prev => [
+    const unassigned =
+      availableTeamMembers.find(
+        (m) =>
+          !assignedMembers.some((am) => String(am.memberId) === String(m.id)),
+      ) || availableTeamMembers[0];
+    if (!unassigned) return;
+    setAssignedMembers((prev) => [
       ...prev,
       {
         memberId: String(unassigned.id),
@@ -221,179 +1794,256 @@ export function DocumentStudioModal({
         memberAvatar: unassigned.avatar,
         payoutType: "percentage",
         payoutValue: prev.length === 0 ? 50 : 25,
-      }
-    ])
-  }
+      },
+    ]);
+  };
 
-  const handleUpdateAssignedMember = (index: number, field: keyof AssignedMemberAttribution, value: any) => {
-    setAssignedMembers(prev => prev.map((m, idx) => {
-      if (idx !== index) return m
-      if (field === "memberId") {
-        const matched = availableTeamMembers.find(tm => String(tm.id) === String(value))
-        return {
-          ...m,
-          memberId: String(value),
-          memberName: matched?.name || m.memberName,
-          memberRole: matched?.role || m.memberRole,
-          memberAvatar: matched?.avatar || m.memberAvatar,
+  const handleUpdateAssignedMember = (
+    index: number,
+    field: keyof AssignedMemberAttribution,
+    value: any,
+  ) => {
+    setAssignedMembers((prev) =>
+      prev.map((m, idx) => {
+        if (idx !== index) return m;
+        if (field === "memberId") {
+          const matched = availableTeamMembers.find(
+            (tm) => String(tm.id) === String(value),
+          );
+          return {
+            ...m,
+            memberId: String(value),
+            memberName: matched?.name || m.memberName,
+            memberRole: matched?.role || m.memberRole,
+            memberAvatar: matched?.avatar || m.memberAvatar,
+          };
         }
-      }
-      return { ...m, [field]: value }
-    }))
-  }
+        return { ...m, [field]: value };
+      }),
+    );
+  };
 
   const handleRemoveAssignedMember = (index: number) => {
-    setAssignedMembers(prev => prev.filter((_, idx) => idx !== index))
-  }
+    setAssignedMembers((prev) => prev.filter((_, idx) => idx !== index));
+  };
 
   // 2. Client Setup
-  const [allClients, setAllClients] = React.useState<ClientItem[]>([])
-  const [clientMode, setClientMode] = React.useState<"select" | "custom">("select")
-  const [selectedClient, setSelectedClient] = React.useState<ClientItem | null>(prefilledClient || null)
-  const [clientSearchQuery, setClientSearchQuery] = React.useState("")
-  const [isClientSearchOpen, setIsClientSearchOpen] = React.useState(false)
+  const [allClients, setAllClients] = React.useState<ClientItem[]>([]);
+  const [clientMode, setClientMode] = React.useState<"select" | "custom">(
+    "select",
+  );
+  const [selectedClient, setSelectedClient] = React.useState<ClientItem | null>(
+    prefilledClient || null,
+  );
+  const [clientSearchQuery, setClientSearchQuery] = React.useState("");
+  const [isClientSearchOpen, setIsClientSearchOpen] = React.useState(false);
 
-  const [clientName, setClientName] = React.useState("")
-  const [clientDesignation, setClientDesignation] = React.useState<string>(initialData?.clientDesignation || "Proprietor")
-  const [customDesignation, setCustomDesignation] = React.useState<string>("")
+  const [clientName, setClientName] = React.useState("");
+  const [clientDesignation, setClientDesignation] = React.useState<string>(
+    initialData?.clientDesignation || "Proprietor",
+  );
+  const [customDesignation, setCustomDesignation] = React.useState<string>("");
   const [contactPersonName, setContactPersonName] = React.useState<string>(
-    initialData?.contactPersonName || initialData?.primaryContact || initialData?.clientContactPerson || ""
-  )
-  const [clientEmail, setClientEmail] = React.useState("")
-  const [clientPhone, setClientPhone] = React.useState("")
-  const [clientAddress, setClientAddress] = React.useState("")
-  const [clientPincode, setClientPincode] = React.useState(initialData?.clientPincode || initialData?.zip || "")
-  const [clientDistrict, setClientDistrict] = React.useState(initialData?.clientDistrict || initialData?.district || "")
-  const [clientCity, setClientCity] = React.useState("")
-  const [clientState, setClientState] = React.useState("")
-  const [clientGst, setClientGst] = React.useState("")
-  const [pincodePlaces, setPincodePlaces] = React.useState<string[]>([])
-  const [pincodeDistricts, setPincodeDistricts] = React.useState<string[]>([])
-  const [pincodeStates, setPincodeStates] = React.useState<string[]>([])
-  const [isPincodeLoading, setIsPincodeLoading] = React.useState<boolean>(false)
+    initialData?.contactPersonName ||
+      initialData?.primaryContact ||
+      initialData?.clientContactPerson ||
+      "",
+  );
+  const [clientEmail, setClientEmail] = React.useState("");
+  const [clientPhone, setClientPhone] = React.useState("");
+  const [clientAddress, setClientAddress] = React.useState("");
+  const [clientPincode, setClientPincode] = React.useState(
+    initialData?.clientPincode || initialData?.zip || "",
+  );
+  const [clientDistrict, setClientDistrict] = React.useState(
+    initialData?.clientDistrict || initialData?.district || "",
+  );
+  const [clientCity, setClientCity] = React.useState("");
+  const [clientState, setClientState] = React.useState("");
+  const [clientGst, setClientGst] = React.useState("");
+  const [pincodePlaces, setPincodePlaces] = React.useState<string[]>([]);
+  const [pincodeDistricts, setPincodeDistricts] = React.useState<string[]>([]);
+  const [pincodeStates, setPincodeStates] = React.useState<string[]>([]);
+  const [isPincodeLoading, setIsPincodeLoading] =
+    React.useState<boolean>(false);
 
   // Customer Credit Notes (for credit deduction on next invoice)
-  const [availableCredit, setAvailableCredit] = React.useState<number>(0)
-  const [applyCredit, setApplyCredit] = React.useState<boolean>(Boolean(initialData?.creditDeduction))
-  const [creditToDeduct, setCreditToDeduct] = React.useState<number>(Number(initialData?.creditDeduction) || 0)
+  const [availableCredit, setAvailableCredit] = React.useState<number>(0);
+  const [applyCredit, setApplyCredit] = React.useState<boolean>(
+    Boolean(initialData?.creditDeduction),
+  );
+  const [creditToDeduct, setCreditToDeduct] = React.useState<number>(
+    Number(initialData?.creditDeduction) || 0,
+  );
 
   // Look up available credit notes when client changes
   React.useEffect(() => {
-    const targetName = (clientName || selectedClient?.name || "").trim()
+    const targetName = (clientName || selectedClient?.name || "").trim();
     if (!targetName || mode !== "invoice") {
       if (!initialData?.creditDeduction) {
-        setAvailableCredit(0)
-        setApplyCredit(false)
-        setCreditToDeduct(0)
+        setAvailableCredit(0);
+        setApplyCredit(false);
+        setCreditToDeduct(0);
       }
-      return
+      return;
     }
 
-    import("@/app/feature/sales/credit-notes/service/creditNoteService").then(({ getAvailableCreditForClient }) => {
-      getAvailableCreditForClient(targetName, companyId).then(res => {
-        setAvailableCredit(res.totalAvailableCredit)
-        if (res.totalAvailableCredit > 0 && !initialData?.creditDeduction) {
-          // prefill default credit to deduct up to available
-          setCreditToDeduct(res.totalAvailableCredit)
-        }
-      }).catch(() => {})
-    })
-  }, [clientName, selectedClient, companyId, mode, initialData?.creditDeduction])
+    import("@/features/credit-notes/services/creditNoteService").then(
+      ({ getAvailableCreditForClient }) => {
+        getAvailableCreditForClient(targetName, companyId)
+          .then((res) => {
+            setAvailableCredit(res.totalAvailableCredit);
+            if (res.totalAvailableCredit > 0 && !initialData?.creditDeduction) {
+              // prefill default credit to deduct up to available
+              setCreditToDeduct(res.totalAvailableCredit);
+            }
+          })
+          .catch(() => {});
+      },
+    );
+  }, [
+    clientName,
+    selectedClient,
+    companyId,
+    mode,
+    initialData?.creditDeduction,
+  ]);
 
   // Digital Marketing & Form No - 9 State
-  const [marketingPackage, setMarketingPackage] = React.useState<DigitalMarketingPackage>(() => {
-    return initialData?.marketingPackage || createDefaultMarketingPackage("Grow - 2")
-  })
+  const [marketingPackage, setMarketingPackage] =
+    React.useState<DigitalMarketingPackage>(() => {
+      return (
+        initialData?.marketingPackage ||
+        createDefaultMarketingPackage("Grow - 2")
+      );
+    });
 
   // Primary Category (Website, Software, Android/Ios, Cloud and domain, Custom)
   const [primaryCategory, setPrimaryCategory] = React.useState<string>(() => {
-    return initialData?.primaryCategory || initialData?.category || (initialData?.isMarketingRetainer ? "Digital Marketing" : "Website")
-  })
-  const [customPrimaryCategory, setCustomPrimaryCategory] = React.useState<string>("")
-  const [paymentMethod, setPaymentMethod] = React.useState<"Online" | "Cash">(
-    initialData?.paymentMethod || (initialData as any)?.paymentMode || "Online"
-  )
+    return (
+      initialData?.primaryCategory ||
+      initialData?.category ||
+      (initialData?.isMarketingRetainer ? "Digital Marketing" : "Website")
+    );
+  });
+  const [customPrimaryCategory, setCustomPrimaryCategory] =
+    React.useState<string>("");
 
   // Payment Plan & Settlement Structure (Order: Full, Part (EMI), Advance, Subscription)
-  const [paymentPlan, setPaymentPlan] = React.useState<"full" | "part" | "advance" | "subscription">(
-    initialData?.paymentPlan || "full"
-  )
+  const [paymentPlan, setPaymentPlan] = React.useState<
+    "full" | "part" | "advance" | "subscription"
+  >(initialData?.paymentPlan || "full");
   const [advanceAmount, setAdvanceAmount] = React.useState<number | "">(
-    initialData?.advanceAmount !== undefined ? initialData.advanceAmount : ""
-  )
+    initialData?.advanceAmount !== undefined ? initialData.advanceAmount : "",
+  );
   // Part (EMI) State (Advance Down Payment Minus Option)
   const [emiAdvanceAmount, setEmiAdvanceAmount] = React.useState<number | "">(
-    initialData?.advanceAmount !== undefined ? initialData.advanceAmount : ""
-  )
+    initialData?.advanceAmount !== undefined ? initialData.advanceAmount : "",
+  );
   const [emiTenureMonths, setEmiTenureMonths] = React.useState<number>(
-    initialData?.emiMonths || initialData?.subscriptionMonths || 3
-  )
+    initialData?.emiMonths || initialData?.subscriptionMonths || 3,
+  );
   const [isCustomEmi, setIsCustomEmi] = React.useState<boolean>(() => {
-    const m = Number(initialData?.emiMonths || initialData?.subscriptionMonths || 3)
-    return ![2, 3, 4, 6, 12].includes(m)
-  })
+    const m = Number(
+      initialData?.emiMonths || initialData?.subscriptionMonths || 3,
+    );
+    return ![2, 3, 4, 6, 12].includes(m);
+  });
 
   // Subscription State (Duration, Recurring Rate & Advance Payment)
-  const [subscriptionCycle, setSubscriptionCycle] = React.useState<"Monthly" | "Weekly" | "Quarterly" | "Yearly">(
-    initialData?.subscriptionCycle || "Monthly"
-  )
-  const [subscriptionDurationMonths, setSubscriptionDurationMonths] = React.useState<number>(
-    initialData?.subscriptionDurationMonths || initialData?.subscriptionDuration || 6
-  )
+  const [subscriptionCycle, setSubscriptionCycle] = React.useState<
+    "Monthly" | "Weekly" | "Quarterly" | "Yearly"
+  >(initialData?.subscriptionCycle || "Monthly");
+  const [subscriptionDurationMonths, setSubscriptionDurationMonths] =
+    React.useState<number>(
+      initialData?.subscriptionDurationMonths ||
+        initialData?.subscriptionDuration ||
+        6,
+    );
   const [subscriptionRate, setSubscriptionRate] = React.useState<number | "">(
-    initialData?.subscriptionRate !== undefined ? initialData.subscriptionRate : ""
-  )
-  const [subscriptionAdvance, setSubscriptionAdvance] = React.useState<number | "">(
-    initialData?.subscriptionAdvance !== undefined ? initialData.subscriptionAdvance : (initialData?.advanceAmount || "")
-  )
-  const [subscriptionMonths, setSubscriptionMonths] = React.useState<number>(3)
+    initialData?.subscriptionRate !== undefined
+      ? initialData.subscriptionRate
+      : "",
+  );
+  const [subscriptionAdvance, setSubscriptionAdvance] = React.useState<
+    number | ""
+  >(
+    initialData?.subscriptionAdvance !== undefined
+      ? initialData.subscriptionAdvance
+      : initialData?.advanceAmount || "",
+  );
+  const [subscriptionMonths, setSubscriptionMonths] = React.useState<number>(3);
 
   // 3. Document Identification
-  const [docNumber, setDocNumber] = React.useState("")
+  const [docNumber, setDocNumber] = React.useState("");
   const [issueDate, setIssueDate] = React.useState<string>(() => {
     if (initialData?.invoiceDate) {
-      const s = String(initialData.invoiceDate).trim()
-      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
-      const dmy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/)
-      if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`
+      const s = String(initialData.invoiceDate).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+      const dmy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (dmy)
+        return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
     }
     if (initialData?.billDate) {
-      const s = String(initialData.billDate).trim()
-      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
-      const dmy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/)
-      if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`
+      const s = String(initialData.billDate).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+      const dmy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (dmy)
+        return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
     }
-    return new Date().toISOString().split("T")[0]
-  })
+    return new Date().toISOString().split("T")[0];
+  });
   const [dueDate, setDueDate] = React.useState(() => {
     if (initialData?.dueDate) {
-      const s = String(initialData.dueDate).trim()
-      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
-      const dmy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/)
-      if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`
+      const s = String(initialData.dueDate).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+      const dmy = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (dmy)
+        return `${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`;
     }
-    return "" // Always default to unset (0000-00-00) until picked!
-  })
+    return ""; // Always default to unset (0000-00-00) until picked!
+  });
 
   // Quotation Specific Fields
-  const [projectTitle, setProjectTitle] = React.useState(initialData?.project || initialData?.projectTitle || "")
-  const [projectOverview, setProjectOverview] = React.useState(initialData?.overview || "")
-  const [projectTimeline, setProjectTimeline] = React.useState(initialData?.timeline || "")
-  const [turnaroundTime, setTurnaroundTime] = React.useState(initialData?.turnaroundTime || "")
-  
+  const [projectTitle, setProjectTitle] = React.useState(
+    initialData?.project || initialData?.projectTitle || "",
+  );
+  const [projectOverview, setProjectOverview] = React.useState(
+    initialData?.overview || "",
+  );
+  const [projectTimeline, setProjectTimeline] = React.useState(
+    initialData?.timeline || "",
+  );
+  const [turnaroundTime, setTurnaroundTime] = React.useState(
+    initialData?.turnaroundTime || "",
+  );
+
   // Deliverables Breakdown (For Quotation)
-  const [deliverables, setDeliverables] = React.useState<Array<{ id: string; title: string; description: string; duration: string }>>(
-    initialData?.deliverables && Array.isArray(initialData.deliverables) ? initialData.deliverables : []
-  )
+  const [deliverables, setDeliverables] = React.useState<
+    Array<{ id: string; title: string; description: string; duration: string }>
+  >(
+    initialData?.deliverables && Array.isArray(initialData.deliverables)
+      ? initialData.deliverables
+      : [],
+  );
 
   // Scope Inclusions & Exclusions (For Quotation)
-  const [scopeInclusions, setScopeInclusions] = React.useState(initialData?.scopeInclusions || "")
-  const [scopeExclusions, setScopeExclusions] = React.useState(initialData?.scopeExclusions || "")
+  const [scopeInclusions, setScopeInclusions] = React.useState(
+    initialData?.scopeInclusions || "",
+  );
+  const [scopeExclusions, setScopeExclusions] = React.useState(
+    initialData?.scopeExclusions || "",
+  );
 
   // Milestone Payment Terms Schedule (For Quotation)
-  const [paymentMilestones, setPaymentMilestones] = React.useState<Array<{ milestone: string; percentage: number; stage: string }>>(
-    initialData?.paymentMilestones && Array.isArray(initialData.paymentMilestones) ? initialData.paymentMilestones : []
-  )
+  const [paymentMilestones, setPaymentMilestones] = React.useState<
+    Array<{ milestone: string; percentage: number; stage: string }>
+  >(
+    initialData?.paymentMilestones &&
+      Array.isArray(initialData.paymentMilestones)
+      ? initialData.paymentMilestones
+      : [],
+  );
 
   // 4. Line Items
   const [items, setItems] = React.useState<InvoiceLineItem[]>([
@@ -407,324 +2057,102 @@ export function DocumentStudioModal({
       gstRate: mode === "invoice" && docScheme === "gst" ? 18 : 0,
       gstAmount: 0,
       charges: [],
-      totalAmount: 0
-    }
-  ])
+      totalAmount: 0,
+    },
+  ]);
 
   // 5. Financial adjustments
-  const [discountType, setDiscountType] = React.useState<"percentage" | "fixed">("percentage")
-  const [discountValue, setDiscountValue] = React.useState<number | "">("")
-  const [setupCharge, setSetupCharge] = React.useState<number | "">("")
-  
+  const [discountType, setDiscountType] = React.useState<
+    "percentage" | "fixed"
+  >("percentage");
+  const [discountValue, setDiscountValue] = React.useState<number | "">("");
+  const [setupCharge, setSetupCharge] = React.useState<number | "">("");
+
   // Notes & Terms
   const [notes, setNotes] = React.useState(
-    mode === "invoice" 
-      ? (activeCompany?.invoice_notes || "Thank you for partnering with Saampark. Please make payment to our verified bank account.")
-      : (activeCompany?.quotation_notes || "Quotation valid for 30 calendar days from issue. 50% mobilization advance required upon kickoff.")
-  )
+    mode === "invoice"
+      ? activeCompany?.invoice_notes ||
+          "Thank you for partnering with Saampark. Please make payment to our verified bank account."
+      : activeCompany?.quotation_notes ||
+          "Quotation valid for 30 calendar days from issue. 50% mobilization advance required upon kickoff.",
+  );
   const [terms, setTerms] = React.useState(
-    activeCompany?.terms_conditions || 
-    "1. Payment is due within statutory terms.\n2. Goods & Services once delivered are subject to project sign-off.\n3. Disputed items must be notified within 7 days."
-  )
+    activeCompany?.terms_conditions ||
+      "1. Payment is due within statutory terms.\n2. Goods & Services once delivered are subject to project sign-off.\n3. Disputed items must be notified within 7 days.",
+  );
 
   // Generate document number helper
   const generateDocNumber = (scheme: "gst" | "nongst", targetDate?: string) => {
-    const rawD = targetDate || issueDate
-    const d = rawD ? new Date(rawD) : new Date()
-    const validD = isNaN(d.getTime()) ? new Date() : d
-    const datePart = `${String(validD.getDate()).padStart(2, "0")}${String(validD.getMonth() + 1).padStart(2, "0")}${validD.getFullYear()}`
-    const randPart = Math.floor(1000 + Math.random() * 9000)
-    
-    let prefix = "INV"
-    if (mode === "quotation") prefix = scheme === "nongst" ? "NGQT" : "QT"
-    else if (mode === "estimate") prefix = scheme === "nongst" ? "NGEST" : "EST"
-    else if (scheme === "nongst") prefix = "NGINV"
-    
-    const gen = `${prefix}-${datePart}-${randPart}`
-    setDocNumber(gen)
-    return gen
-  }
+    const rawD = targetDate || issueDate;
+    const d = rawD ? new Date(rawD) : new Date();
+    const validD = isNaN(d.getTime()) ? new Date() : d;
+    const datePart = `${String(validD.getDate()).padStart(2, "0")}${String(validD.getMonth() + 1).padStart(2, "0")}${validD.getFullYear()}`;
+    const randPart = Math.floor(1000 + Math.random() * 9000);
 
-  const handlePincodeChange = async (pin: string) => {
-    setClientPincode(pin)
-    const cleanPin = pin.trim().replace(/\D/g, "")
-    if (cleanPin.length === 6) {
-      setIsPincodeLoading(true)
-      const res = await lookupPincode(cleanPin)
-      setIsPincodeLoading(false)
-      if (res && res.status === "Success") {
-        setPincodePlaces(res.places || [])
-        setPincodeDistricts(res.districts || [])
-        setPincodeStates(res.states || [])
-        if (res.state) setClientState(res.state)
-        if (res.district) setClientDistrict(res.district)
-        const primaryPlace = (res.places && res.places.length > 0) ? res.places[0] : ""
-        if (primaryPlace) setClientCity(primaryPlace)
-        setClientAddress(prev => {
-          if (!prev || prev.trim() === "" || prev.includes(" - ")) {
-            return `${primaryPlace ? primaryPlace + ", " : ""}${res.district || ""}, ${res.state || ""} - ${cleanPin}`
-          }
-          return prev
-        })
-      }
-    }
-  }
+    let prefix = "INV";
+    if (mode === "quotation") prefix = scheme === "nongst" ? "NGQT" : "QT";
+    else if (mode === "estimate")
+      prefix = scheme === "nongst" ? "NGEST" : "EST";
+    else if (scheme === "nongst") prefix = "NGINV";
+
+    const gen = `${prefix}-${datePart}-${randPart}`;
+    setDocNumber(gen);
+    return gen;
+  };
+
+  const handlePincodeChange: any = createDocumentStudioModalFn50(
+    () => __ctrlRef.current,
+  );
 
   const handleSelectClient = (c: ClientItem) => {
-    setSelectedClient(c)
-    setClientName(c.name || "")
-    setClientDesignation((c as any).designation || "Proprietor")
-    setContactPersonName(c.primaryContact || "")
-    setClientEmail(c.email || "")
-    setClientPhone(c.phone || "")
-    setClientAddress(c.address || "")
-    setClientCity(c.city || "")
-    setClientDistrict((c as any).district || "")
-    setClientState(c.state || "")
-    setClientPincode(c.zip || "")
-    setClientGst(c.gstNumber || c.vatNumber || "")
-    setIsClientSearchOpen(false)
+    setSelectedClient(c);
+    setClientName(c.name || "");
+    setClientDesignation((c as any).designation || "Proprietor");
+    setContactPersonName(c.primaryContact || "");
+    setClientEmail(c.email || "");
+    setClientPhone(c.phone || "");
+    setClientAddress(c.address || "");
+    setClientCity(c.city || "");
+    setClientDistrict((c as any).district || "");
+    setClientState(c.state || "");
+    setClientPincode(c.zip || "");
+    setClientGst(c.gstNumber || c.vatNumber || "");
+    setIsClientSearchOpen(false);
     if (c.zip) {
-      handlePincodeChange(c.zip)
+      handlePincodeChange(c.zip);
     }
-  }
+  };
 
   // Load clients, branches, team members & sync document state with initialData or blank state
-  React.useEffect(() => {
-    if (!isOpen) return
-
-    fetchCompanies?.()
-    fetchBranches?.()
-    fetchSubBranches?.()
-
-    UserService.getTeamMembers().then(users => {
-      if (Array.isArray(users)) {
-        const nonClients = users.filter((u: any) => !((u.role || u.role_name || "").toLowerCase().includes("client")))
-        setAvailableTeamMembers(nonClients.map((u: any) => ({
-          ...u,
-          name: u.name || u.full_name || u.fullName || u.username || u.email || "Team Member",
-          role: u.role || u.role_name || u.roleName || "Team Member"
-        })))
-      }
-    }).catch(() => {})
-
-    getClients("all").then(cl => {
-      setAllClients(cl)
-
-      if (initialData) {
-        const initClient = String(initialData.client || initialData.customer || initialData.clientName || "").trim()
-        const initEmail = initialData.clientEmail || initialData.customerEmail || ""
-        const initPhone = initialData.clientPhone || initialData.customerPhone || ""
-        const initAddress = initialData.clientAddress || initialData.customerAddress || ""
-        const initCity = initialData.clientCity || ""
-        const initState = initialData.clientState || ""
-        const initGst = initialData.clientGstin || initialData.clientGst || ""
-
-        const match = initClient 
-          ? cl.find(c => String(c.name || "").toLowerCase().trim() === initClient.toLowerCase().trim())
-          : null
-
-        if (match) {
-          setSelectedClient(match)
-          setClientMode("select")
-          setClientName(match.name)
-          setClientDesignation(initialData.clientDesignation || (match as any).designation || "Proprietor")
-          setContactPersonName(initialData.contactPersonName || initialData.primaryContact || initialData.clientContactPerson || match.primaryContact || "")
-          setClientEmail(initEmail || match.email || "")
-          setClientPhone(initPhone || match.phone || "")
-          setClientAddress(initAddress || match.address || "")
-          setClientCity(initCity || match.city || "")
-          setClientState(initState || match.state || "")
-          setClientGst(initGst || match.gstNumber || match.vatNumber || "")
-        } else if (initClient) {
-          setSelectedClient(null)
-          setClientMode("custom")
-          setClientName(initClient)
-          setClientDesignation(initialData.clientDesignation || "Proprietor")
-          setContactPersonName(initialData.contactPersonName || initialData.primaryContact || initialData.clientContactPerson || "")
-          setClientEmail(initEmail)
-          setClientPhone(initPhone)
-          setClientAddress(initAddress)
-          setClientCity(initCity)
-          setClientState(initState)
-          setClientGst(initGst)
-        } else {
-          setSelectedClient(null)
-          setClientMode("select")
-          setClientName("")
-          setContactPersonName("")
-          setClientEmail("")
-          setClientPhone("")
-          setClientAddress("")
-          setClientCity("")
-          setClientState("")
-          setClientGst("")
-        }
-      } else if (prefilledClient) {
-        handleSelectClient(prefilledClient)
-      } else {
-        // Clean blank state for new document creation - never auto-select cl[0]
-        setSelectedClient(null)
-        setClientMode("select")
-        setClientName("")
-        setClientEmail("")
-        setClientPhone("")
-        setClientAddress("")
-        setClientCity("")
-        setClientState("")
-        setClientGst("")
-      }
-    }).catch(() => {})
-
-    if (initialData) {
-      const isNonGst = initialData.taxType === "nongst" || initialData.isNonGst || String(initialData.id || "").toUpperCase().startsWith("NGINV") || (initialData.gstRate === 0 && (!initialData.items || initialData.items.every((it: any) => !it.gstRate || it.gstRate === 0)))
-      const resolvedScheme = isNonGst ? "nongst" : "gst"
-      setDocScheme(resolvedScheme)
-      setCompanyId(initialData.companyId || activeCompanyId || "tech")
-      setBranchId(initialData.branchId || (initialData as any).branch_id || "")
-      setSubBranchId(initialData.subBranchId || (initialData as any).sub_branch_id || "")
-      setDocNumber(initialData.id || initialData.invoiceNumber || initialData.number || "")
-
-      if (initialData.invoiceDate || initialData.billDate || initialData.date) {
-        const raw = String(initialData.invoiceDate || initialData.billDate || initialData.date).trim()
-        if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
-          setIssueDate(raw.slice(0, 10))
-        } else {
-          const dmy = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/)
-          if (dmy) setIssueDate(`${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`)
-        }
-      }
-
-      if (initialData.dueDate || initialData.validTill) {
-        const raw = String(initialData.dueDate || initialData.validTill).trim()
-        if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
-          setDueDate(raw.slice(0, 10))
-        } else {
-          const dmy = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/)
-          if (dmy) setDueDate(`${dmy[3]}-${dmy[2].padStart(2, "0")}-${dmy[1].padStart(2, "0")}`)
-        }
-      }
-
-      setProjectTitle(initialData.project || initialData.projectTitle || "")
-      if (initialData.overview) setProjectOverview(initialData.overview)
-      if (initialData.timeline) setProjectTimeline(initialData.timeline)
-      if (initialData.turnaroundTime) setTurnaroundTime(initialData.turnaroundTime)
-      if (initialData.deliverables && Array.isArray(initialData.deliverables)) setDeliverables(initialData.deliverables)
-      if (initialData.scopeInclusions) setScopeInclusions(initialData.scopeInclusions)
-      if (initialData.scopeExclusions) setScopeExclusions(initialData.scopeExclusions)
-      if (initialData.paymentMilestones && Array.isArray(initialData.paymentMilestones)) setPaymentMilestones(initialData.paymentMilestones)
-
-      if (initialData.items && Array.isArray(initialData.items) && initialData.items.length > 0) {
-        setItems(initialData.items.map((it: any) => ({
-          id: it.id || `item_${Date.now()}_${Math.random()}`,
-          serviceName: it.serviceName || it.name || it.description || "Service",
-          description: it.description || "",
-          deliverableTime: it.deliverableTime || it.duration || it.timeline || "1-2 Weeks",
-          sacCode: it.sacCode || it.sac || (resolvedScheme === "gst" ? "998313" : ""),
-          qty: it.qty || it.quantity || 1,
-          unit: it.unit || "Project",
-          rate: it.rate !== undefined ? it.rate : (it.unitPrice !== undefined ? it.unitPrice : 0),
-          gstRate: resolvedScheme === "gst" ? (it.gstRate !== undefined ? it.gstRate : 18) : 0,
-          gstAmount: it.gstAmount || 0,
-          charges: it.charges || [],
-          totalAmount: it.totalAmount || it.total || (it.rate * (it.qty || 1)),
-        })))
-      } else {
-        const baseNum = initialData.baseAmount || initialData.subtotal || 0
-        setItems([{
-          id: `item_${Date.now()}`,
-          serviceName: initialData.project || "Custom Service",
-          sacCode: resolvedScheme === "gst" ? "998313" : "",
-          qty: 1,
-          unit: "Project",
-          rate: baseNum,
-          gstRate: resolvedScheme === "gst" ? 18 : 0,
-          gstAmount: 0,
-          charges: [],
-          totalAmount: baseNum,
-        }])
-      }
-
-      setDiscountValue(initialData.discount !== undefined ? initialData.discount : "")
-      setSetupCharge(initialData.setupCharge !== undefined ? initialData.setupCharge : "")
-      if (initialData.notes) setNotes(initialData.notes)
-      if (initialData.terms) setTerms(initialData.terms)
-
-      if (initialData?.marketingPackage) {
-        setMarketingPackage(initialData.marketingPackage)
-      } else {
-        setMarketingPackage(createDefaultMarketingPackage("Grow - 2"))
-      }
-
-      if (initialData.assignedMembers && Array.isArray(initialData.assignedMembers) && initialData.assignedMembers.length > 0) {
-        setAssignedMembers(initialData.assignedMembers)
-      } else if (initialData.assignedMemberId) {
-        setAssignedMembers([{
-          memberId: initialData.assignedMemberId,
-          memberName: initialData.assignedMemberName || "Team Member",
-          memberRole: initialData.assignedMemberRole || "Team Member",
-          memberAvatar: initialData.assignedMemberAvatar,
-          payoutType: initialData.memberPayoutType || "percentage",
-          payoutValue: initialData.memberPayoutValue !== undefined ? initialData.memberPayoutValue : (initialData.memberSharePct !== undefined ? initialData.memberSharePct : 50),
-        }])
-      } else {
-        setAssignedMembers([])
-      }
-    } else {
-      setCompanyId(activeCompanyId || "tech")
-      setBranchId(activeBranchId || "")
-      setSubBranchId("")
-      generateDocNumber(docScheme)
-      setProjectTitle("")
-      setProjectOverview("")
-      setProjectTimeline("")
-      setTurnaroundTime("")
-      setDeliverables([])
-      setScopeInclusions("")
-      setScopeExclusions("")
-      setPaymentMilestones([])
-      setItems([
-        {
-          id: `item_${Date.now()}`,
-          serviceName: "",
-          sacCode: "",
-          qty: 1,
-          unit: "Project",
-          rate: "" as any,
-          gstRate: mode === "invoice" && docScheme === "gst" ? 18 : 0,
-          gstAmount: 0,
-          charges: [],
-          totalAmount: 0
-        }
-      ])
-      setDiscountValue("")
-      setSetupCharge("")
-      setAssignedMembers([])
-    }
-  }, [isOpen, initialData, prefilledClient])
+  React.useEffect(
+    () => runDocumentStudioModalEffect51(() => __ctrlRef.current),
+    [isOpen, initialData, prefilledClient],
+  );
 
   const handleSchemeChange = (scheme: "gst" | "nongst") => {
-    setDocScheme(scheme)
+    setDocScheme(scheme);
     if (!initialData?.id) {
-      generateDocNumber(scheme)
+      generateDocNumber(scheme);
     }
-    setItems(prev => prev.map(it => {
-      const rate = typeof it.rate === "number" ? it.rate : 0
-      const qty = it.qty > 0 ? it.qty : 1
-      const base = rate * qty
-      const gst = scheme === "gst" ? (it.gstRate || 18) : 0
-      return {
-        ...it,
-        gstRate: gst,
-        gstAmount: Math.round(base * (gst / 100)),
-        totalAmount: base + Math.round(base * (gst / 100))
-      }
-    }))
-  }
+    setItems((prev) =>
+      prev.map((it) => {
+        const rate = typeof it.rate === "number" ? it.rate : 0;
+        const qty = it.qty > 0 ? it.qty : 1;
+        const base = rate * qty;
+        const gst = scheme === "gst" ? it.gstRate || 18 : 0;
+        return {
+          ...it,
+          gstRate: gst,
+          gstAmount: Math.round(base * (gst / 100)),
+          totalAmount: base + Math.round(base * (gst / 100)),
+        };
+      }),
+    );
+  };
 
   // Add line item
-  const handleAddItem = (preset?: typeof SERVICE_PRESETS[0]) => {
-    const isGstActive = docScheme === "gst"
+  const handleAddItem = (preset?: (typeof SERVICE_PRESETS)[0]) => {
+    const isGstActive = docScheme === "gst";
     const newItem: InvoiceLineItem = {
       id: `item_${Date.now()}_${Math.random()}`,
       serviceName: preset?.name || "",
@@ -735,4493 +2163,242 @@ export function DocumentStudioModal({
       gstRate: isGstActive ? (preset?.gst !== undefined ? preset.gst : 18) : 0,
       gstAmount: 0,
       charges: [],
-      totalAmount: 0
-    }
-    const base = newItem.rate * newItem.qty
-    const tax = Math.round(base * (newItem.gstRate / 100))
-    newItem.gstAmount = tax
-    newItem.totalAmount = base + tax
-    setItems(prev => [...prev, newItem])
-  }
+      totalAmount: 0,
+    };
+    const base = newItem.rate * newItem.qty;
+    const tax = Math.round(base * (newItem.gstRate / 100));
+    newItem.gstAmount = tax;
+    newItem.totalAmount = base + tax;
+    setItems((prev) => [...prev, newItem]);
+  };
 
   const handleRemoveItem = (id: string) => {
-    if (items.length <= 1) return
-    setItems(prev => prev.filter(it => it.id !== id))
-  }
+    if (items.length <= 1) return;
+    setItems((prev) => prev.filter((it) => it.id !== id));
+  };
 
-  const handleUpdateItem = (id: string, field: keyof InvoiceLineItem, val: any) => {
-    setItems(prev => prev.map(it => {
-      if (it.id !== id) return it
-      const updated = { ...it, [field]: val }
-      const rate = typeof updated.rate === "number" ? updated.rate : (updated.rate === "" ? 0 : Number(updated.rate) || 0)
-      const qty = typeof updated.qty === "number" ? updated.qty : (updated.qty === "" ? 1 : Number(updated.qty) || 1)
-      const base = rate * qty
-      const isGstActive = docScheme === "gst"
-      const gst = isGstActive ? (typeof updated.gstRate === "number" ? updated.gstRate : 18) : 0
-      updated.totalAmount = base + Math.round(base * (gst / 100))
-      return updated
-    }))
-  }
+  const handleUpdateItem = (
+    id: string,
+    field: keyof InvoiceLineItem,
+    val: any,
+  ) => {
+    setItems((prev) =>
+      prev.map((it) => {
+        if (it.id !== id) return it;
+        const updated = { ...it, [field]: val };
+        const rate =
+          typeof updated.rate === "number"
+            ? updated.rate
+            : updated.rate === ""
+              ? 0
+              : Number(updated.rate) || 0;
+        const qty =
+          typeof updated.qty === "number"
+            ? updated.qty
+            : updated.qty === ""
+              ? 1
+              : Number(updated.qty) || 1;
+        const base = rate * qty;
+        const isGstActive = docScheme === "gst";
+        const gst = isGstActive
+          ? typeof updated.gstRate === "number"
+            ? updated.gstRate
+            : 18
+          : 0;
+        updated.totalAmount = base + Math.round(base * (gst / 100));
+        return updated;
+      }),
+    );
+  };
 
   // Deliverables Handlers (Quotation)
   const handleAddDeliverable = () => {
-    setDeliverables(prev => [
+    setDeliverables((prev) => [
       ...prev,
-      { id: `del_${Date.now()}`, title: "", description: "", duration: "1-2 Weeks" }
-    ])
-  }
+      {
+        id: `del_${Date.now()}`,
+        title: "",
+        description: "",
+        duration: "1-2 Weeks",
+      },
+    ]);
+  };
 
   const handleUpdateDeliverable = (id: string, field: string, val: string) => {
-    setDeliverables(prev => prev.map(d => d.id === id ? { ...d, [field]: val } : d))
-  }
+    setDeliverables((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, [field]: val } : d)),
+    );
+  };
 
   const handleRemoveDeliverable = (id: string) => {
-    if (deliverables.length <= 1) return
-    setDeliverables(prev => prev.filter(d => d.id !== id))
-  }
+    if (deliverables.length <= 1) return;
+    setDeliverables((prev) => prev.filter((d) => d.id !== id));
+  };
 
   // Financial Calculations
   const calculatedSubtotal = React.useMemo(() => {
-    return items.reduce((sum, it) => sum + ((it.rate || 0) * (it.qty || 1)), 0)
-  }, [items])
+    return items.reduce((sum, it) => sum + (it.rate || 0) * (it.qty || 1), 0);
+  }, [items]);
 
   const handleDiscountTypeChange = (newType: "percentage" | "fixed") => {
-    if (newType === discountType) return
-    const curVal = Number(discountValue) || 0
+    if (newType === discountType) return;
+    const curVal = Number(discountValue) || 0;
     if (curVal <= 0 || calculatedSubtotal <= 0) {
-      setDiscountType(newType)
-      return
+      setDiscountType(newType);
+      return;
     }
     if (newType === "percentage") {
-      const pct = Math.min(100, Math.round((curVal / calculatedSubtotal) * 100))
-      setDiscountValue(pct)
+      const pct = Math.min(
+        100,
+        Math.round((curVal / calculatedSubtotal) * 100),
+      );
+      setDiscountValue(pct);
     } else {
-      const amt = Math.min(calculatedSubtotal, Math.round(calculatedSubtotal * (Math.min(100, curVal) / 100)))
-      setDiscountValue(amt)
+      const amt = Math.min(
+        calculatedSubtotal,
+        Math.round(calculatedSubtotal * (Math.min(100, curVal) / 100)),
+      );
+      setDiscountValue(amt);
     }
-    setDiscountType(newType)
-  }
+    setDiscountType(newType);
+  };
 
   const calculatedDiscount = React.useMemo(() => {
-    const rawVal = Number(discountValue)
-    if (!rawVal || isNaN(rawVal) || rawVal <= 0) return 0
+    const rawVal = Number(discountValue);
+    if (!rawVal || isNaN(rawVal) || rawVal <= 0) return 0;
     if (discountType === "percentage") {
-      const clampedPct = Math.min(100, Math.max(0, rawVal))
-      return Math.round(calculatedSubtotal * (clampedPct / 100))
+      const clampedPct = Math.min(100, Math.max(0, rawVal));
+      return Math.round(calculatedSubtotal * (clampedPct / 100));
     }
-    return Math.min(calculatedSubtotal, Math.max(0, rawVal))
-  }, [calculatedSubtotal, discountType, discountValue])
+    return Math.min(calculatedSubtotal, Math.max(0, rawVal));
+  }, [calculatedSubtotal, discountType, discountValue]);
 
-  const numSetupCharge = Number(setupCharge) || 0
-  const taxableBase = Math.max(0, calculatedSubtotal - calculatedDiscount + numSetupCharge)
+  const numSetupCharge = Number(setupCharge) || 0;
+  const taxableBase = Math.max(
+    0,
+    calculatedSubtotal - calculatedDiscount + numSetupCharge,
+  );
 
   const calculatedGst = React.useMemo(() => {
-    if (docScheme === "nongst") return 0
+    if (docScheme === "nongst") return 0;
     return items.reduce((sum, it) => {
-      const base = (it.rate || 0) * (it.qty || 1)
-      const rate = it.gstRate !== undefined ? it.gstRate : 18
-      return sum + Math.round(base * (rate / 100))
-    }, 0)
-  }, [items, docScheme])
+      const base = (it.rate || 0) * (it.qty || 1);
+      const rate = it.gstRate !== undefined ? it.gstRate : 18;
+      return sum + Math.round(base * (rate / 100));
+    }, 0);
+  }, [items, docScheme]);
 
-  const grandTotal = taxableBase + calculatedGst
-  const effectiveCreditDeduction = (applyCredit && creditToDeduct > 0) ? Math.min(creditToDeduct, grandTotal) : 0
-  const netPayable = Math.max(0, grandTotal - effectiveCreditDeduction)
+  const grandTotal = taxableBase + calculatedGst;
+  const effectiveCreditDeduction =
+    applyCredit && creditToDeduct > 0
+      ? Math.min(creditToDeduct, grandTotal)
+      : 0;
+  const netPayable = Math.max(0, grandTotal - effectiveCreditDeduction);
 
   // Helper to project future dates based on billing cycles
-  const calculateCycleFutureDate = (baseDateStr: string, cycle: string, count: number): string => {
-    const d = baseDateStr ? new Date(baseDateStr) : new Date()
-    const valid = isNaN(d.getTime()) ? new Date() : new Date(d.getTime())
-    const cyclesToAdd = count > 0 ? count : 1
-    if (cycle === "Weekly") {
-      valid.setDate(valid.getDate() + 7 * cyclesToAdd)
-    } else if (cycle === "Quarterly") {
-      const curDay = valid.getDate()
-      valid.setDate(1)
-      valid.setMonth(valid.getMonth() + 3 * cyclesToAdd)
-      const maxDays = new Date(valid.getFullYear(), valid.getMonth() + 1, 0).getDate()
-      valid.setDate(Math.min(curDay, maxDays))
-    } else if (cycle === "Yearly") {
-      const curDay = valid.getDate()
-      const curMonth = valid.getMonth()
-      valid.setFullYear(valid.getFullYear() + cyclesToAdd)
-      const maxDays = new Date(valid.getFullYear(), curMonth + 1, 0).getDate()
-      valid.setDate(Math.min(curDay, maxDays))
-    } else {
-      // Monthly default
-      const curDay = valid.getDate()
-      valid.setDate(1)
-      valid.setMonth(valid.getMonth() + cyclesToAdd)
-      const maxDays = new Date(valid.getFullYear(), valid.getMonth() + 1, 0).getDate()
-      valid.setDate(Math.min(curDay, maxDays))
-    }
-    const y = valid.getFullYear()
-    const m = String(valid.getMonth() + 1).padStart(2, "0")
-    const dt = String(valid.getDate()).padStart(2, "0")
-    return `${y}-${m}-${dt}`
-  }
+  const calculateCycleFutureDate: any = createDocumentStudioModalFn52(
+    () => __ctrlRef.current,
+  );
 
   // 1. Part Payment (EMI) Calculations (Total - Advance = Remaining / Months)
-  const numEmiAdvance = typeof emiAdvanceAmount === "number" ? Math.max(0, emiAdvanceAmount) : 0
-  const effectiveEmiAdvance = Math.min(netPayable, numEmiAdvance)
-  const emiRemainingBalance = Math.max(0, netPayable - effectiveEmiAdvance)
-  const emiMonthlyAmount = emiTenureMonths > 0 ? Math.round(emiRemainingBalance / emiTenureMonths) : emiRemainingBalance
+  const numEmiAdvance =
+    typeof emiAdvanceAmount === "number" ? Math.max(0, emiAdvanceAmount) : 0;
+  const effectiveEmiAdvance = Math.min(netPayable, numEmiAdvance);
+  const emiRemainingBalance = Math.max(0, netPayable - effectiveEmiAdvance);
+  const emiMonthlyAmount =
+    emiTenureMonths > 0
+      ? Math.round(emiRemainingBalance / emiTenureMonths)
+      : emiRemainingBalance;
 
   // 2. Subscription Calculations (Multi-month + Advance prepaid)
-  const defaultSubRate = items.length > 0 ? (items[0]?.rate || 100) : 100
-  const activeSubRate = typeof subscriptionRate === "number" && subscriptionRate > 0 ? subscriptionRate : defaultSubRate
-  const subContractTotal = activeSubRate * (subscriptionDurationMonths || 6)
-  const numSubAdvance = typeof subscriptionAdvance === "number" ? Math.max(0, subscriptionAdvance) : 0
-  const effectiveSubAdvance = Math.min(subContractTotal, numSubAdvance)
-  const subPrepaidCycles = activeSubRate > 0 ? Math.min(subscriptionDurationMonths, Math.floor(effectiveSubAdvance / activeSubRate)) : 0
-  const subRemainingCycles = Math.max(0, subscriptionDurationMonths - subPrepaidCycles)
-  const subBalanceDue = Math.max(0, subContractTotal - effectiveSubAdvance)
-  const subNextBillingDate = calculateCycleFutureDate(issueDate, subscriptionCycle, subPrepaidCycles > 0 ? subPrepaidCycles : 1)
+  const defaultSubRate = items.length > 0 ? items[0]?.rate || 100 : 100;
+  const activeSubRate =
+    typeof subscriptionRate === "number" && subscriptionRate > 0
+      ? subscriptionRate
+      : defaultSubRate;
+  const subContractTotal = activeSubRate * (subscriptionDurationMonths || 6);
+  const numSubAdvance =
+    typeof subscriptionAdvance === "number"
+      ? Math.max(0, subscriptionAdvance)
+      : 0;
+  const effectiveSubAdvance = Math.min(subContractTotal, numSubAdvance);
+  const subPrepaidCycles =
+    activeSubRate > 0
+      ? Math.min(
+          subscriptionDurationMonths,
+          Math.floor(effectiveSubAdvance / activeSubRate),
+        )
+      : 0;
+  const subRemainingCycles = Math.max(
+    0,
+    subscriptionDurationMonths - subPrepaidCycles,
+  );
+  const subBalanceDue = Math.max(0, subContractTotal - effectiveSubAdvance);
+  const subNextBillingDate = calculateCycleFutureDate(
+    issueDate,
+    subscriptionCycle,
+    subPrepaidCycles > 0 ? subPrepaidCycles : 1,
+  );
 
   // Save Document handler
-  const handleSaveDocument = async () => {
-    if (!clientName.trim() && !selectedClient?.name) {
-      alert("Please specify a client name.")
-      return
-    }
-    if (items.length === 0 || !items[0].serviceName.trim()) {
-      alert("Please add at least one line item with a service description.")
-      return
-    }
+  const handleSaveDocument: any = createDocumentStudioModalAction20(
+    () => __ctrlRef.current,
+  );
 
-    const docLabel = mode === "invoice" ? "Invoice" : mode === "quotation" ? "Quotation" : "Estimate"
-    const actionLabel = initialData?.id ? "Updating" : "Generating"
+  if (!isOpen) return null;
 
-    setIsSubmitting(true)
-    try {
-      await executeWithFeedback(async () => {
-        const effectiveCategory = primaryCategory === "Custom" ? (customPrimaryCategory.trim() || "Custom / Other Services") : (primaryCategory.includes("Digital Marketing") ? primaryCategory : (isMarketing ? "Digital Marketing & Social Media Retainer" : (primaryCategory || "Website Development")))
-        const effectiveDesignation = clientDesignation === "Other" ? (customDesignation.trim() || "Client") : clientDesignation
-        const effectiveProjectName = isMarketing
-          ? (marketingPackage.planName ? `Digital Marketing Retainer (${marketingPackage.planName})` : "Digital Marketing Campaign")
-          : (projectTitle.trim() || items[0]?.serviceName?.trim() || effectiveCategory || "Client Project")
-
-        // Combined Project + Subscription Total
-        // When subscription plan is active, contract total is added to netPayable (project deliverables)
-        const combinedDocTotal = paymentPlan === "subscription"
-          ? (netPayable + (subContractTotal > 0 ? subContractTotal : 0))
-          : netPayable
-
-        const advancePaidNum = paymentPlan === "full"
-          ? combinedDocTotal
-          : paymentPlan === "advance"
-            ? (typeof advanceAmount === "number" ? Math.min(combinedDocTotal, advanceAmount) : 0)
-            : paymentPlan === "part"
-              ? effectiveEmiAdvance
-              : paymentPlan === "subscription"
-                ? Math.min(combinedDocTotal, effectiveSubAdvance + (typeof advanceAmount === "number" ? advanceAmount : 0))
-                : 0
-
-        const effectiveDue = Math.max(0, combinedDocTotal - advancePaidNum)
-
-        const effectiveDocTotal = combinedDocTotal
-
-        // Final line items compilation
-        let finalItemsToSave = [...items]
-        if (isMarketing) {
-          const planTitle = marketingPackage.planName ? `Digital Marketing Retainer (${marketingPackage.planName})` : "Digital Marketing Retainer"
-          const planPrice = marketingPackage.packagePrice || (typeof items[0]?.rate === "number" && items[0]?.rate > 0 ? items[0].rate : 12000)
-          const base = planPrice
-          const isGstActive = docScheme === "gst"
-          const tax = isGstActive ? Math.round(base * 0.18) : 0
-          finalItemsToSave = [{
-            id: items[0]?.id || `mkt_item_${Date.now()}`,
-            serviceName: planTitle,
-            sacCode: isGstActive ? "998311" : "",
-            qty: 1,
-            unit: "Month",
-            rate: planPrice,
-            gstRate: isGstActive ? 18 : 0,
-            gstAmount: tax,
-            charges: [],
-            totalAmount: base + tax
-          }]
-        } else if (mode === "invoice" && paymentPlan === "subscription" && subContractTotal > 0) {
-          const hasSubItem = finalItemsToSave.some(it => 
-            it.serviceName.toLowerCase().includes("subscription") || 
-            it.serviceName.toLowerCase().includes("retainer")
-          )
-          if (!hasSubItem) {
-          finalItemsToSave.push({
-            id: `sub_retainer_${Date.now()}`,
-            serviceName: `Recurring Subscription Plan (${subscriptionDurationMonths} Months @ ₹${activeSubRate}/${subscriptionCycle})`,
-            sacCode: docScheme === "gst" ? "998313" : "",
-            qty: subscriptionDurationMonths,
-            unit: subscriptionCycle,
-            rate: activeSubRate,
-            gstRate: 0,
-            gstAmount: 0,
-            charges: [],
-            totalAmount: subContractTotal
-          })
-        }
-      }
-
-      const selectedBranch = branches.find(b => String(b.id) === String(branchId) || b.name.toLowerCase() === String(branchId).toLowerCase())
-      const selectedSubBranch = subBranches.find(sb => String(sb.id) === String(subBranchId) || sb.name.toLowerCase() === String(subBranchId).toLowerCase())
-
-      const finalDocPayload: any = {
-        id: docNumber,
-        invoiceNumber: docNumber,
-        number: docNumber,
-        client: String(clientName || selectedClient?.name || "Client"),
-        contactPersonName: contactPersonName.trim(),
-        primaryContact: contactPersonName.trim(),
-        clientContactPerson: contactPersonName.trim(),
-        clientDesignation: effectiveDesignation,
-        clientEmail: clientEmail || selectedClient?.email,
-        clientPhone: clientPhone || selectedClient?.phone,
-        clientAddress: clientAddress || selectedClient?.address,
-        clientPincode: clientPincode || selectedClient?.zip,
-        clientDistrict: clientDistrict || (selectedClient as any)?.district,
-        clientCity: clientCity || selectedClient?.city,
-        clientState: clientState || selectedClient?.state,
-        clientGstin: docScheme === "nongst" ? "" : (clientGst || selectedClient?.gstNumber),
-        category: effectiveCategory,
-        primaryCategory: effectiveCategory,
-        project: effectiveProjectName,
-        paymentPlan: paymentPlan,
-        paymentStructure: paymentPlan === "full" 
-          ? "Full Payment" 
-          : paymentPlan === "part" 
-            ? `Part (EMI) - ${emiTenureMonths} Mo (${effectiveEmiAdvance > 0 ? `₹${effectiveEmiAdvance.toLocaleString("en-IN")} Adv Paid, ` : ""}₹${emiMonthlyAmount.toLocaleString("en-IN")}/mo)`
-            : paymentPlan === "advance" 
-              ? "Advance Payment" 
-              : `Subscription - ${subscriptionDurationMonths} Mo @ ₹${activeSubRate}/${subscriptionCycle} (${effectiveSubAdvance > 0 ? `₹${effectiveSubAdvance.toLocaleString("en-IN")} Adv Paid, ` : ""}Next: ${subNextBillingDate})`,
-        overview: projectOverview,
-        timeline: projectTimeline,
-        turnaroundTime: turnaroundTime,
-        deliverables: deliverables,
-        scopeInclusions: scopeInclusions,
-        scopeExclusions: scopeExclusions,
-        paymentMilestones: paymentMilestones,
-        billDate: issueDate,
-        invoiceDate: issueDate,
-        date: issueDate,
-        dueDate: dueDate,
-        validTill: dueDate,
-        baseAmount: calculatedSubtotal,
-        subtotal: calculatedSubtotal,
-        taxableBase: taxableBase,
-        taxableAmount: taxableBase,
-        discount: calculatedDiscount,
-        creditDeduction: effectiveCreditDeduction,
-        setupCharge: numSetupCharge,
-        gstRate: mode === "invoice" && docScheme === "gst" ? 18 : 0,
-        gstAmount: calculatedGst,
-        tax: calculatedGst,
-        totalInvoiced: `₹${effectiveDocTotal.toLocaleString("en-IN")}`,
-        total: effectiveDocTotal,
-        paymentReceived: `₹${advancePaidNum.toLocaleString("en-IN")}`,
-        due: `₹${effectiveDue.toLocaleString("en-IN")}`,
-        paymentMethod: paymentMethod,
-        paymentMode: paymentMethod,
-        status: effectiveDue === 0 ? "Fully paid" : advancePaidNum > 0 ? "Partially paid" : "Not paid",
-        companyId: companyId,
-        branchId: branchId || undefined,
-        branchName: selectedBranch?.name || undefined,
-        branchCode: (selectedBranch as any)?.code || undefined,
-        subBranchId: subBranchId || undefined,
-        subBranchName: selectedSubBranch?.name || undefined,
-        subBranchCode: (selectedSubBranch as any)?.code || undefined,
-        companyDetails: activeCompany,
-        items: finalItemsToSave,
-        notes: notes,
-        terms: terms ||  activeCompany?.terms_conditions || "1. Payment is due within statutory terms.\n2. Goods & Services once delivered are subject to project sign-off.\n3. Disputed items must be notified within 7 days.",
-        assignedMembers: assignedMembers.length > 0 ? assignedMembers : undefined,
-        assignedMemberId: assignedMembers.length > 0 ? assignedMembers[0].memberId : undefined,
-        assignedMemberName: assignedMembers.length > 0 ? assignedMembers[0].memberName : undefined,
-        assignedMemberRole: assignedMembers.length > 0 ? assignedMembers[0].memberRole : undefined,
-        memberPayoutType: assignedMembers.length > 0 ? assignedMembers[0].payoutType : undefined,
-        memberPayoutValue: assignedMembers.length > 0 ? assignedMembers[0].payoutValue : undefined,
-        // Part Payment (EMI) specific fields
-        emiMonths: emiTenureMonths,
-        emiAdvanceAmount: effectiveEmiAdvance,
-        emiRemainingBalance: emiRemainingBalance,
-        emiMonthlyAmount: emiMonthlyAmount,
-        // Subscription specific fields
-        subscriptionCycle: subscriptionCycle,
-        subscriptionDurationMonths: subscriptionDurationMonths,
-        subscriptionRate: activeSubRate,
-        subscriptionAdvance: effectiveSubAdvance,
-        prepaidCycles: subPrepaidCycles,
-        remainingCycles: subRemainingCycles,
-        nextBillingDate: paymentPlan === "subscription" ? subNextBillingDate : dueDate,
-        marketingPackage: effectiveCategory === "Digital Marketing" ? marketingPackage : undefined,
-        isMarketingRetainer: effectiveCategory === "Digital Marketing",
-        marketingObjective: isMarketing ? marketingObjective : undefined,
-        marketingPlatforms: isMarketing ? marketingPlatforms : undefined,
-        marketingGeography: isMarketing ? marketingGeography : undefined,
-        creativeDriveUrl: isMarketing ? creativeDriveUrl : undefined,
-        lifecycleStage: isMarketing ? (initialData?.lifecycleStage || "Pending") : undefined,
-      }
-
-      if (mode === "invoice") {
-        // Check if client already exists before creating accounts
-        const targetClientEmail = (clientEmail || selectedClient?.email || "").toLowerCase().trim()
-        const targetClientPhone = (clientPhone || selectedClient?.phone || "").trim()
-        let isExistingClient = Boolean(selectedClient)
-
-        if (!isExistingClient && (targetClientEmail || targetClientPhone || clientName.trim())) {
-          try {
-            const { getClients } = await import("@/app/feature/clients/service/clientService")
-            const clientList = await getClients(companyId)
-            const matched = (Array.isArray(clientList) ? clientList : []).find(c => 
-              (targetClientEmail && c.email && c.email.toLowerCase().trim() === targetClientEmail) ||
-              (targetClientPhone && c.phone && c.phone.trim() === targetClientPhone) ||
-              (clientName && c.name && c.name.toLowerCase().trim() === clientName.toLowerCase().trim())
-            )
-            if (matched) isExistingClient = true
-          } catch {}
-        }
-
-        // Auto-save client ONLY when creating an official invoice and client is new
-        if (!isExistingClient && (clientMode === "custom" || (!selectedClient && clientName.trim()))) {
-          try {
-            await saveStoredClient({
-              id: `cli_${Date.now()}`,
-              name: clientName.trim(),
-              primaryContact: contactPersonName.trim() || clientName.trim(),
-              designation: effectiveDesignation,
-              phone: clientPhone,
-              email: clientEmail,
-              address: clientAddress,
-              city: clientCity,
-              district: clientDistrict,
-              state: clientState,
-              zip: clientPincode,
-              gstNumber: docScheme === "nongst" ? "" : clientGst,
-              companyId: companyId,
-              branchId: branchId || undefined,
-              branchName: selectedBranch?.name || undefined,
-              subBranchId: subBranchId || undefined,
-              subBranchName: selectedSubBranch?.name || undefined,
-              group: "Standard",
-              label: "Active",
-              labelColor: "#3B82F6",
-              projectsCount: 1,
-              totalInvoiced: `₹${effectiveDocTotal.toLocaleString("en-IN")}`,
-              paymentReceived: `₹${advancePaidNum.toLocaleString("en-IN")}`,
-              due: `₹${effectiveDue.toLocaleString("en-IN")}`,
-            })
-          } catch (cErr) {
-            console.warn("Auto-save client error:", cErr)
-          }
-        }
-
-        let saved
-        if (initialData?.id) {
-          saved = await updateInvoice(finalDocPayload)
-        } else {
-          saved = await addInvoice(finalDocPayload, companyId)
-        }
-
-        // Only send client portal login credentials if this is a NEW client account!
-        // If client already existed, do NOT send login credentials again!
-        if (targetClientEmail) {
-          if (!isExistingClient) {
-            try {
-              const { ensureClientUserAccount } = await import("@/app/feature/users/service/userService")
-              await ensureClientUserAccount({
-                email: targetClientEmail,
-                name: contactPersonName.trim() || clientName.trim(),
-                phone: clientPhone || selectedClient?.phone,
-                companyId: companyId,
-              })
-              const { sendClientWelcomeEmailNotification } = await import("@/services/emailNotificationService")
-              sendClientWelcomeEmailNotification({
-                id: selectedClient?.id || `cli_${Date.now()}`,
-                name: clientName.trim(),
-                email: targetClientEmail,
-                primaryContact: contactPersonName.trim() || clientName.trim(),
-                companyId: companyId,
-              } as any).catch(wErr => console.warn("Welcome email notice:", wErr))
-            } catch (uErr) {
-              console.warn("Auto-create client user error:", uErr)
-            }
-          }
-
-          // Always send Invoice Details & Receipt Email to client for every invoice!
-          try {
-            const { sendInvoiceDetailsEmailNotification, sendPaymentReceiptEmailNotification } = await import("@/services/emailNotificationService")
-            sendInvoiceDetailsEmailNotification(saved || finalDocPayload, targetClientEmail).catch(invErr => {
-              console.warn("Invoice email dispatch notice:", invErr)
-            })
-
-            if (advancePaidNum > 0) {
-              sendPaymentReceiptEmailNotification({
-                invoice: saved || finalDocPayload,
-                paidAmount: `₹${advancePaidNum.toLocaleString("en-IN")}`,
-                remainingDue: `₹${effectiveDue.toLocaleString("en-IN")}`,
-                nextDueDate: dueDate,
-                paymentMethod: "Advance / Bank Transfer",
-                recipientEmail: targetClientEmail,
-              }).catch(rcptErr => console.warn("Receipt email dispatch notice:", rcptErr))
-            }
-          } catch (mailErr) {
-            console.warn("Email service trigger error:", mailErr)
-          }
-        }
-
-        // If credit note balance was deducted against this invoice, update customer's credit note(s)
-        if (effectiveCreditDeduction > 0) {
-          try {
-            const { applyCreditNoteDeduction } = await import("@/app/feature/sales/credit-notes/service/creditNoteService")
-            await applyCreditNoteDeduction(
-              String(clientName || selectedClient?.name),
-              effectiveCreditDeduction,
-              docNumber,
-              companyId
-            )
-          } catch (cnErr) {
-            console.warn("Could not apply credit note deduction:", cnErr)
-          }
-        }
-
-        // If Part Payment (EMI), auto-create Milestone Tracking Plan in /feature/emi
-        if (paymentPlan === "part") {
-          try {
-            const now = issueDate || new Date().toISOString().split("T")[0]
-            const installmentSchedule = Array.from({ length: emiTenureMonths }, (_, i) => {
-              const instNum = i + 1
-              const dueDateStr = calculateCycleFutureDate(now, "Monthly", instNum)
-              const isLast = instNum === emiTenureMonths
-              const amount = isLast 
-                ? Math.max(0, emiRemainingBalance - emiMonthlyAmount * (emiTenureMonths - 1))
-                : emiMonthlyAmount
-
-              return {
-                installmentNumber: instNum,
-                amount: Math.max(0, amount),
-                formattedAmount: `₹${Math.max(0, amount).toLocaleString("en-IN")}`,
-                dueDate: dueDateStr,
-                status: "Pending" as const,
-                notes: `Installment #${instNum} of ${emiTenureMonths} for Invoice #${docNumber}`,
-              }
-            })
-
-            await saveInstallmentRecord({
-              id: `inst_${docNumber}_${Date.now()}`,
-              invoiceId: docNumber,
-              clientName: String(clientName || selectedClient?.name || "Client"),
-              clientEmail: clientEmail || selectedClient?.email,
-              clientPhone: clientPhone || selectedClient?.phone,
-              clientCompany: selectedClient?.companyName || clientName,
-              projectTitle: effectiveProjectName,
-              totalContractValue: netPayable,
-              totalAdvancePaid: effectiveEmiAdvance,
-              totalPaid: effectiveEmiAdvance,
-              remainingBalance: emiRemainingBalance,
-              totalInstallments: emiTenureMonths,
-              currentInstallmentNumber: 1,
-              currentInstallmentAmount: emiMonthlyAmount,
-              currentDueDate: installmentSchedule[0]?.dueDate || dueDate,
-              status: emiRemainingBalance === 0 ? "Paid" : "Partially Paid",
-              schedule: installmentSchedule,
-              companyId: companyId,
-              branchId: branchId || undefined,
-              createdAt: now,
-            }, companyId)
-          } catch (emiErr) {
-            console.warn("Auto-create EMI milestone error:", emiErr)
-          }
-        }
-
-        // If Subscription based, auto create in Subscriptions section
-        if (paymentPlan === "subscription") {
-          try {
-            await addSubscription({
-              clientId: selectedClient?.id ? String(selectedClient.id) : undefined,
-              clientName: String(clientName || selectedClient?.name || "Client"),
-              clientEmail: clientEmail || selectedClient?.email,
-              clientPhone: clientPhone || selectedClient?.phone,
-              clientCompany: selectedClient?.companyName || clientName || "Client",
-              planName: `${effectiveCategory} - ${items[0]?.serviceName || effectiveProjectName} (${subscriptionDurationMonths}-Month ${subscriptionCycle} @ ₹${activeSubRate})`,
-              status: "Active",
-              amount: `₹${activeSubRate.toLocaleString("en-IN")}`,
-              numericAmount: activeSubRate,
-              billingCycle: (subscriptionCycle === "Yearly" ? "Annually" : subscriptionCycle) as any,
-              startDate: issueDate || new Date().toISOString().split("T")[0],
-              firstPaymentDate: issueDate || new Date().toISOString().split("T")[0],
-              firstPaymentAmount: effectiveSubAdvance,
-              nextBillingDate: subNextBillingDate,
-              totalDurationMonths: subscriptionDurationMonths,
-              totalCycles: subscriptionDurationMonths,
-              prepaidCycles: subPrepaidCycles,
-              remainingCycles: subRemainingCycles,
-              advanceAmount: effectiveSubAdvance,
-              balanceDue: subBalanceDue,
-              prepaidUntilDate: subNextBillingDate,
-              description: `Auto-generated from Invoice #${docNumber} (${subscriptionDurationMonths}-Month ${subscriptionCycle} Plan @ ₹${activeSubRate}/${subscriptionCycle}. ₹${effectiveSubAdvance} paid in advance [${subPrepaidCycles} months prepaid upfront]. Next recurring invoice starts on ${subNextBillingDate})`,
-            }, companyId)
-          } catch (subErr) {
-            console.warn("Auto-create subscription error:", subErr)
-          }
-        }
-
-        // Auto-link/create project in Projects module
-        if (effectiveProjectName && effectiveProjectName.trim()) {
-          try {
-            const { getProjects, addProject } = await import("@/app/feature/projects/service/projectService")
-            const existingProjects = await getProjects(companyId)
-            const projectList = Array.isArray(existingProjects) ? existingProjects : []
-            const cleanTitle = effectiveProjectName.trim()
-            const found = projectList.find(p => p.invoiceId && String(p.invoiceId).toUpperCase().trim() === String(docNumber).toUpperCase().trim())
-            const isDigitalMarketing = effectiveCategory === "Digital Marketing" || (
-              effectiveCategory.toLowerCase().includes("marketing") &&
-              !effectiveCategory.toLowerCase().includes("website") &&
-              !effectiveCategory.toLowerCase().includes("software") &&
-              !effectiveCategory.toLowerCase().includes("app") &&
-              !effectiveCategory.toLowerCase().includes("android") &&
-              !effectiveCategory.toLowerCase().includes("ios")
-            )
-            const mappedMembers = assignedMembers.map(m => {
-              const sharePct = 10 // default 10% commission
-              const totalPayout = Math.round((effectiveDocTotal * sharePct) / 100)
-              const earnedPayout = effectiveDocTotal > 0 ? Math.round((advancePaidNum * sharePct) / 100) : 0
-              return {
-                id: m.memberId,
-                name: m.memberName,
-                role: m.memberRole || (isDigitalMarketing ? "Marketing Specialist" : "Developer"),
-                avatar: m.memberAvatar,
-                avatarUrl: m.memberAvatar,
-                sharePercentage: sharePct,
-                payoutType: "percentage" as const,
-                payoutValue: sharePct,
-                payoutAmount: totalPayout,
-                earnedAmount: earnedPayout,
-                pendingAmount: totalPayout - earnedPayout,
-              }
-            })
-            if (!found) {
-              await addProject({
-                title: cleanTitle,
-                client: String(clientName || selectedClient?.name || "Client"),
-                clientName: String(clientName || selectedClient?.name || "Client"),
-                clientEmail: targetClientEmail || clientEmail || selectedClient?.email,
-                clientPhone: targetClientPhone || clientPhone || selectedClient?.phone,
-                clientId: selectedClient?.id ? String(selectedClient.id) : (targetClientEmail || undefined),
-                customer: String(clientName || selectedClient?.name || "Client"),
-                customerEmail: targetClientEmail || clientEmail || selectedClient?.email,
-                projectType: isDigitalMarketing ? "Digital Marketing Campaign" : "Client Project",
-                price: `₹${effectiveDocTotal.toLocaleString("en-IN")}`,
-                startDate: issueDate || new Date().toISOString().split("T")[0],
-                deadline: dueDate || new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
-                progress: 0,
-                status: "Open", // Default to Open when invoice created
-                paymentStatus: effectiveDue === 0 ? "Paid" : advancePaidNum > 0 ? "Partially Paid" : "Payment Pending",
-                baseAmount: taxableBase,
-                totalAmount: effectiveDocTotal,
-                paidAmount: advancePaidNum,
-                dueAmount: effectiveDue,
-                invoiceId: docNumber,
-                invoiceNumber: docNumber,
-                companyId: companyId,
-                branchId: branchId || undefined,
-                subBranchId: subBranchId || undefined,
-                members: mappedMembers,
-                marketingPackage: isDigitalMarketing ? marketingPackage : undefined,
-                category: effectiveCategory,
-                labels: [isDigitalMarketing ? "Digital Marketing" : "Client Project", effectiveCategory, paymentPlan.toUpperCase()].filter(Boolean),
-                description: isDigitalMarketing
-                  ? `Digital Marketing Campaign for ${clientName || "Client"} (${marketingPackage?.planName || "Grow Plan"}, ${marketingPackage?.packageDuration || "1 month"}). Posters: ${marketingPackage?.postersCount || 12}, Reels: ${marketingPackage?.videosCount || 2}. Target: ${marketingPackage?.targetLocations || "Regional"}`
-                  : `Project for ${clientName || "Client"} - Invoice #${docNumber}. Category: ${effectiveCategory}`,
-              }, companyId)
-            } else {
-              // Direct sync: Update existing project amount and payment balance to match this invoice
-              try {
-                const { updateProject } = await import("@/app/feature/projects/service/projectService")
-                await updateProject(found.id, {
-                  title: cleanTitle,
-                  client: String(clientName || selectedClient?.name || "Client"),
-                  clientName: String(clientName || selectedClient?.name || "Client"),
-                  clientEmail: targetClientEmail || clientEmail || selectedClient?.email,
-                  clientPhone: targetClientPhone || clientPhone || selectedClient?.phone,
-                  startDate: issueDate || found.startDate,
-                  deadline: dueDate || found.deadline,
-                  price: `₹${effectiveDocTotal.toLocaleString("en-IN")}`,
-                  totalAmount: effectiveDocTotal,
-                  paidAmount: advancePaidNum,
-                  dueAmount: effectiveDue,
-                  invoiceId: docNumber,
-                  invoiceNumber: docNumber,
-                  paymentStatus: effectiveDue === 0 ? "Paid" : advancePaidNum > 0 ? "Partially Paid" : "Payment Pending",
-                  category: effectiveCategory,
-                  companyId: companyId,
-                  branchId: branchId || found.branchId,
-                  branchName: selectedBranch?.name || (found as any).branchName,
-                }, companyId)
-              } catch {}
-            }
-          } catch (projErr) {
-            console.warn("Auto-create project error:", projErr)
-          }
-        }
-
-        // Auto-create campaign in Digital Marketing Hub (/feature/marketing) if digital marketing package
-        const isDigitalMarketingEntity = effectiveCategory === "Digital Marketing" || (
-          effectiveCategory.toLowerCase().includes("marketing") &&
-          !effectiveCategory.toLowerCase().includes("website") &&
-          !effectiveCategory.toLowerCase().includes("software") &&
-          !effectiveCategory.toLowerCase().includes("app") &&
-          !effectiveCategory.toLowerCase().includes("android") &&
-          !effectiveCategory.toLowerCase().includes("ios")
-        )
-
-        if (isDigitalMarketingEntity) {
-          try {
-            const { MarketingService } = await import("@/app/feature/marketing/service/marketingService")
-            const totalCommitment = (marketingPackage?.postersCount || 12) + (marketingPackage?.videosCount || 2)
-            const durMonths = marketingPackage?.packageDuration ? parseInt(marketingPackage.packageDuration) || 1 : 1
-
-            await MarketingService.saveCampaign({
-              id: `camp_${docNumber}`,
-              clientId: selectedClient?.id ? String(selectedClient.id) : (targetClientEmail || `cli_${Date.now()}`),
-              clientName: String(clientName || selectedClient?.name || "Client"),
-              clientEmail: targetClientEmail || clientEmail || selectedClient?.email,
-              clientPhone: targetClientPhone || clientPhone || selectedClient?.phone,
-              companyId: companyId,
-              branchId: branchId || undefined,
-              branchName: selectedBranch?.name || undefined,
-              subBranchId: subBranchId || undefined,
-              subBranchName: selectedSubBranch?.name || undefined,
-              assignedMemberId: assignedMembers.length > 0 ? assignedMembers[0].memberId : undefined,
-              assignedMemberName: assignedMembers.length > 0 ? assignedMembers[0].memberName : undefined,
-              invoiceId: docNumber,
-              packageName: marketingPackage?.planName || effectiveProjectName || "Digital Marketing Retainer",
-              packageDurationMonths: durMonths,
-              startDate: issueDate || new Date().toISOString().split("T")[0],
-              endDate: dueDate || new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
-              stage: "Pending",
-              status: "Active",
-              totalCommitment: totalCommitment,
-              totalPosted: 0,
-              totalLeads: 0,
-              services: {
-                poster: {
-                  serviceKey: "poster",
-                  serviceName: "Poster",
-                  commitment: marketingPackage?.postersCount || 12,
-                  posted: 0,
-                  views: 0,
-                  reach: 0,
-                  leads: 0,
-                },
-                video: {
-                  serviceKey: "video",
-                  serviceName: "Video",
-                  commitment: marketingPackage?.videosCount || 2,
-                  posted: 0,
-                  views: 0,
-                  reach: 0,
-                  leads: 0,
-                }
-              } as any,
-            })
-          } catch (mktErr) {
-            console.warn("Auto-create digital marketing campaign error:", mktErr)
-          }
-        }
-
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("storage"))
-          window.dispatchEvent(new CustomEvent("saampark_data_synced"))
-          window.dispatchEvent(new CustomEvent("saampark_invoices_updated"))
-          window.dispatchEvent(new CustomEvent("invoiceCreated", { detail: saved || finalDocPayload }))
-        }
-
-        onSaveSuccess?.(saved || finalDocPayload)
-      } else if (mode === "quotation") {
-        const effectiveQuotationItems = (deliverables.length > 0 && items.length <= 1)
-          ? deliverables.map((del, dIdx) => {
-              const baseShare = deliverables.length > 0 ? Math.floor(taxableBase / deliverables.length) : taxableBase
-              const rem = taxableBase - (baseShare * deliverables.length)
-              const modTotal = dIdx === deliverables.length - 1 ? (baseShare + rem) : baseShare
-              return {
-                id: del.id || `item_${dIdx + 1}`,
-                name: del.title || `Module ${dIdx + 1}`,
-                serviceName: del.title || `Module ${dIdx + 1}`,
-                description: del.description || "",
-                deliverableTime: del.duration || "1-2 Weeks",
-                sac: items[0]?.sacCode || (docScheme === "gst" ? "998313" : "998311"),
-                quantity: 1,
-                unit: "Module",
-                unitPrice: modTotal,
-                rate: modTotal,
-                gstRate: docScheme === "gst" ? 18 : 0,
-                gstAmount: docScheme === "gst" ? Math.round(modTotal * 0.18) : 0,
-                total: modTotal,
-              }
-            })
-          : items.map(it => ({
-              id: it.id,
-              name: it.serviceName,
-              serviceName: it.serviceName,
-              description: it.description || "",
-              deliverableTime: (it as any).deliverableTime || "1-2 Weeks",
-              sac: it.sacCode,
-              quantity: it.qty,
-              unitPrice: it.rate,
-              rate: it.rate,
-              gstRate: docScheme === "gst" ? (it.gstRate ?? 18) : 0,
-              gstAmount: docScheme === "gst" ? Math.round((it.rate * it.qty) * ((it.gstRate ?? 18) / 100)) : 0,
-              total: it.totalAmount || (it.rate * it.qty)
-            }))
-
-        const quotationPayload = {
-          id: initialData?.id || docNumber,
-          number: docNumber,
-          customer: String(clientName || selectedClient?.name || "Client"),
-          client: String(clientName || selectedClient?.name || "Client"),
-          customerEmail: clientEmail || selectedClient?.email,
-          clientEmail: clientEmail || selectedClient?.email,
-          customerPhone: clientPhone || selectedClient?.phone,
-          clientPhone: clientPhone || selectedClient?.phone,
-          customerAddress: clientAddress || selectedClient?.address,
-          clientAddress: clientAddress || selectedClient?.address,
-          clientGstin: clientGst || selectedClient?.gstNumber,
-          primaryContact: contactPersonName.trim(),
-          contactPersonName: contactPersonName.trim(),
-          clientDesignation: effectiveDesignation,
-          clientCity: clientCity || selectedClient?.city,
-          clientDistrict: clientDistrict || (selectedClient as any)?.district,
-          clientState: clientState || selectedClient?.state,
-          clientPincode: clientPincode || selectedClient?.zip,
-          category: effectiveCategory,
-          primaryCategory: effectiveCategory,
-          project: effectiveProjectName || projectTitle,
-          overview: projectOverview,
-          timeline: projectTimeline,
-          turnaroundTime: turnaroundTime,
-          deliverables: deliverables,
-          scopeInclusions: scopeInclusions,
-          scopeExclusions: scopeExclusions,
-          paymentMilestones: paymentMilestones,
-          date: issueDate,
-          validTill: dueDate,
-          notes: notes,
-          terms: terms ||  activeCompany?.terms_conditions || "1. Payment is due within statutory terms.\n2. Goods & Services once delivered are subject to project sign-off.\n3. Disputed items must be notified within 7 days.",
-          subtotal: taxableBase,
-          taxType: docScheme,
-          isNonGst: docScheme === "nongst",
-          tax: docScheme === "gst" ? calculatedGst : 0,
-          total: grandTotal,
-          totalAmount: grandTotal,
-          formattedTotal: `₹${grandTotal.toLocaleString("en-IN")}`,
-          status: initialData?.status || "Draft",
-          companyId: companyId,
-          branchId: branchId,
-          subBranchId: subBranchId,
-          services: effectiveQuotationItems,
-          items: effectiveQuotationItems,
-          marketingPackage: effectiveCategory === "Digital Marketing" ? marketingPackage : undefined,
-        isMarketingRetainer: effectiveCategory === "Digital Marketing",
-        marketingObjective: isMarketing ? marketingObjective : undefined,
-        marketingPlatforms: isMarketing ? marketingPlatforms : undefined,
-        marketingGeography: isMarketing ? marketingGeography : undefined,
-        creativeDriveUrl: isMarketing ? creativeDriveUrl : undefined,
-        lifecycleStage: isMarketing ? (initialData?.lifecycleStage || "Pending") : undefined,
-        }
-
-        let saved: any = null
-        try {
-          if (initialData?.id) {
-            saved = await QuotationService.update(initialData.id, quotationPayload)
-          } else {
-            saved = await QuotationService.create(quotationPayload)
-          }
-        } catch (apiErr) {
-          console.warn("QuotationService API warning:", apiErr)
-        }
-
-        // Also save to app_data / local DB fallback so it immediately appears in quotations list
-        try {
-          const { fetchModuleDataFromDB, saveModuleDataToDB } = await import("@/lib/storageSync")
-          const currentList = await fetchModuleDataFromDB<any[]>("quotations", [], companyId)
-          const itemToSave = { ...quotationPayload, id: initialData?.id || (saved as any)?.data?.id || `qt_${Date.now()}` }
-          const updated = [itemToSave, ...(Array.isArray(currentList) ? currentList.filter(x => x.id !== itemToSave.id && x.number !== itemToSave.number) : [])]
-          await Promise.all([
-            saveModuleDataToDB("quotations", updated, companyId),
-            saveModuleDataToDB("quotations", updated, "all")
-          ])
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(new Event("storage"))
-            window.dispatchEvent(new CustomEvent("saampark_data_synced"))
-          }
-        } catch {}
-
-        onSaveSuccess?.(saved || quotationPayload)
-      } else if (mode === "estimate") {
-        const estimatePayload = {
-          id: initialData?.id || docNumber,
-          number: docNumber,
-          customer: String(clientName || selectedClient?.name || "Client"),
-          client: String(clientName || selectedClient?.name || "Client"),
-          customerEmail: clientEmail || selectedClient?.email,
-          clientEmail: clientEmail || selectedClient?.email,
-          customerPhone: clientPhone || selectedClient?.phone,
-          clientPhone: clientPhone || selectedClient?.phone,
-          customerAddress: clientAddress || selectedClient?.address,
-          clientAddress: clientAddress || selectedClient?.address,
-          clientGstin: clientGst || selectedClient?.gstNumber,
-          primaryContact: contactPersonName.trim(),
-          contactPersonName: contactPersonName.trim(),
-          clientDesignation: effectiveDesignation,
-          clientCity: clientCity || selectedClient?.city,
-          clientDistrict: clientDistrict || (selectedClient as any)?.district,
-          clientState: clientState || selectedClient?.state,
-          clientPincode: clientPincode || selectedClient?.zip,
-          category: effectiveCategory,
-          primaryCategory: effectiveCategory,
-          project: effectiveProjectName || projectTitle,
-          turnaroundTime: turnaroundTime,
-          overview: projectOverview,
-          date: issueDate,
-          validTill: dueDate,
-          notes: notes,
-          terms: terms ||  activeCompany?.terms_conditions || "1. Payment is due within statutory terms.\n2. Goods & Services once delivered are subject to project sign-off.\n3. Disputed items must be notified within 7 days.",
-          subtotal: taxableBase,
-          taxType: docScheme,
-          isNonGst: docScheme === "nongst",
-          tax: docScheme === "gst" ? calculatedGst : 0,
-          total: grandTotal,
-          totalAmount: grandTotal,
-          formattedTotal: `₹${grandTotal.toLocaleString("en-IN")}`,
-          status: initialData?.status || "Draft",
-          companyId: companyId,
-          branchId: branchId,
-          subBranchId: subBranchId,
-          services: items.map(it => ({
-            id: it.id,
-            name: it.serviceName,
-            serviceName: it.serviceName,
-            sac: it.sacCode,
-            quantity: it.qty,
-            unitPrice: it.rate,
-            rate: it.rate,
-            gstRate: docScheme === "gst" ? (it.gstRate ?? 18) : 0,
-            gstAmount: docScheme === "gst" ? Math.round((it.rate * it.qty) * ((it.gstRate ?? 18) / 100)) : 0,
-            total: it.totalAmount || (it.rate * it.qty)
-          })),
-          items: items.map(it => ({
-            id: it.id,
-            name: it.serviceName,
-            serviceName: it.serviceName,
-            sac: it.sacCode,
-            quantity: it.qty,
-            unitPrice: it.rate,
-            rate: it.rate,
-            gstRate: docScheme === "gst" ? (it.gstRate ?? 18) : 0,
-            gstAmount: docScheme === "gst" ? Math.round((it.rate * it.qty) * ((it.gstRate ?? 18) / 100)) : 0,
-            total: it.totalAmount || (it.rate * it.qty)
-          })),
-          marketingPackage: effectiveCategory === "Digital Marketing" ? marketingPackage : undefined,
-        isMarketingRetainer: effectiveCategory === "Digital Marketing",
-        marketingObjective: isMarketing ? marketingObjective : undefined,
-        marketingPlatforms: isMarketing ? marketingPlatforms : undefined,
-        marketingGeography: isMarketing ? marketingGeography : undefined,
-        creativeDriveUrl: isMarketing ? creativeDriveUrl : undefined,
-        lifecycleStage: isMarketing ? (initialData?.lifecycleStage || "Pending") : undefined,
-        }
-
-        let saved: any = null
-        try {
-          if (initialData?.id) {
-            saved = await EstimateService.update(initialData.id, estimatePayload)
-          } else {
-            saved = await EstimateService.create(estimatePayload)
-          }
-        } catch (apiErr) {
-          console.warn("EstimateService API warning:", apiErr)
-        }
-
-        // Also save to app_data / local DB fallback so it immediately appears in estimates list
-        try {
-          const { fetchModuleDataFromDB, saveModuleDataToDB } = await import("@/lib/storageSync")
-          const currentList = await fetchModuleDataFromDB<any[]>("estimates", [], companyId)
-          const itemToSave = { ...estimatePayload, id: initialData?.id || (saved as any)?.data?.id || `est_${Date.now()}` }
-          const updated = [itemToSave, ...(Array.isArray(currentList) ? currentList.filter(x => x.id !== itemToSave.id && x.number !== itemToSave.number) : [])]
-          await Promise.all([
-            saveModuleDataToDB("estimates", updated, companyId),
-            saveModuleDataToDB("estimates", updated, "all")
-          ])
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(new Event("storage"))
-            window.dispatchEvent(new CustomEvent("saampark_data_synced"))
-          }
-        } catch {}
-
-        onSaveSuccess?.(saved || estimatePayload)
-      }
-      onClose()
-    }, {
-      actionType: initialData?.id ? "update" : "create",
-      loadingTitle: `${actionLabel} Official ${docLabel}...`,
-      loadingMsg: `Compiling line items, recalculating GST/discounts, and updating CRM records for ${clientName || "Client"}...`,
-      successTitle: `${docLabel} ${initialData?.id ? "Updated" : "Created"} Successfully!`,
-      successMsg: `Official ${docLabel} #${docNumber} has been safely saved and synchronized with your workspace.`,
-      minLoadingMs: 650,
-      autoCloseMs: 2200,
-    })
-    } catch (err: any) {
-      console.error("Save Document error:", err)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  if (!isOpen) return null
-
-  const modalTitle = isMarketing 
-    ? (mode === "invoice" 
-        ? "Create Digital Marketing Retainer Invoice" 
-        : mode === "quotation" 
-        ? "Create Digital Marketing Retainer Proposal" 
-        : "Create Digital Marketing Retainer Estimate")
-    : (mode === "invoice" 
-        ? (docScheme === "gst" ? "Create Official GST Tax Invoice" : "Create Commercial Non-GST Invoice")
-        : mode === "quotation"
+  const modalTitle = isMarketing
+    ? mode === "invoice"
+      ? "Create Digital Marketing Retainer Invoice"
+      : mode === "quotation"
+        ? "Create Digital Marketing Retainer Proposal"
+        : "Create Digital Marketing Retainer Estimate"
+    : mode === "invoice"
+      ? docScheme === "gst"
+        ? "Create Official GST Tax Invoice"
+        : "Create Commercial Non-GST Invoice"
+      : mode === "quotation"
         ? "Create Commercial Project Quotation & Tender"
-        : "Create Project Cost Estimate")
+        : "Create Project Cost Estimate";
 
-  const totalSteps = isMarketing ? 3 : (mode === "estimate" ? 2 : 3)
+  const totalSteps = isMarketing ? 3 : mode === "estimate" ? 2 : 3;
 
+  __ctrlRef.current = __ctrl;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-1.5 sm:p-5 overflow-y-auto">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.96 }}
         className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden text-xs"
       >
-        {/* ── HEADER ── */}
-        <div className="flex items-center justify-between px-3.5 py-3 sm:px-6 sm:py-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0 bg-zinc-50/80 dark:bg-zinc-800/40">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className={`p-2 sm:p-2.5 rounded-xl ${isMarketing ? "bg-purple-600 text-white" : mode === "invoice" ? (docScheme === "gst" ? "bg-teal-600 text-white" : "bg-sky-600 text-white") : mode === "quotation" ? "bg-indigo-600 text-white" : "bg-amber-600 text-white"} shadow-md shrink-0`}>
-              {isMarketing ? <Sparkles size={18} /> : mode === "invoice" ? <Receipt size={18} /> : mode === "quotation" ? <FileText size={18} /> : <Calculator size={18} />}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 truncate">{modalTitle}</h2>
-                <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${
-                  isMarketing ? "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300" :
-                  mode === "quotation" ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300" :
-                  mode === "estimate" ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" :
-                  docScheme === "gst" ? "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300" : "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300"
-                }`}>
-                  {isMarketing ? "Marketing Retainer" : mode === "quotation" ? "Quotation" : mode === "estimate" ? "Estimate" : docScheme === "gst" ? "GST Invoice" : "Non-GST"}
-                </span>
-              </div>
-              <p className="text-[10px] sm:text-[11px] text-zinc-500 font-mono font-bold mt-0.5 truncate">
-                Ref: {docNumber} • {activeCompany?.brand_name || activeCompany?.name}
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Live Totals Badge */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className="hidden md:flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
-              <div>
-                <span className="text-[10px] text-zinc-400 block leading-none">Subtotal</span>
-                <span className="font-bold text-zinc-800 dark:text-zinc-200 font-mono">₹{taxableBase.toLocaleString("en-IN")}</span>
-              </div>
-              {((mode === "invoice" || isMarketing) && docScheme === "gst") && (
-                <div>
-                  <span className="text-[10px] text-zinc-400 block leading-none">GST Tax</span>
-                  <span className="font-bold text-teal-600 dark:text-teal-400 font-mono">+₹{calculatedGst.toLocaleString("en-IN")}</span>
-                </div>
-              )}
-              <div className="border-l border-zinc-200 dark:border-zinc-700 pl-3">
-                <span className="text-[10px] text-zinc-400 block leading-none font-bold">
-                  {mode === "quotation" ? "Value" : "Total"}
-                </span>
-                <span className="font-black text-emerald-600 dark:text-emerald-400 font-mono text-sm">₹{grandTotal.toLocaleString("en-IN")}</span>
-              </div>
-            </div>
-
-            <button 
-              type="button" 
-              onClick={onClose} 
-              className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* ── CLEAN TAB BAR TAILORED BY DOCUMENT TYPE (Fully Mobile Scrollable) ── */}
-        <div className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 text-center font-bold shrink-0 overflow-x-auto">
-          {isMarketing ? (
-            <div className="flex sm:grid sm:grid-cols-3 min-w-full">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(1)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 1 ? "border-purple-600 text-purple-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                1. 🎯 Marketing Client &amp; Focus
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 2 ? "border-purple-600 text-purple-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                2. 📱 Retainer Deliverables Quota
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(3)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 3 ? "border-purple-600 text-purple-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                3. 💳 Pricing &amp; Commercial SLAs
-              </button>
-            </div>
-          ) : mode === "quotation" ? (
-            <div className="flex sm:grid sm:grid-cols-3 min-w-full">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(1)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 1 ? "border-indigo-600 text-indigo-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                1. Project &amp; Client Overview
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 2 ? "border-indigo-600 text-indigo-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                2. Scope &amp; Deliverables
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(3)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 3 ? "border-indigo-600 text-indigo-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                3. Commercial Value &amp; Milestones
-              </button>
-            </div>
-          ) : mode === "estimate" ? (
-            <div className="flex sm:grid sm:grid-cols-2 min-w-full">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(1)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 1 ? "border-amber-600 text-amber-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                1. Estimate &amp; Client Details
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 2 ? "border-amber-600 text-amber-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                2. Estimated Services &amp; Notes
-              </button>
-            </div>
-          ) : (
-            <div className="flex sm:grid sm:grid-cols-3 min-w-full">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(1)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 1 ? "border-teal-600 text-teal-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                1. Entity &amp; Scheme
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 2 ? "border-teal-600 text-teal-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                2. Client &amp; Reference
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(3)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 3 ? "border-teal-600 text-teal-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                3. Items &amp; Settlement
-              </button>
-            </div>
-          )}
-        </div>
+        <DocumentStudioModalSection2 ctrl={__ctrl} />
 
         {/* ── MODAL BODY ── */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-
           {/* Centralized Inheritance Notice Bar across all modes */}
           <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl flex items-center justify-between text-xs text-blue-800 dark:text-blue-300">
             <div className="flex items-center gap-2">
               <Landmark size={15} className="text-blue-600 shrink-0" />
               <span>
-                Issuing under <strong>{activeCompany?.brand_name || activeCompany?.name}</strong>. Banking, UPI QR, Signatory &amp; Seal are automatically inherited.
+                Issuing under{" "}
+                <strong>
+                  {activeCompany?.brand_name || activeCompany?.name}
+                </strong>
+                . Banking, UPI QR, Signatory &amp; Seal are automatically
+                inherited.
               </span>
             </div>
             <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400">
-              Signatory: {activeCompany?.signatory_name || "Authorized Signatory"}
+              Signatory:{" "}
+              {activeCompany?.signatory_name || "Authorized Signatory"}
             </span>
           </div>
 
           {/* ════════════════════════════════════════════════════════════════
               DIGITAL MARKETING STUDIO (DEDICATED 3-STEP SEPARATED INTERFACE)
              ════════════════════════════════════════════════════════════════ */}
-          {isMarketing ? (
-            <>
-              {/* Marketing Step 1: 🎯 Client & Campaign Focus */}
-              {currentStep === 1 && (
-                <div className="space-y-5">
-                  {/* Issuing Entity & Scheme */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Issuing Corporate Entity &amp; Taxation Mode
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Issuing Company *</label>
-                        <select
-                          value={companyId}
-                          onChange={e => setCompanyId(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                        >
-                          {selectableCompanies.map(c => (
-                            <option key={c.id || c.slug} value={c.id || c.slug}>
-                              {c.brand_name || c.name} ({c.slug === "consultancy" || c.id === "2" ? "Digital Marketing Entity" : "IT / Tech Entity"})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Operating Branch</label>
-                        <select
-                          value={branchId}
-                          onChange={e => setBranchId(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                        >
-                          <option value="">Default Head Office / Main Branch</option>
-                          {companyBranches.map(b => (
-                            <option key={b.id} value={b.id}>{b.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Tax Scheme */}
-                    <div className="pt-2">
-                      <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-1.5">Tax Scheme *</label>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => handleSchemeChange("gst")}
-                          className={`p-2.5 rounded-xl border-2 text-left cursor-pointer transition-all flex items-center gap-2.5 ${
-                            docScheme === "gst" 
-                              ? "border-purple-600 bg-purple-50/50 dark:bg-purple-950/30 font-bold text-purple-950 dark:text-purple-200" 
-                              : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
-                          }`}
-                        >
-                          <Building2 size={15} className={docScheme === "gst" ? "text-purple-600" : "text-zinc-400"} />
-                          <div>
-                            <div className="text-xs">GST Tax Mode (18% Statutory)</div>
-                            <div className="text-[9.5px] opacity-75 font-normal">HSN/SAC 998311 • CGST/SGST Breakdown</div>
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSchemeChange("nongst")}
-                          className={`p-2.5 rounded-xl border-2 text-left cursor-pointer transition-all flex items-center gap-2.5 ${
-                            docScheme === "nongst" 
-                              ? "border-purple-600 bg-purple-50/50 dark:bg-purple-950/30 font-bold text-purple-950 dark:text-purple-200" 
-                              : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
-                          }`}
-                        >
-                          <Calculator size={15} className={docScheme === "nongst" ? "text-purple-600" : "text-zinc-400"} />
-                          <div>
-                            <div className="text-xs">Commercial Non-GST Mode (0% Tax)</div>
-                            <div className="text-[9.5px] opacity-75 font-normal">Direct Net Retainer Billing</div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Client & Brand Selection */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                        <UserCheck size={15} className="text-purple-600" />
-                        <span>Client / Brand Organization</span>
-                      </span>
-                      <div className="flex gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setClientMode("select")}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                            clientMode === "select" ? "bg-purple-600 text-white" : "bg-white dark:bg-zinc-800 text-zinc-600 border border-zinc-200 dark:border-zinc-700"
-                          }`}
-                        >
-                          Select Existing Client
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setClientMode("custom")
-                            setSelectedClient(null)
-                          }}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                            clientMode === "custom" ? "bg-purple-600 text-white" : "bg-white dark:bg-zinc-800 text-zinc-600 border border-zinc-200 dark:border-zinc-700"
-                          }`}
-                        >
-                          + Custom Brand
-                        </button>
-                      </div>
-                    </div>
-
-                    {clientMode === "select" && (
-                      <div className="relative">
-                        <div
-                          onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between cursor-pointer hover:border-purple-500"
-                        >
-                          <span className="font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                            {selectedClient ? `${selectedClient.name} (${selectedClient.email || selectedClient.phone || 'No contact'})` : "Click to select a client..."}
-                          </span>
-                          <ChevronDown size={16} className="text-zinc-400 shrink-0" />
-                        </div>
-
-                        {isClientSearchOpen && (
-                          <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden p-2 space-y-2">
-                            <input
-                              type="text"
-                              placeholder="Search client..."
-                              value={clientSearchQuery}
-                              onChange={(e) => setClientSearchQuery(e.target.value)}
-                              className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs"
-                              autoFocus
-                            />
-                            <div className="max-h-52 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
-                              {allClients
-                                .filter(c => !clientSearchQuery || String(c.name || "").toLowerCase().includes(clientSearchQuery.toLowerCase()))
-                                .map(c => (
-                                  <div
-                                    key={c.id}
-                                    onClick={() => handleSelectClient(c)}
-                                    className="p-2.5 hover:bg-purple-50 dark:hover:bg-purple-950/30 cursor-pointer rounded-lg flex items-center justify-between"
-                                  >
-                                    <div>
-                                      <div className="font-bold text-zinc-900 dark:text-zinc-100">{c.name}</div>
-                                      <div className="text-[10.5px] text-zinc-400">{c.email || c.phone || "No contact"}</div>
-                                    </div>
-                                    <span className="text-[10.5px] text-purple-600 font-bold">Select</span>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Brand / Company Name *</label>
-                        <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g. Apex Health Clinic" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Contact Person *</label>
-                        <Input value={contactPersonName} onChange={e => setContactPersonName(e.target.value)} placeholder="e.g. Rahul Sen" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Designation</label>
-                        <select
-                          value={clientDesignation}
-                          onChange={e => setClientDesignation(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                        >
-                          <option value="Proprietor">Proprietor</option>
-                          <option value="Founder">Founder</option>
-                          <option value="Managing Director">Managing Director</option>
-                          <option value="Marketing Head">Marketing Head</option>
-                          <option value="CEO">CEO</option>
-                          <option value="Manager">Manager</option>
-                          <option value="Partner">Partner</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">WhatsApp / Phone *</label>
-                        <Input value={clientPhone} onChange={e => setClientPhone(e.target.value)} placeholder="+91 98765 43210" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Official Email</label>
-                        <Input type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)} placeholder="marketing@apexhealth.in" />
-                      </div>
-                      {docScheme !== "nongst" && (
-                        <div>
-                          <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Client GSTIN (Optional)</label>
-                          <Input value={clientGst} onChange={e => setClientGst(e.target.value.toUpperCase())} placeholder="19AAAAA0000A1Z5" className="font-mono uppercase" />
-                        </div>
-                      )}
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Office / Brand Address</label>
-                        <Input value={clientAddress} onChange={e => setClientAddress(e.target.value)} placeholder="Suite 401, Park Street, Kolkata" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Pincode (Auto-lookup)</label>
-                        <Input value={clientPincode} onChange={e => handlePincodeChange(e.target.value)} placeholder="700016" maxLength={6} className="font-mono" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Reference & Campaign Objectives */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Campaign Focus, Active Channels &amp; Geography
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Document Number *</label>
-                        <Input value={docNumber} onChange={e => setDocNumber(e.target.value)} className="font-mono font-bold" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Billing / Start Date *</label>
-                        <Input type="date" value={issueDate} onChange={e => setIssueDate(e.target.value)} />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Due / Renewal Date</label>
-                        <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
-                      </div>
-
-                      {/* Primary Campaign Objective */}
-                      <div className="sm:col-span-3">
-                        <label className="block text-[10.5px] font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                          🎯 Primary Campaign Objective *
-                        </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                          {[
-                            { id: "Brand Awareness & Viral Social Reach", label: "🚀 Brand Awareness", desc: "Maximize reach & viral engagement" },
-                            { id: "High-Intent Lead Generation & Enquiries", label: "🎯 Lead Generation", desc: "Forms, WhatsApp calls & direct inbound" },
-                            { id: "E-Commerce ROAS & Conversion Sales", label: "🛒 E-Commerce & ROAS", desc: "Catalog sales, pixel tracking & orders" },
-                            { id: "Local Store Footfall & Regional Growth", label: "📍 Local Footfall", desc: "Google My Business & hyper-local radius" },
-                          ].map(obj => (
-                            <button
-                              key={obj.id}
-                              type="button"
-                              onClick={() => setMarketingObjective(obj.id)}
-                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                                marketingObjective === obj.id
-                                  ? "border-purple-600 bg-purple-50 dark:bg-purple-950/60 text-purple-900 dark:text-purple-200 ring-1 ring-purple-500 shadow-2xs"
-                                  : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
-                              }`}
-                            >
-                              <div className="font-bold text-xs">{obj.label}</div>
-                              <div className="text-[10px] text-zinc-500 mt-0.5">{obj.desc}</div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Active Channels */}
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10.5px] font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                          📢 Active Marketing Channels *
-                        </label>
-                        <div className="grid grid-cols-3 gap-2">
-                          {[
-                            "Instagram",
-                            "Facebook",
-                            "Meta Ads Manager",
-                            "Google Ads & Search",
-                            "YouTube Shorts & Videos",
-                            "LinkedIn B2B"
-                          ].map(platform => {
-                            const active = marketingPlatforms.includes(platform)
-                            return (
-                              <button
-                                key={platform}
-                                type="button"
-                                onClick={() => {
-                                  if (active) {
-                                    if (marketingPlatforms.length > 1) {
-                                      setMarketingPlatforms(marketingPlatforms.filter(p => p !== platform))
-                                    }
-                                  } else {
-                                    setMarketingPlatforms([...marketingPlatforms, platform])
-                                  }
-                                }}
-                                className={`px-2.5 py-1.5 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer ${
-                                  active
-                                    ? "border-purple-600 bg-purple-100/70 dark:bg-purple-900/50 text-purple-900 dark:text-purple-100"
-                                    : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-                                }`}
-                              >
-                                {active ? "✓ " : "+ "}{platform}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Target Geography */}
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Target Geography / Radius</label>
-                        <Input
-                          value={marketingGeography}
-                          onChange={e => setMarketingGeography(e.target.value)}
-                          placeholder="e.g. Kolkata, West Bengal & Eastern India"
-                          className="font-semibold text-xs"
-                        />
-                      </div>
-
-                      {/* Live Drive / Meta Link */}
-                      <div className="sm:col-span-3">
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-1 flex items-center justify-between">
-                          <span>🔗 Live Creative Assets Drive / Meta URL</span>
-                          <span className="text-[9.5px] text-purple-600 font-bold">Google Drive, Meta Business Suite, or Figma link for client live view</span>
-                        </label>
-                        <Input
-                          value={creativeDriveUrl}
-                          onChange={e => setCreativeDriveUrl(e.target.value)}
-                          placeholder="https://drive.google.com/drive/folders/... or https://business.facebook.com/..."
-                          className="font-mono text-xs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Marketing Step 2: 📱 Retainer Deliverables Quota */}
-              {currentStep === 2 && (
-                <div className="space-y-4">
-                  <DigitalMarketingPackageBuilder
-                    value={marketingPackage}
-                    onChange={(pkg) => {
-                      setMarketingPackage(pkg)
-                      if (pkg.packagePrice) {
-                        handleUpdateItem(items[0]?.id || "item_1", "rate", pkg.packagePrice)
-                      }
-                    }}
-                    clientName={clientName}
-                    clientPhone={clientPhone}
-                    clientAddress={clientAddress}
-                  />
-                </div>
-              )}
-
-              {/* Marketing Step 3: 💳 Pricing, Commercial SLAs & Settlement */}
-              {currentStep === 3 && (
-                <div className="space-y-5">
-                  {/* Retainer Commercials */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Retainer Monthly Fee &amp; Duration Calculation Zone
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Monthly Retainer Fee (₹) *</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={items[0]?.rate ?? marketingPackage.packagePrice ?? 12000}
-                          onChange={e => {
-                            const val = e.target.value === "" ? 0 : Number(e.target.value)
-                            handleUpdateItem(items[0]?.id || "item_1", "rate", val)
-                            setMarketingPackage(prev => ({ ...prev, packagePrice: val }))
-                          }}
-                          className="font-bold font-mono text-purple-600 text-sm"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Campaign Duration</label>
-                        <select
-                          value={subscriptionDurationMonths}
-                          onChange={e => setSubscriptionDurationMonths(Number(e.target.value))}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                        >
-                          <option value="1">1 Month (Trial / One-off)</option>
-                          <option value="3">3 Months (Quarterly Retainer)</option>
-                          <option value="6">6 Months (Half-Yearly Retainer)</option>
-                          <option value="12">12 Months (Annual Growth Retainer)</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Setup / Onboarding Fee (₹)</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={setupCharge === 0 ? "" : setupCharge}
-                          onChange={e => setSetupCharge(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                          placeholder="e.g. 2000"
-                          className="font-mono font-bold"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
-                            Commercial Discount {discountType === "percentage" ? "(%)" : "(₹)"}
-                          </label>
-                          <div className="flex items-center p-0.5 rounded-lg bg-zinc-200/70 dark:bg-zinc-800 text-[10px] font-bold">
-                            <button
-                              type="button"
-                              onClick={() => handleDiscountTypeChange("fixed")}
-                              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                                discountType === "fixed"
-                                  ? "bg-white dark:bg-zinc-900 text-purple-600 dark:text-purple-400 shadow-xs"
-                                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                              }`}
-                            >
-                              ₹ Amount
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDiscountTypeChange("percentage")}
-                              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                                discountType === "percentage"
-                                  ? "bg-white dark:bg-zinc-900 text-purple-600 dark:text-purple-400 shadow-xs"
-                                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                              }`}
-                            >
-                              % Percent
-                            </button>
-                          </div>
-                        </div>
-                        <Input
-                          type="number"
-                          min="0"
-                          max={discountType === "percentage" ? 100 : undefined}
-                          value={discountValue === 0 ? "" : discountValue}
-                          onChange={e => {
-                            const val = e.target.value === "" ? "" : Math.max(0, Number(e.target.value))
-                            if (typeof val === "number" && discountType === "percentage" && val > 100) {
-                              setDiscountValue(100)
-                            } else {
-                              setDiscountValue(val)
-                            }
-                          }}
-                          placeholder={discountType === "percentage" ? "e.g. 10 (%)" : "e.g. 1000 (₹)"}
-                          className="font-mono font-bold text-rose-600"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Financial Summary */}
-                    <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 space-y-2 mt-2">
-                      <div className="flex items-center justify-between text-zinc-600 text-xs">
-                        <span>Monthly Retainer Base:</span>
-                        <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">₹{calculatedSubtotal.toLocaleString("en-IN")}</span>
-                      </div>
-                      {calculatedDiscount > 0 && (
-                        <div className="flex items-center justify-between text-rose-600 text-xs">
-                          <span>Less Discount:</span>
-                          <span className="font-mono font-bold">-₹{calculatedDiscount.toLocaleString("en-IN")}</span>
-                        </div>
-                      )}
-                      {numSetupCharge > 0 && (
-                        <div className="flex items-center justify-between text-zinc-600 text-xs">
-                          <span>Add Onboarding / Setup:</span>
-                          <span className="font-mono font-bold">+₹{numSetupCharge.toLocaleString("en-IN")}</span>
-                        </div>
-                      )}
-                      {docScheme === "gst" && (
-                        <div className="flex items-center justify-between text-purple-600 text-xs font-semibold">
-                          <span>Statutory GST (18% SAC 998311):</span>
-                          <span className="font-mono font-bold">+₹{calculatedGst.toLocaleString("en-IN")}</span>
-                        </div>
-                      )}
-                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-2 flex items-center justify-between text-sm">
-                        <span className="font-black text-zinc-900 dark:text-zinc-100">Monthly Net Payable:</span>
-                        <span className="font-black font-mono text-purple-600 dark:text-purple-400 text-base">₹{netPayable.toLocaleString("en-IN")}</span>
-                      </div>
-                      <div className="text-[10px] text-zinc-400 font-medium italic">
-                        Amount in words: {numberToIndianWords(netPayable)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Payment Settlement Structure */}
-                  <div className="p-4 rounded-2xl border border-purple-200 dark:border-purple-800/80 bg-purple-50/20 dark:bg-purple-950/20 space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200/60 dark:border-purple-800/60 pb-2">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200 text-xs flex items-center gap-1.5">
-                        <Calculator size={15} className="text-purple-600" />
-                        <span>Payment Settlement &amp; Billing Structure (Interactive Marketing Payment Plan)</span>
-                      </span>
-
-                      {/* 1. Full, 2. Part (EMI), 3. Advance, 4. Subscription */}
-                      <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700 flex-wrap">
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("full")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "full" ? "bg-purple-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          1. 💳 Full
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("part")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "part" ? "bg-purple-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          2. 🔄 Part (EMI)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("advance")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "advance" ? "bg-purple-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          3. 🪙 Advance
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("subscription")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "subscription" ? "bg-purple-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          4. 🗓️ Subscription
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Payment Mode Selector: Online vs Cash */}
-                    <div className="p-3 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-700 flex items-center justify-between gap-3">
-                      <div>
-                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Payment Mode</span>
-                        <span className="text-[10.5px] text-muted-foreground">Select whether payment is received Online or in Cash</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 bg-zinc-200/70 dark:bg-zinc-900/80 p-1 rounded-xl">
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod("Online")}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentMethod === "Online" ? "bg-teal-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          💳 Online (Bank / UPI)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod("Cash")}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentMethod === "Cash" ? "bg-emerald-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          💵 Cash
-                        </button>
-                      </div>
-                    </div>
-
-                    {paymentPlan === "full" && (
-                      <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-purple-200 dark:border-purple-800 text-xs flex items-center justify-between">
-                        <span className="text-zinc-600 dark:text-zinc-400">
-                          100% Upfront Package Settlement. Full invoice balance settled upon kickoff.
-                        </span>
-                        <span className="font-mono font-bold text-purple-600">Total: ₹{grandTotal.toLocaleString("en-IN")}</span>
-                      </div>
-                    )}
-
-                    {paymentPlan === "part" && (
-                      <div className="p-3.5 bg-purple-50/60 dark:bg-purple-950/30 rounded-xl border border-purple-200 dark:border-purple-800/80 space-y-3 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-purple-950 dark:text-purple-200 flex items-center gap-1.5 text-xs">
-                            <span>🔄 Part Payment / Monthly EMI Installment Structure</span>
-                          </span>
-                          <span className="text-[10.5px] text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-900/50 px-2 py-0.5 rounded-full font-bold">
-                            Advance Minus Option
-                          </span>
-                        </div>
-
-                        {/* Advance Down Payment Input */}
-                        <div className="space-y-1.5 bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-purple-100 dark:border-purple-900/50">
-                          <div className="flex items-center justify-between">
-                            <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
-                              Advance Kickoff Down Payment (Paid Upfront)
-                            </label>
-                            <div className="flex gap-1">
-                              {[0, 0.20, 0.30, 0.50].map(pct => (
-                                <button
-                                  key={pct}
-                                  type="button"
-                                  onClick={() => setEmiAdvanceAmount(pct === 0 ? 0 : Math.round(netPayable * pct))}
-                                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                                    (pct === 0 && (emiAdvanceAmount === 0 || emiAdvanceAmount === "")) ||
-                                    (pct > 0 && emiAdvanceAmount === Math.round(netPayable * pct))
-                                      ? "bg-purple-600 text-white"
-                                      : "bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 hover:bg-purple-100"
-                                  }`}
-                                >
-                                  {pct === 0 ? "0% (No Adv)" : `${pct * 100}%`}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">₹</span>
-                            <Input
-                              type="number"
-                              min="0"
-                              max={netPayable}
-                              value={emiAdvanceAmount === 0 ? "" : emiAdvanceAmount}
-                              onChange={e => setEmiAdvanceAmount(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                              placeholder="Enter upfront advance amount..."
-                              className="font-mono font-bold pl-7 h-8 text-xs"
-                            />
-                          </div>
-                        </div>
-
-                        {/* EMI Tenure Months */}
-                        <div className="space-y-1.5 bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-purple-100 dark:border-purple-900/50">
-                          <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 block">
-                            Retainer Tenure / Installments Count
-                          </label>
-                          <div className="flex gap-1.5 flex-wrap">
-                            {[2, 3, 4, 6, 9, 12].map(m => (
-                              <button
-                                key={m}
-                                type="button"
-                                onClick={() => {
-                                  setIsCustomEmi(false)
-                                  setEmiTenureMonths(m)
-                                }}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                  !isCustomEmi && emiTenureMonths === m
-                                    ? "bg-purple-600 text-white shadow-2xs"
-                                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200"
-                                }`}
-                              >
-                                {m} Months
-                              </button>
-                            ))}
-                            <button
-                              type="button"
-                              onClick={() => setIsCustomEmi(true)}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                isCustomEmi ? "bg-purple-600 text-white shadow-2xs" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200"
-                              }`}
-                            >
-                              Custom
-                            </button>
-                          </div>
-                          {isCustomEmi && (
-                            <div className="pt-1.5 flex items-center gap-2">
-                              <span className="text-zinc-500 text-[11px]">Duration:</span>
-                              <input
-                                type="number"
-                                min="1"
-                                max="60"
-                                value={emiTenureMonths}
-                                onChange={e => setEmiTenureMonths(Math.max(1, Number(e.target.value) || 1))}
-                                className="w-20 px-2 py-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-xs font-bold font-mono"
-                              />
-                              <span className="text-zinc-500 text-[11px]">Months</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Calculated Breakdown Card */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 bg-purple-100/60 dark:bg-purple-900/40 rounded-lg text-[11px]">
-                          <div>
-                            <span className="text-purple-900 dark:text-purple-300 font-semibold block">Kickoff Advance:</span>
-                            <span className="font-mono font-bold text-purple-700 dark:text-purple-200 text-xs">
-                              ₹{effectiveEmiAdvance.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-purple-900 dark:text-purple-300 font-semibold block">Balance to Split:</span>
-                            <span className="font-mono font-bold text-purple-700 dark:text-purple-200 text-xs">
-                              ₹{emiRemainingBalance.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-purple-900 dark:text-purple-300 font-semibold block">Monthly EMI:</span>
-                            <span className="font-mono font-black text-purple-700 dark:text-purple-200 text-xs">
-                              ₹{emiMonthlyAmount.toLocaleString("en-IN")} / mo
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {paymentPlan === "advance" && (
-                      <div className="p-3.5 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/80 space-y-3 text-xs">
-                        <span className="font-bold text-amber-950 dark:text-amber-200 block text-xs">
-                          🪙 Advance Payment Structure (Kickoff Advance + Balance Due on Delivery)
-                        </span>
-
-                        <div className="space-y-1.5 bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-amber-100 dark:border-amber-900/50">
-                          <div className="flex items-center justify-between">
-                            <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
-                              Advance Down Payment Amount
-                            </label>
-                            <div className="flex gap-1">
-                              {[0.25, 0.30, 0.50, 0.75].map(pct => (
-                                <button
-                                  key={pct}
-                                  type="button"
-                                  onClick={() => setAdvanceAmount(Math.round(netPayable * pct))}
-                                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                                    advanceAmount === Math.round(netPayable * pct)
-                                      ? "bg-amber-600 text-white"
-                                      : "bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 hover:bg-amber-100"
-                                  }`}
-                                >
-                                  {pct * 100}%
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">₹</span>
-                            <Input
-                              type="number"
-                              min="0"
-                              max={netPayable}
-                              value={advanceAmount === 0 ? "" : advanceAmount}
-                              onChange={e => setAdvanceAmount(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                              placeholder="Enter advance amount..."
-                              className="font-mono font-bold pl-7 h-8 text-xs"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 p-2.5 bg-amber-100/60 dark:bg-amber-900/40 rounded-lg text-[11px]">
-                          <div>
-                            <span className="text-amber-900 dark:text-amber-300 font-semibold block">Kickoff Advance:</span>
-                            <span className="font-mono font-bold text-amber-700 dark:text-amber-200 text-xs">
-                              ₹{(Number(advanceAmount) || 0).toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-amber-900 dark:text-amber-300 font-semibold block">Remaining Balance:</span>
-                            <span className="font-mono font-bold text-amber-700 dark:text-amber-200 text-xs">
-                              ₹{Math.max(0, netPayable - (Number(advanceAmount) || 0)).toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {paymentPlan === "subscription" && (
-                      <div className="p-3.5 bg-purple-50/60 dark:bg-purple-950/30 rounded-xl border border-purple-200 dark:border-purple-800/80 space-y-3 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-purple-950 dark:text-purple-200 flex items-center gap-1.5 text-xs">
-                            <span>🗓️ Recurring Subscription / Retainer Contract</span>
-                          </span>
-                          <span className="text-[10.5px] text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-900/50 px-2 py-0.5 rounded-full font-bold">
-                            Auto Billing Schedule
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-purple-100 dark:border-purple-900/50">
-                          <div>
-                            <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 block mb-1">
-                              Billing Cadence Cycle
-                            </label>
-                            <select
-                              value={subscriptionCycle}
-                              onChange={e => setSubscriptionCycle(e.target.value as any)}
-                              className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-xs font-semibold"
-                            >
-                              <option value="Monthly">Monthly Retainer</option>
-                              <option value="Weekly">Weekly Sprint</option>
-                              <option value="Quarterly">Quarterly Retainer</option>
-                              <option value="Yearly">Annual Retainer</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 block mb-1">
-                              Contract Duration (Months)
-                            </label>
-                            <select
-                              value={subscriptionDurationMonths}
-                              onChange={e => setSubscriptionDurationMonths(Number(e.target.value))}
-                              className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-xs font-semibold"
-                            >
-                              <option value="1">1 Month</option>
-                              <option value="3">3 Months (Standard)</option>
-                              <option value="6">6 Months</option>
-                              <option value="12">12 Months (1 Year)</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 bg-purple-100/60 dark:bg-purple-900/40 rounded-lg text-[11px]">
-                          <div>
-                            <span className="text-purple-900 dark:text-purple-300 font-semibold block">Cycle Rate:</span>
-                            <span className="font-mono font-bold text-purple-700 dark:text-purple-200 text-xs">
-                              ₹{(activeSubRate || grandTotal).toLocaleString("en-IN")} / {subscriptionCycle.toLowerCase()}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-purple-900 dark:text-purple-300 font-semibold block">Total Contract:</span>
-                            <span className="font-mono font-bold text-purple-700 dark:text-purple-200 text-xs">
-                              ₹{subContractTotal.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-purple-900 dark:text-purple-300 font-semibold block">Next Bill Date:</span>
-                            <span className="font-mono font-bold text-purple-700 dark:text-purple-200 text-xs">
-                              {subNextBillingDate}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* SLAs & Retainer Terms */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Digital Marketing SLAs &amp; Service Deliverable Commitments
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                      <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700">
-                        <div className="font-bold text-purple-600">⏱️ Review Turnaround SLA</div>
-                        <p className="text-[11px] text-zinc-500 mt-1">Client approval window: 24-48 hours. Edits processed within 1 business day.</p>
-                      </div>
-                      <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700">
-                        <div className="font-bold text-purple-600">📊 Weekly Cadence &amp; Insights</div>
-                        <p className="text-[11px] text-zinc-500 mt-1">Weekly WhatsApp reach report &amp; comprehensive monthly performance audit.</p>
-                      </div>
-                      <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700">
-                        <div className="font-bold text-purple-600">🎯 Meta / Google Ad Spends</div>
-                        <p className="text-[11px] text-zinc-500 mt-1">Ad budget paid directly into Meta/Google ad account or reimbursed at cost.</p>
-                      </div>
-                    </div>
-
-                    <div className="pt-2">
-                      <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Retainer Terms &amp; Scope Notes</label>
-                      <textarea
-                        rows={3}
-                        value={terms}
-                        onChange={e => setTerms(e.target.value)}
-                        className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs resize-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-          {/* ════════════════════════════════════════════════════════════════
-              MODE: QUOTATION (COMMERCIAL PROJECT PROPOSAL)
-             ════════════════════════════════════════════════════════════════ */}
-          {mode === "quotation" && (
-            <>
-              {/* Step 1: Project & Client Overview */}
-              {currentStep === 1 && (
-                <div className="space-y-5">
-                  {/* Link Against Existing Project or Invoice */}
-                  <div className="p-3.5 rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-950/20 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-indigo-950 dark:text-indigo-200 block">
-                        Proposal Association (Search &amp; Auto-Fill from Project or Invoice)
-                      </span>
-                      <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">
-                        Selecting auto-populates client, services, and technical deliverables
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
-                            Search &amp; Link Existing Project
-                          </label>
-                          {selectedLinkedProject && (
-                            <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">✓ Auto-filled</span>
-                          )}
-                        </div>
-                        <div className="space-y-1.5">
-                          <input
-                            type="text"
-                            placeholder="🔍 Search projects by title or client..."
-                            value={projectFilterQuery}
-                            onChange={e => setProjectFilterQuery(e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs"
-                          />
-                          <select
-                            value={selectedLinkedProject}
-                            onChange={e => {
-                              const val = e.target.value
-                              setSelectedLinkedProject(val)
-                              if (!val) return
-                              const p = availableProjects.find(pr => String(pr.id) === val || pr.name === val)
-                              if (p) {
-                                if (p.name) setProjectTitle(p.name)
-                                if (p.category) setPrimaryCategory(p.category)
-                                if (p.overview || p.description) setProjectOverview(p.overview || p.description)
-                                if (p.timeline) setProjectTimeline(p.timeline)
-                                if (p.turnaroundTime) setTurnaroundTime(p.turnaroundTime)
-
-                                const matchedClient = (allClients || []).find((c: any) => 
-                                  (p.clientId && String(c.id) === String(p.clientId)) ||
-                                  (p.clientName && String(c.name || "").toLowerCase().trim() === String(p.clientName).toLowerCase().trim())
-                                )
-                                if (matchedClient) {
-                                  setSelectedClient(matchedClient)
-                                  setClientName(matchedClient.name || "")
-                                  setClientEmail(matchedClient.email || "")
-                                  setClientPhone(matchedClient.phone || "")
-                                  setClientAddress(matchedClient.address || "")
-                                  setClientCity(matchedClient.city || "")
-                                  setClientState(matchedClient.state || "")
-                                  setClientDistrict(matchedClient.district || "")
-                                  setClientPincode(matchedClient.zip || "")
-                                  setClientGst(matchedClient.gstNumber || "")
-                                  setContactPersonName(matchedClient.primaryContact || matchedClient.contactPerson || "")
-                                  setClientDesignation(matchedClient.designation || "Proprietor")
-                                } else if (p.clientName) {
-                                  setClientName(p.clientName)
-                                  if (p.clientEmail) setClientEmail(p.clientEmail)
-                                  if (p.clientPhone) setClientPhone(p.clientPhone)
-                                  if (p.clientAddress) setClientAddress(p.clientAddress)
-                                  if (p.clientCity) setClientCity(p.clientCity)
-                                  if (p.clientState) setClientState(p.clientState)
-                                  if (p.clientGst) setClientGst(p.clientGst)
-                                }
-
-                                if (Array.isArray(p.deliverables) && p.deliverables.length > 0) {
-                                  setDeliverables(p.deliverables)
-                                }
-                                if (Array.isArray(p.services) && p.services.length > 0) {
-                                  setItems(p.services.map((s: any, idx: number) => ({
-                                    id: s.id || `item_${idx + 1}`,
-                                    serviceName: s.name || s.serviceName || `Service ${idx + 1}`,
-                                    description: s.description || "",
-                                    sacCode: s.sac || s.sacCode || "998311",
-                                    qty: Number(s.quantity || s.qty || 1),
-                                    rate: Number(s.unitPrice || s.rate || 0),
-                                    gstRate: docScheme === "gst" ? 18 : 0,
-                                    totalAmount: Number(s.total || ((s.unitPrice || s.rate || 0) * (s.quantity || s.qty || 1)))
-                                  })))
-                                } else if (Array.isArray(p.items) && p.items.length > 0) {
-                                  setItems(p.items.map((it: any, idx: number) => ({
-                                    id: it.id || `item_${idx + 1}`,
-                                    serviceName: it.serviceName || it.name || `Service ${idx + 1}`,
-                                    description: it.description || "",
-                                    sacCode: it.sacCode || it.sac || "998311",
-                                    qty: Number(it.qty || it.quantity || 1),
-                                    rate: Number(it.rate || it.unitPrice || 0),
-                                    gstRate: docScheme === "gst" ? 18 : 0,
-                                    totalAmount: Number(it.totalAmount || it.total || ((it.rate || it.unitPrice || 0) * (it.qty || it.quantity || 1)))
-                                  })))
-                                }
-                              }
-                            }}
-                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold"
-                          >
-                            <option value="">-- No Project (New Commercial Opportunity) --</option>
-                            {filteredProjects.map(p => (
-                              <option key={p.id} value={p.id}>{p.name} {p.clientName ? `(${p.clientName})` : ""}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
-                            Search &amp; Link Existing Invoice
-                          </label>
-                          {selectedLinkedInvoice && (
-                            <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">✓ Auto-filled</span>
-                          )}
-                        </div>
-                        <div className="space-y-1.5">
-                          <input
-                            type="text"
-                            placeholder="🔍 Search invoices by number or client..."
-                            value={invoiceFilterQuery}
-                            onChange={e => setInvoiceFilterQuery(e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs"
-                          />
-                          <select
-                            value={selectedLinkedInvoice}
-                            onChange={e => {
-                              const val = e.target.value
-                              setSelectedLinkedInvoice(val)
-                              if (!val) return
-                              const inv = availableInvoices.find(i => String(i.id) === val || i.invoiceNumber === val)
-                              if (inv) {
-                                if (inv.project) setProjectTitle(inv.project)
-                                else if (inv.projectName) setProjectTitle(inv.projectName)
-                                if (inv.category) setPrimaryCategory(inv.category)
-                                if (inv.isNonGst || inv.taxType === "nongst") handleSchemeChange("nongst")
-                                else if (inv.taxType === "gst") handleSchemeChange("gst")
-
-                                const matchedClient = (allClients || []).find((c: any) => 
-                                  (inv.clientId && String(c.id) === String(inv.clientId)) ||
-                                  (inv.client && String(c.name || "").toLowerCase().trim() === String(inv.client).toLowerCase().trim()) ||
-                                  (inv.clientName && String(c.name || "").toLowerCase().trim() === String(inv.clientName).toLowerCase().trim())
-                                )
-                                if (matchedClient) {
-                                  setSelectedClient(matchedClient)
-                                  setClientName(matchedClient.name || "")
-                                  setClientEmail(matchedClient.email || "")
-                                  setClientPhone(matchedClient.phone || "")
-                                  setClientAddress(matchedClient.address || "")
-                                  setClientCity(matchedClient.city || "")
-                                  setClientState(matchedClient.state || "")
-                                  setClientDistrict(matchedClient.district || "")
-                                  setClientPincode(matchedClient.zip || "")
-                                  setClientGst(matchedClient.gstNumber || "")
-                                  setContactPersonName(matchedClient.primaryContact || matchedClient.contactPerson || "")
-                                  setClientDesignation(matchedClient.designation || "Proprietor")
-                                } else {
-                                  if (inv.client || inv.clientName) setClientName(inv.client || inv.clientName)
-                                  if (inv.clientEmail || inv.customerEmail) setClientEmail(inv.clientEmail || inv.customerEmail)
-                                  if (inv.clientPhone || inv.customerPhone) setClientPhone(inv.clientPhone || inv.customerPhone)
-                                  if (inv.clientAddress || inv.customerAddress) setClientAddress(inv.clientAddress || inv.customerAddress)
-                                  if (inv.clientCity) setClientCity(inv.clientCity)
-                                  if (inv.clientState) setClientState(inv.clientState)
-                                  if (inv.clientGst || inv.clientGstin) setClientGst(inv.clientGst || inv.clientGstin)
-                                  if (inv.contactPersonName || inv.primaryContact) setContactPersonName(inv.contactPersonName || inv.primaryContact)
-                                }
-
-                                if (Array.isArray(inv.items) && inv.items.length > 0) {
-                                  setItems(inv.items.map((it: any, idx: number) => ({
-                                    id: it.id || `item_${idx + 1}`,
-                                    serviceName: it.serviceName || it.name || it.item_name || `Service ${idx + 1}`,
-                                    description: it.description || "",
-                                    sacCode: it.sacCode || it.sac || it.hsnCode || "998311",
-                                    qty: Number(it.qty || it.quantity || 1),
-                                    rate: Number(it.rate || it.unitPrice || 0),
-                                    gstRate: it.gstRate ?? (docScheme === "gst" ? 18 : 0),
-                                    totalAmount: Number(it.totalAmount || it.total || ((it.rate || it.unitPrice || 0) * (it.qty || it.quantity || 1)))
-                                  })))
-                                } else if (Array.isArray(inv.services) && inv.services.length > 0) {
-                                  setItems(inv.services.map((s: any, idx: number) => ({
-                                    id: s.id || `item_${idx + 1}`,
-                                    serviceName: s.serviceName || s.name || `Service ${idx + 1}`,
-                                    description: s.description || "",
-                                    sacCode: s.sacCode || s.sac || "998311",
-                                    qty: Number(s.qty || s.quantity || 1),
-                                    rate: Number(s.rate || s.unitPrice || 0),
-                                    gstRate: s.gstRate ?? (docScheme === "gst" ? 18 : 0),
-                                    totalAmount: Number(s.totalAmount || s.total || ((s.rate || s.unitPrice || 0) * (s.qty || s.quantity || 1)))
-                                  })))
-                                }
-                              }
-                            }}
-                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold"
-                          >
-                            <option value="">-- No Linked Invoice --</option>
-                            {filteredInvoices.map(inv => (
-                              <option key={inv.id || inv.invoiceNumber} value={inv.id || inv.invoiceNumber}>
-                                {inv.invoiceNumber || inv.id} — {inv.client || "Client"} (₹{Number(inv.total || 0).toLocaleString("en-IN")})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Project Proposal Overview &amp; Timeline
-                    </span>
-
-                    {/* Proposal Taxation Scheme (GST 18% vs Non-GST 0%) */}
-                    <div>
-                      <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1.5">Taxation Scheme *</label>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => handleSchemeChange("gst")}
-                          className={`p-2.5 rounded-xl border-2 text-left cursor-pointer transition-all flex items-center gap-2.5 ${
-                            docScheme === "gst" 
-                              ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 font-bold text-indigo-950 dark:text-indigo-200" 
-                              : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
-                          }`}
-                        >
-                          <Building2 size={15} className={docScheme === "gst" ? "text-indigo-600" : "text-zinc-400"} />
-                          <div>
-                            <div className="text-xs">GST Proposal (18%)</div>
-                            <div className="text-[9.5px] opacity-75 font-normal">Adds standard GST &amp; HSN codes</div>
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSchemeChange("nongst")}
-                          className={`p-2.5 rounded-xl border-2 text-left cursor-pointer transition-all flex items-center gap-2.5 ${
-                            docScheme === "nongst" 
-                              ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 font-bold text-indigo-950 dark:text-indigo-200" 
-                              : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
-                          }`}
-                        >
-                          <FileText size={15} className={docScheme === "nongst" ? "text-indigo-600" : "text-zinc-400"} />
-                          <div>
-                            <div className="text-xs">Non-GST Commercial (0%)</div>
-                            <div className="text-[9.5px] opacity-75 font-normal">Commercial bill / No tax added</div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1 flex items-center justify-between">
-                          <span>Issuing Company Entity *</span>
-                          {selectableCompanies.length <= 1 && (
-                            <span className="text-[9px] text-blue-600 font-bold bg-blue-50 dark:bg-blue-950/40 px-1 py-0.2 rounded border border-blue-200 dark:border-blue-800">
-                              🔒 Active Scope
-                            </span>
-                          )}
-                        </label>
-                        <select
-                          value={companyId}
-                          onChange={(e) => {
-                            setCompanyId(e.target.value)
-                            setBranchId("")
-                            setSubBranchId("")
-                          }}
-                          disabled={selectableCompanies.length <= 1}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold disabled:opacity-85 disabled:cursor-not-allowed"
-                        >
-                          {selectableCompanies.map(c => (
-                            <option key={c.id} value={c.id}>{c.brand_name || c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Issuing Branch</label>
-                        <select
-                          value={branchId}
-                          onChange={(e) => {
-                            setBranchId(e.target.value)
-                            setSubBranchId("")
-                          }}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium"
-                        >
-                          <option value="">🏢 Company HQ / Central Office</option>
-                          {companyBranches.map(b => (
-                            <option key={b.id} value={b.id}>📍 {b.name} ({b.code})</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Sub-Branch Partner</label>
-                        <select
-                          value={subBranchId}
-                          disabled={!branchId || branchSubBranches.length === 0}
-                          onChange={(e) => setSubBranchId(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium disabled:opacity-50"
-                        >
-                          <option value="">None (Direct Branch Quote)</option>
-                          {branchSubBranches.map(sb => (
-                            <option key={sb.id} value={sb.id}>🤝 {sb.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                          Primary Service Category *
-                        </label>
-                        <select
-                          value={primaryCategory}
-                          onChange={e => {
-                            const cat = e.target.value
-                            setPrimaryCategory(cat)
-                            if (cat.includes("Digital Marketing")) {
-                              const defaultPkg = createDefaultMarketingPackage("Package 02 - Grow")
-                              setMarketingPackage(defaultPkg)
-                              if (!projectTitle || projectTitle === "Commercial Project Proposal" || projectTitle === "Enterprise Cloud ERP Implementation") {
-                                setProjectTitle(`${defaultPkg.planName} - Digital Marketing Retainer`)
-                              }
-                              if (!projectOverview) {
-                                setProjectOverview("Comprehensive 360° Digital Marketing Retainer including Social Media Management, Creative Designing, Performance Ads Campaign Management, and Monthly Brand Growth.")
-                              }
-                              setProjectTimeline("1 Month (Renewable Retainer)")
-                              setTurnaroundTime("Ongoing Weekly Deliverables")
-                              setDeliverables([
-                                { id: "del-1", title: "Social Media Posts & Creatives", description: `${defaultPkg.postersCount || 12} High-Impact Brand Creatives designed & scheduled across Meta & Google`, duration: "1 Month" },
-                                { id: "del-2", title: "Video Reels & Motion Creatives", description: `${defaultPkg.videosCount || 2} Dynamic AI / Motion Video Reels with trending audio & hooks`, duration: "1 Month" },
-                                { id: "del-3", title: "Ad Campaign & Lead Generation Setup", description: "Meta Ads & Google Ads budget planning, target audience research, A/B testing & optimization", duration: "Ongoing" },
-                                { id: "del-4", title: "Monthly Performance & ROI Reporting", description: "Monthly analytics report covering reach, impressions, leads, conversion metrics & next steps", duration: "End of Month" },
-                              ])
-                              setItems([{
-                                id: "mktg-pkg-1",
-                                serviceName: defaultPkg.planName,
-                                sacCode: "998311",
-                                qty: 1,
-                                rate: defaultPkg.packagePrice,
-                                unit: "Month",
-                                gstRate: docScheme === "gst" ? 18 : 0,
-                                gstAmount: docScheme === "gst" ? Math.round(defaultPkg.packagePrice * 0.18) : 0,
-                                charges: [],
-                                totalAmount: docScheme === "gst" ? Math.round(defaultPkg.packagePrice * 1.18) : defaultPkg.packagePrice,
-                              }])
-                            } else if (items.length === 1 && (items[0].id === "mktg-pkg-1" || (items[0].serviceName && items[0].serviceName.includes("Package ")))) {
-                              setItems([{
-                                id: "item-1",
-                                serviceName: cat === "Website" ? "Website Development" : cat === "Custom Software" ? "Custom Software Application" : cat,
-                                sacCode: "998313",
-                                qty: 1,
-                                rate: 25000,
-                                unit: "Project",
-                                gstRate: docScheme === "gst" ? 18 : 0,
-                                gstAmount: docScheme === "gst" ? 4500 : 0,
-                                charges: [],
-                                totalAmount: docScheme === "gst" ? 29500 : 25000,
-                              }])
-                            }
-                          }}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 shadow-2xs cursor-pointer focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="Website">Website Development</option>
-                          <option value="Custom Software">Custom Software Application</option>
-                          <option value="Android / iOS Mobile App">Android / iOS Mobile App</option>
-                          <option value="Cloud Infrastructure">Cloud Infrastructure &amp; Domain</option>
-                          <option value="Digital Marketing">Digital Marketing &amp; Social Media Retainer</option>
-                          <option value="Custom">Custom / Other Services</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Project Proposal Title *</label>
-                        <Input 
-                          value={projectTitle} 
-                          onChange={e => setProjectTitle(e.target.value)} 
-                          placeholder="e.g. Enterprise Cloud ERP Implementation"
-                          className="font-bold text-indigo-950 dark:text-indigo-200" 
-                        />
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Project Summary / Executive Statement</label>
-                        <textarea
-                          rows={2}
-                          value={projectOverview}
-                          onChange={e => setProjectOverview(e.target.value)}
-                          placeholder="Summary of project goals, technical strategy, and business outcomes..."
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs resize-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Quotation Number *</label>
-                        <Input value={docNumber} onChange={e => setDocNumber(e.target.value)} className="font-mono font-bold" />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Estimated Project Timeline / Turnaround</label>
-                        <Input 
-                          value={projectTimeline} 
-                          onChange={e => setProjectTimeline(e.target.value)} 
-                          placeholder="e.g. 6 to 8 Weeks / 3 Sprints" 
-                          className="font-medium"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Proposal Issue Date *</label>
-                        <Input type="date" value={issueDate} onChange={e => setIssueDate(e.target.value)} />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Quotation Valid Till</label>
-                        <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Client Information */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                        <UserCheck size={15} className="text-indigo-600" />
-                        <span>Client / Prospect Organization</span>
-                      </span>
-                      <div className="flex gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setClientMode("select")}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                            clientMode === "select" ? "bg-indigo-600 text-white" : "bg-white dark:bg-zinc-800 text-zinc-600 border border-zinc-200 dark:border-zinc-700"
-                          }`}
-                        >
-                          Select Existing Client
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setClientMode("custom")
-                            setSelectedClient(null)
-                          }}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                            clientMode === "custom" ? "bg-indigo-600 text-white" : "bg-white dark:bg-zinc-800 text-zinc-600 border border-zinc-200 dark:border-zinc-700"
-                          }`}
-                        >
-                          + Custom Prospect
-                        </button>
-                      </div>
-                    </div>
-
-                    {clientMode === "select" && (
-                      <div className="relative">
-                        <div
-                          onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between cursor-pointer hover:border-indigo-500"
-                        >
-                          <span className="font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                            {selectedClient ? `${selectedClient.name} (${selectedClient.email || selectedClient.phone || 'No contact'})` : "Click to select a client..."}
-                          </span>
-                          <ChevronDown size={16} className="text-zinc-400 shrink-0" />
-                        </div>
-
-                        {isClientSearchOpen && (
-                          <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden p-2 space-y-2">
-                            <input
-                              type="text"
-                              placeholder="Search client..."
-                              value={clientSearchQuery}
-                              onChange={(e) => setClientSearchQuery(e.target.value)}
-                              className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs"
-                              autoFocus
-                            />
-                            <div className="max-h-52 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
-                              {allClients
-                                .filter(c => !clientSearchQuery || String(c.name || "").toLowerCase().includes(clientSearchQuery.toLowerCase()))
-                                .map(c => (
-                                  <div
-                                    key={c.id}
-                                    onClick={() => handleSelectClient(c)}
-                                    className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 cursor-pointer rounded-lg flex items-center justify-between"
-                                  >
-                                    <div>
-                                      <div className="font-bold text-zinc-900 dark:text-zinc-100">{c.name}</div>
-                                      <div className="text-[10.5px] text-zinc-400">{c.email || c.phone || "No contact"}</div>
-                                    </div>
-                                    <span className="text-[10.5px] text-indigo-600 font-bold">Select</span>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Organization / Client Name *</label>
-                        <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g. Acme Innovations Ltd" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Contact Designation *</label>
-                        <select
-                          value={clientDesignation}
-                          onChange={e => setClientDesignation(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                        >
-                          <option value="Proprietor">Proprietor</option>
-                          <option value="Manager">Manager</option>
-                          <option value="Founder">Founder</option>
-                          <option value="CEO">CEO</option>
-                          <option value="Director">Director</option>
-                          <option value="Partner">Partner</option>
-                          <option value="Other">Other (Custom)</option>
-                        </select>
-                        {clientDesignation === "Other" && (
-                          <Input
-                            value={customDesignation}
-                            onChange={e => setCustomDesignation(e.target.value)}
-                            placeholder="Type designation..."
-                            className="mt-1.5 text-xs font-bold"
-                          />
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5 flex items-center justify-between">
-                          <span>{clientDesignation === "Other" && customDesignation ? `${customDesignation} Name` : `${clientDesignation} Name`}</span>
-                          <span className="text-[9px] text-indigo-600 font-bold">Contact Person</span>
-                        </label>
-                        <Input
-                          value={contactPersonName}
-                          onChange={e => setContactPersonName(e.target.value)}
-                          placeholder={`Full name of ${clientDesignation === "Other" && customDesignation ? customDesignation.toLowerCase() : clientDesignation.toLowerCase()}...`}
-                          className="font-bold text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Contact Email</label>
-                        <Input value={clientEmail} onChange={e => setClientEmail(e.target.value)} placeholder="contact@acme.com" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Contact Phone</label>
-                        <Input value={clientPhone} onChange={e => setClientPhone(e.target.value)} placeholder="+91 98765 43210" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">City &amp; State</label>
-                        <Input value={clientCity} onChange={e => setClientCity(e.target.value)} placeholder="City, State" />
-                      </div>
-                      <div className="sm:col-span-3">
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Address</label>
-                        <Input value={clientAddress} onChange={e => setClientAddress(e.target.value)} placeholder="Full street address" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 2: Scope of Work & Deliverables */}
-              {currentStep === 2 && (
-                <div className="space-y-5">
-                  {primaryCategory.includes("Digital Marketing") && (
-                    <div className="p-4 rounded-2xl border border-purple-200 dark:border-purple-800 bg-purple-50/40 dark:bg-purple-950/20 space-y-3">
-                      <div className="flex items-center justify-between border-b border-purple-200 dark:border-purple-800 pb-2">
-                        <span className="font-extrabold text-purple-950 dark:text-purple-200 text-xs flex items-center gap-1.5">
-                          <Sparkles size={15} className="text-purple-600" />
-                          <span>Digital Marketing Retainer Package Configuration</span>
-                        </span>
-                        <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/60 px-2.5 py-0.5 rounded-full">
-                          Retainer Deliverables SLA
-                        </span>
-                      </div>
-                      <DigitalMarketingPackageBuilder
-                        value={marketingPackage}
-                        clientName={clientName}
-                        clientPhone={clientPhone}
-                        clientAddress={clientAddress}
-                        onChange={newPkg => {
-                          setMarketingPackage(newPkg)
-                          setDeliverables([
-                            { id: "del-1", title: "Social Media Posts & Creatives", description: `${newPkg.postersCount || 12} High-Impact Brand Creatives designed & scheduled across Meta & Google`, duration: `${newPkg.packageDuration || "1 month"}` },
-                            { id: "del-2", title: "Video Reels & Motion Creatives", description: `${newPkg.videosCount || 2} Dynamic AI / Motion Video Reels with trending audio & hooks`, duration: `${newPkg.packageDuration || "1 month"}` },
-                            { id: "del-3", title: "Ad Campaign & Lead Generation Setup", description: "Meta Ads & Google Ads budget planning, target audience research, A/B testing & optimization", duration: "Ongoing" },
-                            { id: "del-4", title: "Monthly Performance & ROI Reporting", description: "Monthly analytics report covering reach, impressions, leads, conversion metrics & next steps", duration: "End of Month" },
-                          ])
-                          setItems([{
-                            id: "mktg-pkg-1",
-                            serviceName: newPkg.planName,
-                            sacCode: "998311",
-                            qty: 1,
-                            rate: newPkg.packagePrice,
-                            unit: "Month",
-                            gstRate: docScheme === "gst" ? 18 : 0,
-                            gstAmount: docScheme === "gst" ? Math.round(newPkg.packagePrice * 0.18) : 0,
-                            charges: [],
-                            totalAmount: docScheme === "gst" ? Math.round(newPkg.packagePrice * 1.18) : newPkg.packagePrice,
-                          }])
-                        }}
-                      />
-                    </div>
-                  )}
-                  {/* Modules / Deliverables */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                        <ListChecks size={15} className="text-indigo-600" />
-                        <span>Deliverables &amp; Functional Scope Breakdown</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleAddDeliverable}
-                        className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus size={13} /> + Add Deliverable
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {deliverables.map((del, idx) => (
-                        <div key={del.id} className="p-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-zinc-700 dark:text-zinc-300 text-xs">Module #{idx + 1}</span>
-                            {deliverables.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveDeliverable(del.id)}
-                                className="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-1 rounded cursor-pointer"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                            <div className="sm:col-span-2">
-                              <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Module / Deliverable Title</label>
-                              <Input
-                                value={del.title}
-                                onChange={e => handleUpdateDeliverable(del.id, "title", e.target.value)}
-                                placeholder="Module title..."
-                                className="font-bold"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Estimated Duration / Sprint</label>
-                              <Input
-                                value={del.duration}
-                                onChange={e => handleUpdateDeliverable(del.id, "duration", e.target.value)}
-                                placeholder="e.g. 2 Weeks"
-                              />
-                            </div>
-                            <div className="sm:col-span-3">
-                              <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Scope Description &amp; Technical Criteria</label>
-                              <Input
-                                value={del.description}
-                                onChange={e => handleUpdateDeliverable(del.id, "description", e.target.value)}
-                                placeholder="Key functionality, APIs, and deliverables included in this module..."
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Inclusions & Exclusions */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/20 dark:bg-emerald-950/10 space-y-2">
-                      <span className="font-bold text-emerald-900 dark:text-emerald-300 text-xs flex items-center gap-1.5">
-                        <CheckCircle2 size={14} className="text-emerald-600" />
-                        Scope Inclusions (What&apos;s Covered)
-                      </span>
-                      <textarea
-                        rows={4}
-                        value={scopeInclusions}
-                        onChange={e => setScopeInclusions(e.target.value)}
-                        className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs resize-none"
-                      />
-                    </div>
-
-                    <div className="p-4 rounded-2xl border border-rose-200 dark:border-rose-800 bg-rose-50/20 dark:bg-rose-950/10 space-y-2">
-                      <span className="font-bold text-rose-900 dark:text-rose-300 text-xs flex items-center gap-1.5">
-                        <AlertCircle size={14} className="text-rose-600" />
-                        Scope Exclusions (Out of Scope)
-                      </span>
-                      <textarea
-                        rows={4}
-                        value={scopeExclusions}
-                        onChange={e => setScopeExclusions(e.target.value)}
-                        className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-rose-200 dark:border-rose-800 rounded-xl text-xs resize-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: Commercial Pricing & Payment Terms */}
-              {currentStep === 3 && (
-                <div className="space-y-5">
-                  {/* Primary Service Category Selector & Marketing Package Configurator */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-700/60 pb-2.5">
-                      <div>
-                        <span className="font-extrabold text-xs text-zinc-800 dark:text-zinc-200 block">
-                          Primary Service Category *
-                        </span>
-                        <span className="text-[11px] text-zinc-500">
-                          Select category to configure quotation line items or digital marketing retainer packages
-                        </span>
-                      </div>
-                      <select
-                        value={primaryCategory}
-                        onChange={e => {
-                          const cat = e.target.value
-                          setPrimaryCategory(cat)
-                          if (cat.includes("Digital Marketing")) {
-                            const defaultPkg = createDefaultMarketingPackage("Package 02 - Grow")
-                            setMarketingPackage(defaultPkg)
-                            setItems([{
-                              id: "mktg-pkg-1",
-                              serviceName: `Digital Marketing Retainer - ${defaultPkg.planName}`,
-                              sacCode: "998311",
-                              qty: 1,
-                              rate: defaultPkg.packagePrice,
-                              unit: defaultPkg.packageDuration || "1 Month",
-                              gstRate: docScheme === "gst" ? 18 : 0,
-                              gstAmount: docScheme === "gst" ? Math.round(defaultPkg.packagePrice * 0.18) : 0,
-                              charges: [],
-                              totalAmount: docScheme === "gst" ? Math.round(defaultPkg.packagePrice * 1.18) : defaultPkg.packagePrice,
-                            }])
-                            setProjectTitle(`${defaultPkg.planName} - Digital Marketing Retainer`)
-                            setProjectOverview("Comprehensive 360° Digital Marketing Retainer including Social Media Management, Creative Designing, Performance Ads Campaign Management, and Monthly Brand Growth.")
-                            setDeliverables([
-                              { id: "del-1", title: "Social Media Posts & Creatives", description: `${defaultPkg.postersCount || 12} High-Impact Brand Creatives designed & scheduled across Meta & Google`, duration: `${defaultPkg.packageDuration || "1 month"}` },
-                              { id: "del-2", title: "Video Reels & Motion Creatives", description: `${defaultPkg.videosCount || 2} Dynamic AI / Motion Video Reels with trending audio & hooks`, duration: `${defaultPkg.packageDuration || "1 month"}` },
-                              { id: "del-3", title: "Ad Campaign & Lead Generation Setup", description: "Meta Ads & Google Ads budget planning, target audience research, A/B testing & optimization", duration: "Ongoing" },
-                              { id: "del-4", title: "Monthly Performance & ROI Reporting", description: "Monthly analytics report covering reach, impressions, leads, conversion metrics & next steps", duration: "End of Month" },
-                            ])
-                          } else if (items.length === 1 && (items[0].id === "mktg-pkg-1" || (items[0].serviceName && items[0].serviceName.includes("Package ")))) {
-                            setItems([{
-                              id: "item-1",
-                              serviceName: cat === "Website" ? "Website Development" : cat === "Custom Software" ? "Custom Software Application" : cat,
-                              sacCode: "998313",
-                              qty: 1,
-                              rate: 25000,
-                              unit: "Project",
-                              gstRate: docScheme === "gst" ? 18 : 0,
-                              gstAmount: docScheme === "gst" ? 4500 : 0,
-                              charges: [],
-                              totalAmount: docScheme === "gst" ? 29500 : 25000,
-                            }])
-                          }
-                        }}
-                        className="px-3.5 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 shadow-2xs cursor-pointer focus:ring-2 focus:ring-indigo-500"
-                      >
-                        <option value="Website Development">Website Development</option>
-                        <option value="Custom Software Application">Custom Software Application</option>
-                        <option value="Android / iOS Mobile App">Android / iOS Mobile App</option>
-                        <option value="Cloud Infrastructure & Domain">Cloud Infrastructure & Domain</option>
-                        <option value="Digital Marketing & Social Media Retainer">Digital Marketing & Social Media Retainer</option>
-                        <option value="Custom">Custom / Other Services</option>
-                      </select>
-                    </div>
-
-                    {primaryCategory.includes("Digital Marketing") && (
-                      <DigitalMarketingPackageBuilder
-                        value={marketingPackage}
-                        clientName={clientName}
-                        clientPhone={clientPhone}
-                        clientAddress={clientAddress}
-                        onChange={newPkg => {
-                          setMarketingPackage(newPkg)
-                          setItems([{
-                            id: "mktg-pkg-1",
-                            serviceName: `Digital Marketing Retainer - ${newPkg.planName}`,
-                            sacCode: "998311",
-                            qty: 1,
-                            rate: newPkg.packagePrice,
-                            unit: newPkg.packageDuration || "1 Month",
-                            gstRate: docScheme === "gst" ? 18 : 0,
-                            gstAmount: docScheme === "gst" ? Math.round(newPkg.packagePrice * 0.18) : 0,
-                            charges: [],
-                            totalAmount: docScheme === "gst" ? Math.round(newPkg.packagePrice * 1.18) : newPkg.packagePrice,
-                          }])
-                          setDeliverables([
-                            { id: "del-1", title: "Social Media Posts & Creatives", description: `${newPkg.postersCount || 12} High-Impact Brand Creatives designed & scheduled across Meta & Google`, duration: `${newPkg.packageDuration || "1 month"}` },
-                            { id: "del-2", title: "Video Reels & Motion Creatives", description: `${newPkg.videosCount || 2} Dynamic AI / Motion Video Reels with trending audio & hooks`, duration: `${newPkg.packageDuration || "1 month"}` },
-                            { id: "del-3", title: "Ad Campaign & Lead Generation Setup", description: "Meta Ads & Google Ads budget planning, target audience research, A/B testing & optimization", duration: "Ongoing" },
-                            { id: "del-4", title: "Monthly Performance & ROI Reporting", description: "Monthly analytics report covering reach, impressions, leads, conversion metrics & next steps", duration: "End of Month" },
-                          ])
-                          if (!projectTitle || projectTitle.includes("Digital Marketing")) {
-                            setProjectTitle(`${newPkg.planName} - Digital Marketing Retainer`)
-                          }
-                        }}
-                      />
-                    )}
-                  </div>
-
-                  {/* Commercial Line Items */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                        <Coins size={15} className="text-indigo-600" />
-                        <span>Commercial Quotation Breakdown</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleAddItem()}
-                        className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus size={13} /> + Add Item
-                      </button>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {items.map((item, index) => (
-                        <div key={item.id} className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
-                          <div className="sm:col-span-6">
-                            <div className="flex items-center justify-between mb-0.5">
-                              <label className="block text-[10px] font-bold text-zinc-500">Service / Component Description *</label>
-                              {!primaryCategory.includes("Digital Marketing") && (
-                                <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400">Preset / Custom</span>
-                              )}
-                            </div>
-                            {!primaryCategory.includes("Digital Marketing") ? (
-                              <div className="space-y-1">
-                                <select
-                                  value={
-                                    SERVICE_PRESETS.some(p => p.name.toLowerCase() === (item.serviceName || "").toLowerCase())
-                                      ? SERVICE_PRESETS.find(p => p.name.toLowerCase() === (item.serviceName || "").toLowerCase())?.name
-                                      : (item.serviceName ? "custom" : "")
-                                  }
-                                  onChange={(e) => {
-                                    const val = e.target.value
-                                    if (val === "custom") {
-                                      if (SERVICE_PRESETS.some(p => p.name === item.serviceName)) {
-                                        handleUpdateItem(item.id, "serviceName", "")
-                                      }
-                                    } else if (val) {
-                                      const preset = SERVICE_PRESETS.find(p => p.name === val)
-                                      if (preset) {
-                                        handleUpdateItem(item.id, "serviceName", preset.name)
-                                        if (preset.unit) handleUpdateItem(item.id, "unit", preset.unit)
-                                        if (preset.rate && (!item.rate || item.rate === 0)) handleUpdateItem(item.id, "rate", preset.rate)
-                                      }
-                                    }
-                                  }}
-                                  className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 outline-none focus:border-indigo-500 cursor-pointer mb-1"
-                                >
-                                  <option value="" disabled>Select Preset or Custom...</option>
-                                  {SERVICE_PRESETS.map((preset) => (
-                                    <option key={preset.name} value={preset.name}>
-                                      {preset.name}
-                                    </option>
-                                  ))}
-                                  <option value="custom">✏️ Custom Service / Item</option>
-                                </select>
-                                <Input
-                                  value={item.serviceName}
-                                  onChange={e => handleUpdateItem(item.id, "serviceName", e.target.value)}
-                                  placeholder="e.g. Platform Architecture & Backend API"
-                                  className="font-bold text-xs"
-                                />
-                              </div>
-                            ) : (
-                              <Input
-                                value={item.serviceName}
-                                onChange={e => handleUpdateItem(item.id, "serviceName", e.target.value)}
-                                placeholder="e.g. Digital Marketing Retainer"
-                                className="font-bold text-xs"
-                              />
-                            )}
-                          </div>
-                          <div className="sm:col-span-2">
-                            <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Unit</label>
-                            <Input
-                              value={item.unit || (primaryCategory.includes("Digital Marketing") ? "Month" : "Project")}
-                              onChange={e => handleUpdateItem(item.id, "unit", e.target.value)}
-                              placeholder="Project / Month"
-                            />
-                          </div>
-                          <div className="sm:col-span-3">
-                            <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Commercial Value (₹) *</label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={item.rate === 0 ? "" : (item.rate ?? "")}
-                              onChange={e => handleUpdateItem(item.id, "rate", e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                              placeholder="30000"
-                              className="font-bold text-emerald-600 font-mono"
-                            />
-                          </div>
-                          <div className="sm:col-span-1 flex justify-end">
-                            {items.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveItem(item.id)}
-                                className="text-rose-500 hover:bg-rose-50 p-1.5 rounded cursor-pointer"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Total Summary */}
-                    <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200">Total Commercial Project Value:</span>
-                      <span className="text-base font-black text-indigo-600 dark:text-indigo-400 font-mono">₹{grandTotal.toLocaleString("en-IN")}</span>
-                    </div>
-                  </div>
-
-                  {/* Milestone Payment Terms */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Milestone Payment Terms Schedule
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {paymentMilestones.map((pm, idx) => (
-                        <div key={idx} className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl space-y-1.5">
-                          <div className="flex items-center justify-between font-bold text-zinc-800 dark:text-zinc-200">
-                            <span>{pm.milestone}</span>
-                            <span className="text-indigo-600 font-mono">{pm.percentage}%</span>
-                          </div>
-                          <p className="text-[10.5px] text-zinc-400">{pm.stage}</p>
-                          <div className="pt-1 border-t border-zinc-100 dark:border-zinc-800 font-mono font-bold text-emerald-600 text-xs">
-                            ₹{Math.round(grandTotal * (pm.percentage / 100)).toLocaleString("en-IN")}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Terms & Conditions automatically inherited from issuing company/branch profile */}
-                </div>
-              )}
-
-
-            </>
-          )}
-
-          {/* ════════════════════════════════════════════════════════════════
-              MODE: ESTIMATE (FAST PROJECT COST ESTIMATE)
-             ════════════════════════════════════════════════════════════════ */}
-          {mode === "estimate" && (
-            <>
-              {currentStep === 1 && (
-                <div className="space-y-5">
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Estimate Identity &amp; Client Overview
-                    </span>
-
-                    {/* Estimate Taxation Scheme (GST 18% vs Non-GST 0%) */}
-                    <div>
-                      <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1.5">Taxation Scheme *</label>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => handleSchemeChange("gst")}
-                          className={`p-2.5 rounded-xl border-2 text-left cursor-pointer transition-all flex items-center gap-2.5 ${
-                            docScheme === "gst" 
-                              ? "border-amber-600 bg-amber-50/50 dark:bg-amber-950/30 font-bold text-amber-950 dark:text-amber-200" 
-                              : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
-                          }`}
-                        >
-                          <Building2 size={15} className={docScheme === "gst" ? "text-amber-600" : "text-zinc-400"} />
-                          <div>
-                            <div className="text-xs">GST Estimate (18%)</div>
-                            <div className="text-[9.5px] opacity-75 font-normal">Includes GST calculations</div>
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSchemeChange("nongst")}
-                          className={`p-2.5 rounded-xl border-2 text-left cursor-pointer transition-all flex items-center gap-2.5 ${
-                            docScheme === "nongst" 
-                              ? "border-amber-600 bg-amber-50/50 dark:bg-amber-950/30 font-bold text-amber-950 dark:text-amber-200" 
-                              : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
-                          }`}
-                        >
-                          <Calculator size={15} className={docScheme === "nongst" ? "text-amber-600" : "text-zinc-400"} />
-                          <div>
-                            <div className="text-xs">Non-GST Estimate (0%)</div>
-                            <div className="text-[9.5px] opacity-75 font-normal">Commercial estimate / 0% tax</div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1 flex items-center justify-between">
-                          <span>Company Entity *</span>
-                          {selectableCompanies.length <= 1 && (
-                            <span className="text-[9px] text-blue-600 font-bold bg-blue-50 dark:bg-blue-950/40 px-1 py-0.2 rounded border border-blue-200 dark:border-blue-800">
-                              🔒 Active Scope
-                            </span>
-                          )}
-                        </label>
-                        <select
-                          value={companyId}
-                          onChange={(e) => {
-                            setCompanyId(e.target.value)
-                            setBranchId("")
-                            setSubBranchId("")
-                          }}
-                          disabled={selectableCompanies.length <= 1}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold disabled:opacity-85 disabled:cursor-not-allowed"
-                        >
-                          {selectableCompanies.map(c => (
-                            <option key={c.id} value={c.id}>{c.brand_name || c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Issuing Branch</label>
-                        <select
-                          value={branchId}
-                          onChange={(e) => {
-                            setBranchId(e.target.value)
-                            setSubBranchId("")
-                          }}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium"
-                        >
-                          <option value="">🏢 Company HQ / Central Office</option>
-                          {companyBranches.map(b => (
-                            <option key={b.id} value={b.id}>📍 {b.name} ({b.code})</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Sub-Branch Partner</label>
-                        <select
-                          value={subBranchId}
-                          disabled={!branchId || branchSubBranches.length === 0}
-                          onChange={(e) => setSubBranchId(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium disabled:opacity-50"
-                        >
-                          <option value="">None (Direct Branch Estimate)</option>
-                          {branchSubBranches.map(sb => (
-                            <option key={sb.id} value={sb.id}>🤝 {sb.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Estimate Number *</label>
-                        <Input value={docNumber} onChange={e => setDocNumber(e.target.value)} className="font-mono font-bold" />
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Estimate Subject / Project Reference *</label>
-                        <Input value={projectTitle} onChange={e => setProjectTitle(e.target.value)} placeholder="e.g. Website Overhaul & Performance Tuning" className="font-bold" />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Estimate Date</label>
-                        <Input type="date" value={issueDate} onChange={e => setIssueDate(e.target.value)} />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Estimated Turnaround Time</label>
-                        <Input value={turnaroundTime} onChange={e => setTurnaroundTime(e.target.value)} placeholder="e.g. 5 Business Days" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Client Select */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Client Contact
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Client Name *</label>
-                        <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Client Name" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Client Email</label>
-                        <Input value={clientEmail} onChange={e => setClientEmail(e.target.value)} placeholder="email@client.com" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Client Phone</label>
-                        <Input value={clientPhone} onChange={e => setClientPhone(e.target.value)} placeholder="+91 98765 43210" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {currentStep === 2 && (
-                <div className="space-y-5">
-                  {/* Estimated Services */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200">Estimated Services &amp; Rates</span>
-                      <button
-                        type="button"
-                        onClick={() => handleAddItem()}
-                        className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus size={13} /> + Add Service
-                      </button>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {items.map(item => (
-                        <div key={item.id} className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
-                          <div className="sm:col-span-5">
-                            <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Service Name *</label>
-                            <Input value={item.serviceName} onChange={e => handleUpdateItem(item.id, "serviceName", e.target.value)} placeholder="Service description..." className="font-bold" />
-                          </div>
-                          <div className="sm:col-span-2">
-                            <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Hours / Qty</label>
-                            <Input type="number" min="1" value={item.qty === 0 ? "" : (item.qty ?? "")} onChange={e => handleUpdateItem(item.id, "qty", e.target.value === "" ? "" : Math.max(1, Number(e.target.value)))} />
-                          </div>
-                          <div className="sm:col-span-2">
-                            <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Rate (₹)</label>
-                            <Input type="number" min="0" value={item.rate === 0 ? "" : (item.rate ?? "")} onChange={e => handleUpdateItem(item.id, "rate", e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))} className="font-bold font-mono" />
-                          </div>
-                          <div className="sm:col-span-2 font-mono font-bold text-emerald-600 text-xs">
-                            ₹{(item.rate * item.qty).toLocaleString("en-IN")}
-                          </div>
-                          <div className="sm:col-span-1 flex justify-end">
-                            {items.length > 1 && (
-                              <button type="button" onClick={() => handleRemoveItem(item.id)} className="text-rose-500 p-1 rounded cursor-pointer"><Trash2 size={14} /></button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
-                      <span className="font-bold text-zinc-800 dark:text-zinc-200">Total Estimated Cost:</span>
-                      <span className="text-base font-black text-amber-600 dark:text-amber-400 font-mono">₹{grandTotal.toLocaleString("en-IN")}</span>
-                    </div>
-                  </div>
-
-                  {/* Notes */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-2">
-                    <span className="font-bold text-zinc-800 dark:text-zinc-200 block text-xs">Scope Notes &amp; Assumptions</span>
-                    <textarea
-                      rows={3}
-                      value={notes}
-                      onChange={e => setNotes(e.target.value)}
-                      className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs resize-none"
-                    />
-                  </div>
-                </div>
-              )}
-
-
-            </>
-          )}
-
-          {/* ════════════════════════════════════════════════════════════════
-              MODE: INVOICE (GST OR NON-GST BILLING)
-             ════════════════════════════════════════════════════════════════ */}
-          {mode === "invoice" && (
-            <>
-              {/* Step 1: Entity, Scheme & Attribution */}
-              {currentStep === 1 && (
-                <div className="space-y-5">
-                  {/* Scheme Switcher */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Invoicing Scheme &amp; Tax Mode
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div
-                        onClick={() => handleSchemeChange("gst")}
-                        className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
-                          docScheme === "gst" 
-                            ? "border-teal-600 bg-teal-50/50 dark:bg-teal-950/30 shadow-xs" 
-                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300"
-                        }`}
-                      >
-                        <div className={`p-2 rounded-lg ${docScheme === "gst" ? "bg-teal-600 text-white" : "bg-zinc-100 text-zinc-500"}`}>
-                          <Building2 size={16} />
-                        </div>
-                        <div>
-                          <div className="font-bold text-zinc-900 dark:text-zinc-100">GST Tax Invoicing (Standard 18%)</div>
-                          <div className="text-[11px] text-zinc-500 mt-0.5">Includes HSN/SAC codes, CGST/SGST/IGST breakdown, and Company GSTIN.</div>
-                        </div>
-                      </div>
-
-                      <div
-                        onClick={() => handleSchemeChange("nongst")}
-                        className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
-                          docScheme === "nongst" 
-                            ? "border-sky-600 bg-sky-50/50 dark:bg-sky-950/30 shadow-xs" 
-                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300"
-                        }`}
-                      >
-                        <div className={`p-2 rounded-lg ${docScheme === "nongst" ? "bg-sky-600 text-white" : "bg-zinc-100 text-zinc-500"}`}>
-                          <Receipt size={16} />
-                        </div>
-                        <div>
-                          <div className="font-bold text-zinc-900 dark:text-zinc-100">Non-GST / Commercial Billing (0% Tax)</div>
-                          <div className="text-[11px] text-zinc-500 mt-0.5">No tax added to line items. Links Non-GST bank profile automatically.</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Company & Branch */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Issuing Company Entity &amp; Branch Location
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1 flex items-center justify-between">
-                          <span>Company Entity *</span>
-                          {selectableCompanies.length <= 1 && (
-                            <span className="text-[9px] text-blue-600 font-bold bg-blue-50 dark:bg-blue-950/40 px-1 py-0.2 rounded border border-blue-200 dark:border-blue-800">
-                              🔒 Active Scope
-                            </span>
-                          )}
-                        </label>
-                        <select
-                          value={companyId}
-                          onChange={(e) => {
-                            setCompanyId(e.target.value)
-                            setBranchId("")
-                            setSubBranchId("")
-                          }}
-                          disabled={selectableCompanies.length <= 1}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold disabled:opacity-85 disabled:cursor-not-allowed"
-                        >
-                          {selectableCompanies.map(c => (
-                            <option key={c.id} value={c.id}>{c.brand_name || c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Issuing Branch</label>
-                        <select
-                          value={branchId}
-                          onChange={(e) => {
-                            setBranchId(e.target.value)
-                            setSubBranchId("")
-                          }}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium"
-                        >
-                          <option value="">🏢 Company HQ / Central Office</option>
-                          {companyBranches.map(b => (
-                            <option key={b.id} value={b.id}>📍 {b.name} ({b.code})</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Sub-Branch Partner</label>
-                        <select
-                          value={subBranchId}
-                          disabled={!branchId || branchSubBranches.length === 0}
-                          onChange={(e) => setSubBranchId(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium disabled:opacity-50"
-                        >
-                          <option value="">None (Direct Branch Billing)</option>
-                          {branchSubBranches.map(sb => (
-                            <option key={sb.id} value={sb.id}>🤝 {sb.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Team Member Attribution */}
-                  <div className="p-4 rounded-2xl border border-indigo-500/20 bg-indigo-50/20 dark:bg-indigo-950/10 space-y-3">
-                    <div className="flex items-center justify-between border-b border-indigo-500/20 pb-2">
-                      <span className="font-extrabold text-indigo-900 dark:text-indigo-200 text-xs flex items-center gap-1.5">
-                        <Users size={15} className="text-indigo-600" />
-                        <span>Sales Rep &amp; Team Member Revenue Attribution</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleAddAssignedMember}
-                        className="text-[11px] font-bold text-indigo-600 hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus size={13} /> + Add Member
-                      </button>
-                    </div>
-
-                    {assignedMembers.length === 0 ? (
-                      <div className="py-3 text-center text-zinc-400 text-xs">
-                        No team members assigned yet. Click &quot;+ Add Member&quot; to attribute revenue share.
-                      </div>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {assignedMembers.map((m, idx) => (
-                          <div key={idx} className="p-3 bg-white dark:bg-zinc-900 border border-indigo-100 dark:border-indigo-900/60 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                            <div className="sm:col-span-5">
-                              <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Team Member</label>
-                              <select
-                                value={m.memberId}
-                                onChange={(e) => handleUpdateAssignedMember(idx, "memberId", e.target.value)}
-                                className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs font-bold"
-                              >
-                                {availableTeamMembers.map(tm => (
-                                  <option key={tm.id} value={tm.id}>{tm.name} ({tm.role})</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="sm:col-span-3">
-                              <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Payout Mode</label>
-                              <div className="flex rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateAssignedMember(idx, "payoutType", "percentage")}
-                                  className={`flex-1 py-1 text-center font-bold ${m.payoutType === "percentage" ? "bg-indigo-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 text-zinc-600"}`}
-                                >
-                                  % Share
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateAssignedMember(idx, "payoutType", "fixed")}
-                                  className={`flex-1 py-1 text-center font-bold ${m.payoutType === "fixed" ? "bg-indigo-600 text-white" : "bg-zinc-50 dark:bg-zinc-800 text-zinc-600"}`}
-                                >
-                                  ₹ Fixed
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="sm:col-span-3">
-                              <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">
-                                {m.payoutType === "percentage" ? "Share (%)" : "Amount (₹)"}
-                              </label>
-                              <Input
-                                type="number"
-                                value={m.payoutValue === 0 ? "" : (m.payoutValue ?? "")}
-                                onChange={(e) => handleUpdateAssignedMember(idx, "payoutValue", e.target.value === "" ? "" : Number(e.target.value))}
-                                placeholder={m.payoutType === "percentage" ? "30" : "5000"}
-                                className="font-bold"
-                              />
-                            </div>
-
-                            <div className="sm:col-span-1 flex justify-end">
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveAssignedMember(idx)}
-                                className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 2: Client & Dates */}
-              {currentStep === 2 && (
-                <div className="space-y-5">
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                        <UserCheck size={15} className="text-teal-600" />
-                        <span>Client Billing Details</span>
-                      </span>
-                      <div className="flex gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setClientMode("select")}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                            clientMode === "select" ? "bg-teal-600 text-white" : "bg-white dark:bg-zinc-800 text-zinc-600 border border-zinc-200 dark:border-zinc-700"
-                          }`}
-                        >
-                          Select Client
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setClientMode("custom")
-                            setSelectedClient(null)
-                          }}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                            clientMode === "custom" ? "bg-teal-600 text-white" : "bg-white dark:bg-zinc-800 text-zinc-600 border border-zinc-200 dark:border-zinc-700"
-                          }`}
-                        >
-                          + Custom Client
-                        </button>
-                      </div>
-                    </div>
-
-                    {clientMode === "select" && (
-                      <div className="relative">
-                        <div
-                          onClick={() => setIsClientSearchOpen(!isClientSearchOpen)}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 flex items-center justify-between cursor-pointer hover:border-teal-500"
-                        >
-                          <span className="font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                            {selectedClient ? `${selectedClient.name} (${selectedClient.email || selectedClient.phone || 'No contact'})` : "Click to select a client..."}
-                          </span>
-                          <ChevronDown size={16} className="text-zinc-400 shrink-0" />
-                        </div>
-
-                        {isClientSearchOpen && (
-                          <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden p-2 space-y-2">
-                            <input
-                              type="text"
-                              placeholder="Search client..."
-                              value={clientSearchQuery}
-                              onChange={(e) => setClientSearchQuery(e.target.value)}
-                              className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs"
-                              autoFocus
-                            />
-                            <div className="max-h-52 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
-                              {allClients
-                                .filter(c => !clientSearchQuery || String(c.name || "").toLowerCase().includes(clientSearchQuery.toLowerCase()))
-                                .map(c => (
-                                  <div
-                                    key={c.id}
-                                    onClick={() => handleSelectClient(c)}
-                                    className="p-2.5 hover:bg-teal-50 dark:hover:bg-teal-950/30 cursor-pointer rounded-lg flex items-center justify-between"
-                                  >
-                                    <div>
-                                      <div className="font-bold text-zinc-900 dark:text-zinc-100">{c.name}</div>
-                                      <div className="text-[10.5px] text-zinc-400">{c.email || c.phone || "No contact"}</div>
-                                    </div>
-                                    <span className="text-[10.5px] text-teal-600 font-bold">Select</span>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Client / Organization Name *</label>
-                        <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Client / Company Name" />
-                      </div>
-
-                      {/* Designation Dropdown */}
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Contact Designation *</label>
-                        <select
-                          value={clientDesignation}
-                          onChange={e => setClientDesignation(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                        >
-                          <option value="Proprietor">Proprietor</option>
-                          <option value="Manager">Manager</option>
-                          <option value="Founder">Founder</option>
-                          <option value="CEO">CEO</option>
-                          <option value="Director">Director</option>
-                          <option value="Partner">Partner</option>
-                          <option value="Other">Other (Custom)</option>
-                        </select>
-                        {clientDesignation === "Other" && (
-                          <Input
-                            value={customDesignation}
-                            onChange={e => setCustomDesignation(e.target.value)}
-                            placeholder="Type designation..."
-                            className="mt-1.5 text-xs font-bold"
-                          />
-                        )}
-                      </div>
-
-                      {/* Contact Person Name (Founder, CEO, Proprietor Name, etc.) */}
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5 flex items-center justify-between">
-                          <span>{clientDesignation === "Other" && customDesignation ? `${customDesignation} Name` : `${clientDesignation} Name`}</span>
-                          <span className="text-[9px] text-teal-600 font-bold">Contact Person</span>
-                        </label>
-                        <Input
-                          value={contactPersonName}
-                          onChange={e => setContactPersonName(e.target.value)}
-                          placeholder={`Full name of ${clientDesignation === "Other" && customDesignation ? customDesignation.toLowerCase() : clientDesignation.toLowerCase()}...`}
-                          className="font-bold text-xs"
-                        />
-                      </div>
-
-                      {/* Client Phone (Printed in invoice) */}
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5 flex items-center justify-between">
-                          <span>Phone Number *</span>
-                          <span className="text-[9px] text-teal-600 font-bold">Printed on Invoice</span>
-                        </label>
-                        <Input
-                          value={clientPhone}
-                          onChange={e => setClientPhone(e.target.value)}
-                          placeholder="+91 98765 43210"
-                          className="font-bold font-mono"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Client Email</label>
-                        <Input value={clientEmail} onChange={e => setClientEmail(e.target.value)} placeholder="client@company.com" />
-                      </div>
-
-                      {docScheme !== "nongst" && (
-                        <div>
-                          <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Client GSTIN (if applicable)</label>
-                          <Input value={clientGst} onChange={e => setClientGst(e.target.value.toUpperCase())} className="font-mono uppercase" placeholder="19AAAAA0000A1Z5" />
-                        </div>
-                      )}
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5 flex items-center justify-between">
-                          <span>Postal PIN Code</span>
-                          {isPincodeLoading ? (
-                            <span className="text-[9px] text-blue-600 font-bold animate-pulse">Fetching API...</span>
-                          ) : (
-                            <span className="text-[9px] text-zinc-400">6-digit PIN</span>
-                          )}
-                        </label>
-                        <Input
-                          value={clientPincode}
-                          onChange={e => handlePincodeChange(e.target.value)}
-                          placeholder="e.g. 700001"
-                          maxLength={6}
-                          className="font-mono font-bold"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-3">
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Street Address</label>
-                        <Input value={clientAddress} onChange={e => setClientAddress(e.target.value)} placeholder="Plot, Suite, Building, Street..." />
-                      </div>
-
-                      {/* City Dropdown / Input */}
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">City / Post Office</label>
-                        {pincodePlaces.length > 0 ? (
-                          <select
-                            value={clientCity}
-                            onChange={e => setClientCity(e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                          >
-                            {pincodePlaces.map(p => (
-                              <option key={p} value={p}>{p}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <Input value={clientCity} onChange={e => setClientCity(e.target.value)} placeholder="City" />
-                        )}
-                      </div>
-
-                      {/* District Dropdown / Input */}
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">District</label>
-                        {pincodeDistricts.length > 0 ? (
-                          <select
-                            value={clientDistrict}
-                            onChange={e => setClientDistrict(e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                          >
-                            {pincodeDistricts.map(d => (
-                              <option key={d} value={d}>{d}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <Input value={clientDistrict} onChange={e => setClientDistrict(e.target.value)} placeholder="District" />
-                        )}
-                      </div>
-
-                      {/* State Dropdown / Input */}
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">State</label>
-                        {pincodeStates.length > 0 ? (
-                          <select
-                            value={clientState}
-                            onChange={e => setClientState(e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
-                          >
-                            {pincodeStates.map(s => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <Input value={clientState} onChange={e => setClientState(e.target.value)} placeholder="State" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Invoice Identification & Primary Category */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Invoice Reference, Dates &amp; Primary Category
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Invoice Number *</label>
-                        <Input value={docNumber} onChange={e => setDocNumber(e.target.value)} className="font-mono font-bold" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Bill Date *</label>
-                        <Input type="date" value={issueDate} onChange={e => setIssueDate(e.target.value)} />
-                      </div>
-
-
-
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: Line Items & Calculation */}
-              {currentStep === 3 && (
-                <div className="space-y-5">
-                  {/* Primary Service Category Selector & Marketing Package Configurator */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 dark:border-zinc-700/60 pb-2.5">
-                      <div>
-                        <span className="font-extrabold text-xs text-zinc-800 dark:text-zinc-200 block">
-                          Primary Service Category *
-                        </span>
-                        <span className="text-[11px] text-zinc-500">
-                          Select category to configure line items or marketing retainer packages
-                        </span>
-                      </div>
-                      <select
-                        value={primaryCategory}
-                        onChange={e => {
-                          const cat = e.target.value
-                          setPrimaryCategory(cat)
-                          if (cat.includes("Digital Marketing")) {
-                            const defaultPkg = createDefaultMarketingPackage("Package 02 - Grow")
-                            setMarketingPackage(defaultPkg)
-                            setItems([{
-                              id: "mktg-pkg-1",
-                              serviceName: defaultPkg.planName,
-                              sacCode: "998311",
-                              qty: 1,
-                              rate: defaultPkg.packagePrice,
-                              unit: "Month",
-                              gstRate: docScheme === "gst" ? 18 : 0,
-                              gstAmount: docScheme === "gst" ? Math.round(defaultPkg.packagePrice * 0.18) : 0,
-                              charges: [],
-                              totalAmount: docScheme === "gst" ? Math.round(defaultPkg.packagePrice * 1.18) : defaultPkg.packagePrice,
-                            }])
-                          } else if (items.length === 1 && (items[0].id === "mktg-pkg-1" || (items[0].serviceName && items[0].serviceName.includes("Package ")))) {
-                            setItems([{
-                              id: "item-1",
-                              serviceName: cat === "Website" ? "Website Development" : cat === "Custom Software" ? "Custom Software Application" : cat,
-                              sacCode: "998313",
-                              qty: 1,
-                              rate: 25000,
-                              unit: "Project",
-                              gstRate: docScheme === "gst" ? 18 : 0,
-                              gstAmount: docScheme === "gst" ? 4500 : 0,
-                              charges: [],
-                              totalAmount: docScheme === "gst" ? 29500 : 25000,
-                            }])
-                          }
-                        }}
-                        className="px-3.5 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 shadow-2xs cursor-pointer focus:ring-2 focus:ring-teal-500"
-                      >
-                        <option value="Website Development">Website Development</option>
-                        <option value="Custom Software Application">Custom Software Application</option>
-                        <option value="Android / iOS Mobile App">Android / iOS Mobile App</option>
-                        <option value="Cloud Infrastructure & Domain">Cloud Infrastructure & Domain</option>
-                        <option value="Digital Marketing & Social Media Retainer">Digital Marketing & Social Media Retainer</option>
-                        <option value="Custom">Custom / Other Services</option>
-                      </select>
-                    </div>
-
-                    {primaryCategory === "Custom" && (
-                      <div className="mt-2.5">
-                        <label className="block text-[10.5px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">Custom Category Name *</label>
-                        <Input
-                          value={customPrimaryCategory}
-                          onChange={e => setCustomPrimaryCategory(e.target.value)}
-                          placeholder="e.g. AI Consultation, Hardware Maintenance..."
-                          className="font-bold text-xs"
-                        />
-                      </div>
-                    )}
-
-                    {/* Dedicated Project Name field for Website Development & non-marketing services */}
-                    {!primaryCategory.includes("Digital Marketing") && (
-                      <div className="mt-3 p-3 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-700">
-                        <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                          Project Name * <span className="text-[10px] font-normal text-muted-foreground">(Stored explicitly in Projects &amp; Invoices)</span>
-                        </label>
-                        <Input
-                          value={projectTitle}
-                          onChange={e => setProjectTitle(e.target.value)}
-                          placeholder="e.g. Corporate Web Portal, E-Commerce App, Mobile Application"
-                          className="font-bold text-xs bg-white dark:bg-zinc-900"
-                        />
-                      </div>
-                    )}
-
-                    {primaryCategory.includes("Digital Marketing") ? (
-                      <DigitalMarketingPackageBuilder
-                        value={marketingPackage}
-                        clientName={clientName}
-                        clientPhone={clientPhone}
-                        clientAddress={clientAddress}
-                        onChange={newPkg => {
-                          setMarketingPackage(newPkg)
-                          setItems([{
-                            id: "mktg-pkg-1",
-                            serviceName: newPkg.planName,
-                            sacCode: "998311",
-                            qty: 1,
-                            rate: newPkg.packagePrice,
-                            unit: "Month",
-                            gstRate: docScheme === "gst" ? 18 : 0,
-                            gstAmount: docScheme === "gst" ? Math.round(newPkg.packagePrice * 0.18) : 0,
-                            charges: [],
-                            totalAmount: docScheme === "gst" ? Math.round(newPkg.packagePrice * 1.18) : newPkg.packagePrice,
-                          }])
-                        }}
-                      />
-                    ) : null}
-                  </div>
-
-                  {/* Line Items List */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Line Items &amp; Services ({items.length})</span>
-                      <button
-                        type="button"
-                        onClick={() => handleAddItem()}
-                        className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
-                      >
-                        <Plus size={14} /> Add Line Item
-                      </button>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {items.map((item, index) => {
-                        const rowBase = (item.rate || 0) * (item.qty || 1)
-                        const rowTax = docScheme === "gst" ? Math.round(rowBase * ((item.gstRate !== undefined ? item.gstRate : 18) / 100)) : 0
-                        const rowTotal = rowBase + rowTax
-
-                        return (
-                          <div key={item.id} className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="font-black text-zinc-800 dark:text-zinc-200 text-xs">#{index + 1} Item</span>
-                              <div className="flex items-center gap-3">
-                                <span className="font-mono font-bold text-teal-600 dark:text-teal-400 text-xs">
-                                  Total: ₹{rowTotal.toLocaleString("en-IN")} {docScheme === "gst" ? `(incl. ₹${rowTax} tax)` : ''}
-                                </span>
-                                {items.length > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveItem(item.id)}
-                                    className="p-1 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                              <div className="sm:col-span-4">
-                                <div className="flex items-center justify-between mb-1">
-                                  <label className="block text-[10px] font-bold text-zinc-500">
-                                    {(mode as any) === "quotation" ? "Module / Feature Name *" : "Service / Project Item *"}
-                                  </label>
-                                  <span className="text-[9px] font-bold text-teal-600 dark:text-teal-400">Preset / Custom</span>
-                                </div>
-                                <div className="space-y-1.5">
-                                  {primaryCategory.includes("Digital Marketing") ? (
-                                    <select
-                                      value={
-                                        SERVICE_PRESETS.some(p => p.name.toLowerCase() === (item.serviceName || "").toLowerCase())
-                                          ? SERVICE_PRESETS.find(p => p.name.toLowerCase() === (item.serviceName || "").toLowerCase())?.name
-                                          : (item.serviceName ? "custom" : "")
-                                      }
-                                      onChange={(e) => {
-                                        const val = e.target.value
-                                        if (val === "custom") {
-                                          if (SERVICE_PRESETS.some(p => p.name === item.serviceName)) {
-                                            handleUpdateItem(item.id, "serviceName", "")
-                                          }
-                                        } else if (val) {
-                                          const preset = SERVICE_PRESETS.find(p => p.name === val)
-                                          if (preset) {
-                                            handleUpdateItem(item.id, "serviceName", preset.name)
-                                            if (preset.sac) handleUpdateItem(item.id, "sacCode", preset.sac)
-                                            if (preset.rate && (!item.rate || item.rate === 0)) handleUpdateItem(item.id, "rate", preset.rate)
-                                            if (preset.unit) handleUpdateItem(item.id, "unit", preset.unit)
-                                          }
-                                        }
-                                      }}
-                                      className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-200 outline-none focus:border-teal-500 cursor-pointer"
-                                    >
-                                      <option value="" disabled>Select Preset or Custom...</option>
-                                      {SERVICE_PRESETS.map((preset) => (
-                                        <option key={preset.name} value={preset.name}>
-                                          {preset.name}
-                                        </option>
-                                      ))}
-                                      <option value="custom">✏️ Custom Service / Item</option>
-                                    </select>
-                                  ) : null}
-                                  <Input
-                                    value={item.serviceName}
-                                    onChange={e => handleUpdateItem(item.id, "serviceName", e.target.value)}
-                                    placeholder={primaryCategory === "Website" ? "e.g. Website Development (Corporate Portal)" : "Service name / deliverables..."}
-                                    className="font-bold text-xs"
-                                  />
-                                </div>
-                              </div>
-                              {docScheme === "gst" && (
-                                <div className="sm:col-span-2">
-                                  <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">SAC/HSN</label>
-                                  <Input value={item.sacCode} onChange={e => handleUpdateItem(item.id, "sacCode", e.target.value)} className="font-mono" />
-                                </div>
-                              )}
-                              <div className="sm:col-span-2">
-                                <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Qty</label>
-                                <Input type="number" min="1" value={item.qty === 0 ? "" : (item.qty ?? "")} onChange={e => handleUpdateItem(item.id, "qty", e.target.value === "" ? "" : Math.max(1, Number(e.target.value)))} />
-                              </div>
-                              {/* Quantity & Unit Dropdown */}
-                              <div className="sm:col-span-2">
-                                <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Unit</label>
-                                <select
-                                  value={item.unit || "Qty"}
-                                  onChange={e => handleUpdateItem(item.id, "unit", e.target.value)}
-                                  className="w-full px-2 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold"
-                                >
-                                  <option value="Qty">Qty</option>
-                                  <option value="Unit">Unit</option>
-                                  <option value="Project">Project</option>
-                                  <option value="Module">Module</option>
-                                  <option value="Sprint">Sprint</option>
-                                  <option value="Weekly">Weekly</option>
-                                  <option value="Monthly">Monthly</option>
-                                  <option value="Yearly">Yearly</option>
-                                </select>
-                              </div>
-                              <div className={docScheme === "gst" ? "sm:col-span-2" : "sm:col-span-4"}>
-                                <label className="block text-[10px] font-bold text-zinc-500 mb-0.5">Rate (₹) *</label>
-                                <Input type="number" min="0" value={item.rate === 0 ? "" : (item.rate ?? "")} onChange={e => handleUpdateItem(item.id, "rate", e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))} className="font-bold text-emerald-600" />
-                              </div>
-
-                              {/* Deliverable Time & Detailed Description Fields */}
-                              <div className="sm:col-span-12 grid grid-cols-1 sm:grid-cols-12 gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800">
-                                <div className="sm:col-span-4">
-                                  <label className="block text-[10px] font-bold text-teal-700 dark:text-teal-400 mb-0.5 flex items-center gap-1">
-                                    <Clock size={11} />
-                                    <span>Deliverable Time (Timeline SLA) *</span>
-                                  </label>
-                                  <Input
-                                    value={(item as any).deliverableTime || ""}
-                                    onChange={e => handleUpdateItem(item.id, "deliverableTime", e.target.value)}
-                                    placeholder="e.g. 2 Weeks / 10 Business Days"
-                                    className="font-semibold text-xs text-teal-800 dark:text-teal-300"
-                                  />
-                                </div>
-                                <div className="sm:col-span-8">
-                                  <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">
-                                    Module Description &amp; Technical Scope (Features &amp; Specifications)
-                                  </label>
-                                  <textarea
-                                    rows={2}
-                                    value={item.description || ""}
-                                    onChange={e => handleUpdateItem(item.id, "description", e.target.value)}
-                                    placeholder="Detailed specifications, features, technical architecture, database schemas, deliverables checklist..."
-                                    className="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-normal resize-y"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Customer Credit Note Balance & Deduction Section */}
-                  {(availableCredit > 0 || Boolean(initialData?.creditDeduction)) && (
-                    <div className="p-4 rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/20 space-y-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <Receipt className="w-5 h-5 text-indigo-600" />
-                          <div>
-                            <h4 className="text-xs font-bold text-indigo-950 dark:text-indigo-100">Customer Available Credit Note</h4>
-                            <p className="text-[11px] text-indigo-600/90">
-                              Available credit balance: <span className="font-black font-mono">₹{availableCredit.toLocaleString("en-IN")}</span>
-                              {initialData?.creditDeduction ? ` (Currently deducted: ₹${Number(initialData.creditDeduction).toLocaleString("en-IN")})` : ""}
-                            </p>
-                          </div>
-                        </div>
-                        <label className="flex items-center gap-2 cursor-pointer bg-white dark:bg-zinc-900 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-xs">
-                          <input
-                            type="checkbox"
-                            checked={applyCredit}
-                            onChange={(e) => {
-                              const checked = e.target.checked
-                              setApplyCredit(checked)
-                              if (checked && (!creditToDeduct || creditToDeduct === 0)) {
-                                setCreditToDeduct(Math.min(availableCredit || (Number(initialData?.creditDeduction) || 0), grandTotal))
-                              }
-                            }}
-                            className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
-                          />
-                          <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200">Deduct Credit Note Balance</span>
-                        </label>
-                      </div>
-
-                      {applyCredit && (
-                        <div className="pt-2 border-t border-indigo-100 dark:border-indigo-900/60 grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-                          <div>
-                            <label className="block text-[10.5px] font-bold text-indigo-950 dark:text-indigo-200 mb-1">
-                              Amount to Deduct (₹) (Max ₹{Math.min(availableCredit || creditToDeduct, grandTotal).toLocaleString("en-IN")})
-                            </label>
-                            <Input
-                              type="number"
-                              min="0"
-                              max={availableCredit || creditToDeduct}
-                              value={creditToDeduct === 0 ? "" : creditToDeduct}
-                              onChange={(e) => {
-                                const val = e.target.value === "" ? 0 : Number(e.target.value)
-                                setCreditToDeduct(Math.min(val, grandTotal))
-                              }}
-                              className="font-bold font-mono text-indigo-600 bg-white dark:bg-zinc-900"
-                            />
-                          </div>
-                          <div className="text-xs text-zinc-600 dark:text-zinc-400">
-                            Applying credit reduces the customer payable invoice total from <strong className="font-mono text-zinc-800 dark:text-zinc-200">₹{grandTotal.toLocaleString("en-IN")}</strong> to <strong className="font-mono text-emerald-600">₹{netPayable.toLocaleString("en-IN")}</strong>.
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Calculations Summary */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
-                            Discount {discountType === "percentage" ? "(%)" : "(₹)"}
-                          </label>
-                          <div className="flex items-center p-0.5 rounded-lg bg-zinc-200/70 dark:bg-zinc-800 text-[10px] font-bold">
-                            <button
-                              type="button"
-                              onClick={() => handleDiscountTypeChange("percentage")}
-                              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                                discountType === "percentage"
-                                  ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                              }`}
-                            >
-                              % Percent
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDiscountTypeChange("fixed")}
-                              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                                discountType === "fixed"
-                                  ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                              }`}
-                            >
-                              ₹ Amount
-                            </button>
-                          </div>
-                        </div>
-                        <Input
-                          type="number"
-                          min="0"
-                          max={discountType === "percentage" ? 100 : undefined}
-                          value={discountValue === 0 ? "" : discountValue}
-                          onChange={e => {
-                            const val = e.target.value === "" ? "" : Math.max(0, Number(e.target.value))
-                            if (typeof val === "number" && discountType === "percentage" && val > 100) {
-                              setDiscountValue(100)
-                            } else {
-                              setDiscountValue(val)
-                            }
-                          }}
-                          placeholder={discountType === "percentage" ? "e.g. 10 (%)" : "e.g. 1000 (₹)"}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">Platform / Setup Charge (₹)</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={setupCharge === 0 ? "" : setupCharge}
-                          onChange={e => setSetupCharge(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                          placeholder="e.g. 1500"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 space-y-2 mt-2">
-                      <div className="flex items-center justify-between text-zinc-600 text-xs">
-                        <span>Subtotal:</span>
-                        <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">₹{calculatedSubtotal.toLocaleString("en-IN")}</span>
-                      </div>
-                      {calculatedDiscount > 0 && (
-                        <div className="flex items-center justify-between text-rose-600 text-xs">
-                          <span>Discount:</span>
-                          <span className="font-mono font-bold">-₹{calculatedDiscount.toLocaleString("en-IN")}</span>
-                        </div>
-                      )}
-                      {numSetupCharge > 0 && (
-                        <div className="flex items-center justify-between text-zinc-600 text-xs">
-                          <span>Platform / Setup:</span>
-                          <span className="font-mono font-bold">+₹{numSetupCharge.toLocaleString("en-IN")}</span>
-                        </div>
-                      )}
-                      {docScheme === "gst" && (
-                        <div className="flex items-center justify-between text-teal-600 text-xs">
-                          <span>Statutory GST (18%):</span>
-                          <span className="font-mono font-bold">+₹{calculatedGst.toLocaleString("en-IN")}</span>
-                        </div>
-                      )}
-                      {effectiveCreditDeduction > 0 && (
-                        <div className="flex items-center justify-between text-indigo-700 dark:text-indigo-300 font-bold text-xs bg-indigo-50/80 dark:bg-indigo-950/40 px-2 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                          <span>Less: Credit Note Applied:</span>
-                          <span className="font-mono">-₹{effectiveCreditDeduction.toLocaleString("en-IN")}</span>
-                        </div>
-                      )}
-                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-2 flex items-center justify-between text-sm">
-                        <span className="font-black text-zinc-900 dark:text-zinc-100">Net Payable Total:</span>
-                        <span className="font-black font-mono text-emerald-600 dark:text-emerald-400 text-base">₹{netPayable.toLocaleString("en-IN")}</span>
-                      </div>
-                      <div className="text-[10px] text-zinc-400 font-medium italic">
-                        Amount in words: {numberToIndianWords(netPayable)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Payment Plan & Settlement Structure (Order: Full, Part (EMI), Advance, Subscription) */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
-                      <span className="font-extrabold text-zinc-800 dark:text-zinc-200 text-xs flex items-center gap-1.5">
-                        <Calculator size={15} className="text-teal-600" />
-                        <span>Payment Plan &amp; Settlement Structure</span>
-                      </span>
-
-                      {/* 1. Full, 2. Part (EMI), 3. Advance, 4. Subscription */}
-                      <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700 flex-wrap">
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("full")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "full" ? "bg-teal-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          1. 💳 Full
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("part")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "part" ? "bg-teal-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          2. 🔄 Part (EMI)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("advance")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "advance" ? "bg-teal-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          3. 🪙 Advance
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("subscription")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "subscription" ? "bg-teal-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          4. 🗓️ Subscription
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Payment Mode Selector: Online vs Cash */}
-                    <div className="p-3 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-700 flex items-center justify-between gap-3">
-                      <div>
-                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Payment Mode</span>
-                        <span className="text-[10.5px] text-muted-foreground">Select whether payment is received Online or in Cash</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 bg-zinc-200/70 dark:bg-zinc-900/80 p-1 rounded-xl">
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod("Online")}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentMethod === "Online" ? "bg-teal-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          💳 Online (Bank / UPI)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentMethod("Cash")}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentMethod === "Cash" ? "bg-emerald-600 text-white shadow-xs" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          💵 Cash
-                        </button>
-                      </div>
-                    </div>
-
-                    {paymentPlan === "full" && (
-                      <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-teal-200 dark:border-teal-800 text-xs flex items-center justify-between">
-                        <span className="text-zinc-600 dark:text-zinc-400">
-                          100% Full Payment Settlement. Full invoice balance marked as settled upon receipt.
-                        </span>
-                        <span className="font-mono font-bold text-teal-600">Total: ₹{grandTotal.toLocaleString("en-IN")}</span>
-                      </div>
-                    )}
-
-                    {paymentPlan === "part" && (
-                      <div className="p-3.5 bg-blue-50/60 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-800/80 space-y-3 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5 text-xs">
-                            <span>🔄 Part Payment / EMI Milestone Structure</span>
-                          </span>
-                          <span className="text-[10.5px] text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-900/50 px-2 py-0.5 rounded-full font-bold">
-                            Advance Minus Option
-                          </span>
-                        </div>
-
-                        {/* Advance Down Payment Input */}
-                        <div className="space-y-1.5 bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/50">
-                          <div className="flex items-center justify-between">
-                            <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
-                              Advance Down Payment (Paid Upfront)
-                            </label>
-                            <div className="flex gap-1">
-                              {[0, 0.20, 0.30, 0.50].map(pct => (
-                                <button
-                                  key={pct}
-                                  type="button"
-                                  onClick={() => setEmiAdvanceAmount(pct === 0 ? 0 : Math.round(netPayable * pct))}
-                                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
-                                    (pct === 0 && (emiAdvanceAmount === 0 || emiAdvanceAmount === "")) ||
-                                    (pct > 0 && emiAdvanceAmount === Math.round(netPayable * pct))
-                                      ? "bg-blue-600 text-white"
-                                      : "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-100"
-                                  }`}
-                                >
-                                  {pct === 0 ? "0% (No Adv)" : `${pct * 100}%`}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">₹</span>
-                            <Input
-                              type="number"
-                              min="0"
-                              max={netPayable}
-                              value={emiAdvanceAmount === 0 ? "" : emiAdvanceAmount}
-                              onChange={e => setEmiAdvanceAmount(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                              placeholder="Enter upfront advance amount..."
-                              className="font-mono font-bold pl-7 h-8 text-xs"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Tenure Selection with Dropdown: 2 Mo, 3 Mo, 4 Mo, 6 Mo, 12 M and custom */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <label className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
-                              Installment Period (Tenure):
-                            </label>
-                            <select
-                              value={isCustomEmi ? "custom" : String(emiTenureMonths)}
-                              onChange={(e) => {
-                                const val = e.target.value
-                                if (val === "custom") {
-                                  setIsCustomEmi(true)
-                                } else {
-                                  setIsCustomEmi(false)
-                                  setEmiTenureMonths(Number(val))
-                                }
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 font-bold text-xs shadow-xs focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                            >
-                              <option value="2">2 Mo</option>
-                              <option value="3">3 Mo</option>
-                              <option value="4">4 Mo</option>
-                              <option value="6">6 Mo</option>
-                              <option value="12">12 M</option>
-                              <option value="custom">Custom</option>
-                            </select>
-                          </div>
-
-                          {isCustomEmi && (
-                            <div className="p-2.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900 flex items-center justify-between gap-3">
-                              <label className="text-[10.5px] font-bold text-blue-950 dark:text-blue-300 shrink-0">
-                                Enter Custom Months (Tenure):
-                              </label>
-                              <Input
-                                type="number"
-                                min="1"
-                                max="60"
-                                value={emiTenureMonths === 0 ? "" : (emiTenureMonths || "")}
-                                onChange={(e) => setEmiTenureMonths(e.target.value === "" ? ("" as any) : Math.max(1, Number(e.target.value)))}
-                                placeholder="e.g. 5, 8, 9, 18, 24"
-                                className="font-mono font-bold text-xs h-8 text-right bg-white dark:bg-zinc-900 max-w-[120px]"
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Visual Equation Matrix */}
-                        <div className="p-2.5 bg-blue-100/50 dark:bg-blue-950/60 rounded-lg border border-blue-200 dark:border-blue-800 text-[11px] space-y-1.5 font-mono">
-                          <div className="flex justify-between text-zinc-700 dark:text-zinc-300 font-sans">
-                            <span>Total Contract Amount:</span>
-                            <strong className="font-mono">₹{netPayable.toLocaleString("en-IN")}</strong>
-                          </div>
-                          <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-sans">
-                            <span>Less: Advance Down Payment:</span>
-                            <strong className="font-mono">(-) ₹{effectiveEmiAdvance.toLocaleString("en-IN")}</strong>
-                          </div>
-                          <div className="flex justify-between text-blue-900 dark:text-blue-200 font-bold border-t border-blue-200 dark:border-blue-800 pt-1 font-sans">
-                            <span>Remaining Balance for EMI:</span>
-                            <strong className="font-mono text-blue-700 dark:text-blue-300">₹{emiRemainingBalance.toLocaleString("en-IN")}</strong>
-                          </div>
-                          <div className="flex justify-between text-indigo-700 dark:text-indigo-300 font-extrabold bg-white dark:bg-zinc-900 p-1.5 rounded border border-blue-200 dark:border-blue-800 font-sans">
-                            <span>Monthly EMI ({emiTenureMonths} Installments):</span>
-                            <strong className="font-mono text-sm text-indigo-600 dark:text-indigo-400">
-                              ₹{emiMonthlyAmount.toLocaleString("en-IN")}<span className="text-[10px] font-normal text-zinc-500">/mo</span>
-                            </strong>
-                          </div>
-                        </div>
-
-                        {/* Quick schedule breakdown hint */}
-                        <div className="flex items-center justify-between text-[10.5px] text-zinc-500 pt-0.5">
-                          <span>🛡️ Auto-syncs to <strong>EMI Milestone Plans (/feature/emi)</strong></span>
-                          <span>1st EMI Due: <strong>{calculateCycleFutureDate(issueDate, "Monthly", 1)}</strong></span>
-                        </div>
-                      </div>
-                    )}
-
-                    {paymentPlan === "advance" && (
-                      <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200 dark:border-emerald-800 space-y-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <label className="font-bold text-emerald-800 dark:text-emerald-300">
-                            Advance Down Payment Amount (₹)
-                          </label>
-                          <div className="flex gap-1">
-                            {[0.25, 0.50].map(pct => (
-                              <button
-                                key={pct}
-                                type="button"
-                                onClick={() => setAdvanceAmount(Math.round(grandTotal * pct))}
-                                className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold cursor-pointer"
-                              >
-                                {pct * 100}%
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={advanceAmount === 0 ? "" : advanceAmount}
-                          onChange={e => setAdvanceAmount(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                          placeholder="e.g. 10000"
-                          className="font-mono font-bold"
-                        />
-                        <div className="flex justify-between text-[11px] text-zinc-500 pt-0.5">
-                          <span>Advance Paid: <strong className="text-emerald-600 font-mono">₹{(typeof advanceAmount === "number" ? advanceAmount : 0).toLocaleString("en-IN")}</strong></span>
-                          <span>Balance Due: <strong className="text-rose-600 font-mono">₹{Math.max(0, grandTotal - (typeof advanceAmount === "number" ? advanceAmount : 0)).toLocaleString("en-IN")}</strong></span>
-                        </div>
-                      </div>
-                    )}
-
-                    {paymentPlan === "subscription" && (
-                      <div className="p-3.5 bg-purple-50/60 dark:bg-purple-950/30 rounded-xl border border-purple-200 dark:border-purple-800/80 space-y-3 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-purple-950 dark:text-purple-200 flex items-center gap-1.5 text-xs">
-                            <span>🗓️ Subscription & Retainer Configuration</span>
-                          </span>
-                          <span className="text-[10.5px] text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-900/50 px-2 py-0.5 rounded-full font-bold">
-                            Multi-Month + Advance
-                          </span>
-                        </div>
-
-                        {/* Cycle & Duration */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                              Billing Frequency
-                            </label>
-                            <div className="grid grid-cols-4 gap-1">
-                              {(["Weekly", "Monthly", "Quarterly", "Yearly"] as const).map(cycle => (
-                                <button
-                                  key={cycle}
-                                  type="button"
-                                  onClick={() => setSubscriptionCycle(cycle)}
-                                  className={`py-1 text-center rounded text-[11px] font-bold cursor-pointer transition-all ${
-                                    subscriptionCycle === cycle
-                                      ? "bg-purple-600 text-white shadow-xs"
-                                      : "bg-white dark:bg-zinc-800 text-zinc-600 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100"
-                                  }`}
-                                >
-                                  {cycle.slice(0, 3)}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-1">
-                              Subscription Duration
-                            </label>
-                            <div className="flex gap-1">
-                              {[1, 3, 6, 12, 24].map(m => (
-                                <button
-                                  key={m}
-                                  type="button"
-                                  onClick={() => setSubscriptionDurationMonths(m)}
-                                  className={`flex-1 py-1 text-center rounded text-[11px] font-bold cursor-pointer transition-all ${
-                                    subscriptionDurationMonths === m
-                                      ? "bg-purple-600 text-white shadow-xs"
-                                      : "bg-white dark:bg-zinc-800 text-zinc-600 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100"
-                                  }`}
-                                >
-                                  {m}M
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Recurring Rate & Advance Payment */}
-                        <div className="grid grid-cols-2 gap-2.5">
-                          <div className="space-y-1 bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-purple-100 dark:border-purple-900/50">
-                            <label className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400 block">
-                              Rate per {subscriptionCycle} (₹)
-                            </label>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">₹</span>
-                              <Input
-                                type="number"
-                                min="0"
-                                value={subscriptionRate}
-                                onChange={e => setSubscriptionRate(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                                placeholder={`e.g. ${defaultSubRate}`}
-                                className="font-mono font-bold pl-7 h-8 text-xs"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-1 bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-purple-100 dark:border-purple-900/50">
-                            <div className="flex items-center justify-between">
-                              <label className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
-                                Advance Amount Paid (₹)
-                              </label>
-                              <div className="flex gap-1">
-                                {[1, 3].map(c => {
-                                  const val = activeSubRate * c
-                                  if (c > subscriptionDurationMonths) return null
-                                  return (
-                                    <button
-                                      key={c}
-                                      type="button"
-                                      onClick={() => setSubscriptionAdvance(val)}
-                                      className="px-1 py-0.2 rounded bg-purple-50 text-purple-700 text-[9px] font-bold cursor-pointer"
-                                    >
-                                      {c}M
-                                    </button>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">₹</span>
-                              <Input
-                                type="number"
-                                min="0"
-                                max={subContractTotal}
-                                value={subscriptionAdvance === 0 ? "" : subscriptionAdvance}
-                                onChange={e => setSubscriptionAdvance(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
-                                placeholder="e.g. 300"
-                                className="font-mono font-bold pl-7 h-8 text-xs"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Live Subscription Breakdown Matrix */}
-                        <div className="p-2.5 bg-purple-100/50 dark:bg-purple-950/60 rounded-lg border border-purple-200 dark:border-purple-800 text-[11px] space-y-1 font-mono">
-                          <div className="flex justify-between text-zinc-700 dark:text-zinc-300 font-sans">
-                            <span>Project Deliverables Base:</span>
-                            <strong className="font-mono">₹{netPayable.toLocaleString("en-IN")}</strong>
-                          </div>
-                          <div className="flex justify-between text-purple-900 dark:text-purple-200 font-sans">
-                            <span>Subscription Retainer ({subscriptionDurationMonths} Mo @ ₹{activeSubRate.toLocaleString("en-IN")}):</span>
-                            <strong className="font-mono">₹{subContractTotal.toLocaleString("en-IN")}</strong>
-                          </div>
-                          <div className="flex justify-between text-zinc-900 dark:text-zinc-100 font-bold border-t border-purple-200 dark:border-purple-800 pt-1 font-sans">
-                            <span>Combined Invoice Grand Total:</span>
-                            <strong className="font-mono text-purple-700 dark:text-purple-300">
-                              ₹{(netPayable + subContractTotal).toLocaleString("en-IN")}
-                            </strong>
-                          </div>
-                          <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-sans">
-                            <span>Advance Paid Upfront:</span>
-                            <strong className="font-mono">
-                              (-) ₹{effectiveSubAdvance.toLocaleString("en-IN")}
-                              {subPrepaidCycles > 0 && <span className="text-[10px] font-normal text-emerald-600 ml-1">({subPrepaidCycles} Mo prepaid)</span>}
-                            </strong>
-                          </div>
-                          <div className="flex justify-between text-rose-700 dark:text-rose-400 font-bold border-t border-purple-200 dark:border-purple-800 pt-1 font-sans">
-                            <span>Net Balance Due:</span>
-                            <strong className="font-mono">
-                              ₹{Math.max(0, (netPayable + subContractTotal) - effectiveSubAdvance).toLocaleString("en-IN")}
-                            </strong>
-                          </div>
-                          <div className="flex justify-between text-indigo-700 dark:text-indigo-300 font-sans pt-0.5">
-                            <span>Next Recurring Billing Date:</span>
-                            <strong className="font-mono text-indigo-700 dark:text-indigo-400">{subNextBillingDate}</strong>
-                          </div>
-                        </div>
-
-                        <p className="text-[10px] text-zinc-500 pt-0.5">
-                          📌 Syncs to <strong>Subscriptions section</strong> with first recurring billing cycle scheduled on <strong>{subNextBillingDate}</strong>.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Settlement Due Date (Optional) */}
-                  <div className="p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <label className="block text-[11px] font-extrabold text-zinc-800 dark:text-zinc-200">
-                        Invoice Due Date (Optional)
-                      </label>
-                      <p className="text-[10px] text-zinc-500">
-                        Defaults to unset (0000-00-00). Select an explicit date if this payment requires a firm statutory deadline.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="date"
-                        value={dueDate}
-                        onChange={e => setDueDate(e.target.value)}
-                        className="text-xs font-mono font-bold bg-zinc-50 dark:bg-zinc-800 w-auto"
-                      />
-                      {dueDate && (
-                        <button
-                          type="button"
-                          onClick={() => setDueDate("")}
-                          className="px-2 py-1 text-[10px] font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-                        >
-                          Clear (Unset)
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-
-            </>
-          )}
-          </>
-        )}
-
+          <DocumentStudioModalSection1 ctrl={__ctrl} />
         </div>
 
         {/* ── FOOTER (Responsive on Mobile) ── */}
@@ -5242,7 +2419,7 @@ export function DocumentStudioModal({
             {currentStep > 1 && (
               <button
                 type="button"
-                onClick={() => setCurrentStep(prev => prev - 1)}
+                onClick={() => setCurrentStep((prev) => prev - 1)}
                 className="px-3.5 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-xl cursor-pointer"
               >
                 Previous Step
@@ -5252,7 +2429,7 @@ export function DocumentStudioModal({
             {currentStep < totalSteps ? (
               <button
                 type="button"
-                onClick={() => setCurrentStep(prev => prev + 1)}
+                onClick={() => setCurrentStep((prev) => prev + 1)}
                 className="px-4 sm:px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all cursor-pointer"
               >
                 Next Step →
@@ -5265,13 +2442,18 @@ export function DocumentStudioModal({
                 className="px-4 sm:px-6 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Check size={15} />
-                <span>{isSubmitting ? "Saving..." : (initialData?.id ? "Update Document" : "Save & Generate Document")}</span>
+                <span>
+                  {isSubmitting
+                    ? "Saving..."
+                    : initialData?.id
+                      ? "Update Document"
+                      : "Save & Generate Document"}
+                </span>
               </button>
             )}
           </div>
         </div>
-
       </motion.div>
     </div>
-  )
+  );
 }

@@ -7,8 +7,8 @@ import {
   Printer, AlertCircle, Share2,
   CheckCircle2
 } from "lucide-react"
-import { getEstimates, updateEstimateStatus, EstimateItem } from "@/app/feature/estimates/service/estimateService"
-import { OfficialEstimateDocument } from "@/app/feature/estimates/components/OfficialEstimateDocument"
+import { getEstimates, updateEstimateStatus, EstimateItem } from "@/features/estimates/services/estimateService"
+import { OfficialEstimateDocument } from "@/features/estimates/components/OfficialEstimateDocument"
 import { fetchModuleDataFromDB } from "@/lib/storageSync"
 import { Company, DEFAULT_COMPANIES } from "@/store/useAuthStore"
 

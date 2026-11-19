@@ -29,7 +29,6 @@ export interface ActivityLog {
   userName?: string
   userEmail?: string
   userRole?: string
-  userId?: string
   details?: string
 }
 
@@ -52,44 +51,7 @@ function saveLocalLogs(logs: ActivityLog[]): void {
   } catch {}
 }
 
-export const DEFAULT_ACTIVITY_LOGS: ActivityLog[] = [
-  {
-    id: "act-init-1",
-    companyId: "tech",
-    companyName: "Saampark Technology",
-    module: "Permissions",
-    action: "Permissions Initialized",
-    description: "System RBAC access matrix and 4 core action controls (View, Add, Edit, Delete) configured",
-    type: "permission",
-    timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    userName: "System Security",
-    userRole: "Super Admin",
-  },
-  {
-    id: "act-init-2",
-    companyId: "tech",
-    companyName: "Saampark Technology",
-    module: "Leads",
-    action: "Lead Pipeline Ready",
-    description: "Lead management and automated conversion workflows online",
-    type: "lead",
-    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    userName: "CRM Core",
-    userRole: "System",
-  },
-  {
-    id: "act-init-3",
-    companyId: "tech",
-    companyName: "Saampark Technology",
-    module: "Invoices",
-    action: "Billing Service Active",
-    description: "Digital GST tax invoicing and automated milestone billing active",
-    type: "invoice",
-    timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    userName: "Billing System",
-    userRole: "System",
-  },
-]
+export const DEFAULT_ACTIVITY_LOGS: ActivityLog[] = []
 
 export async function getActivityLogs(companyId?: string): Promise<ActivityLog[]> {
   try {

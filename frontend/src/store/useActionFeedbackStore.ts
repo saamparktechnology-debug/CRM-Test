@@ -1,6 +1,7 @@
 "use client"
 
 import { create } from "zustand"
+import { ApiError, getErrorMessage, isErrorResponse } from "@/lib/responseHandler"
 
 export type FeedbackActionType = "create" | "update" | "delete" | "process" | "sync" | "payment"
 
@@ -148,7 +149,8 @@ export const useActionFeedbackStore = create<FeedbackState>((set, get) => ({
 }))
 
 /**
- * Universal helper that wraps any async action with automatic loading, success, and error popups!
+ * Universal helper that wraps any async action with automatic loading, success, and error popups.
+ * Strictly validates backend response — never displays a success modal when backend returns an error.
  */
 export async function executeWithFeedback<T>(
   asyncTask: () => Promise<T>,
@@ -173,7 +175,7 @@ export async function executeWithFeedback<T>(
     successMsg = "All changes have been successfully applied and synced.",
     errorTitle = "Operation Failed",
     errorMsg,
-    minLoadingMs = 400,
+    minLoadingMs = 300,
     autoCloseMs = 2500,
   } = options
 
@@ -182,6 +184,10 @@ export async function executeWithFeedback<T>(
 
   try {
     const result = await asyncTask()
+    if (isErrorResponse(result)) {
+      const errMessage = getErrorMessage(result, errorMsg || "Request failed on server.")
+      throw new ApiError(errMessage, (result as any)?.statusCode || 500, (result as any)?.errors, result)
+    }
     const elapsed = Date.now() - startTime
     if (elapsed < minLoadingMs) {
       await new Promise((r) => setTimeout(r, minLoadingMs - elapsed))
@@ -193,7 +199,7 @@ export async function executeWithFeedback<T>(
     if (elapsed < minLoadingMs) {
       await new Promise((r) => setTimeout(r, minLoadingMs - elapsed))
     }
-    const finalErrMsg = errorMsg || err?.message || "An unexpected error occurred while executing this operation."
+    const finalErrMsg = getErrorMessage(err, errorMsg || "An unexpected error occurred while executing this operation.")
     store.showError({ title: errorTitle, message: finalErrMsg, actionType })
     throw err
   }

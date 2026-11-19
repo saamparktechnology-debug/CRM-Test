@@ -1,27 +1,38 @@
-/**
- * ImgBB Free Cloud Image & Document Upload Utility
- * Uploads images, avatars, and KYC documents to free permanent hosting
- * with automatic client-side compression and multi-key fallback.
- */
-
-// Fallback pool of free public ImgBB API keys
-const IMGBB_API_KEYS = [
-  process.env.NEXT_PUBLIC_IMGBB_API_KEY,
-  "d3e020e9803b9e4a812df88283ae99a0",
-  "6d207e02198a847aa98d0a2a901485a5",
-  "b0c16301389369d727b140798beba417",
-].filter(Boolean) as string[]
+import axiosInstance from "@/lib/axios"
+import { ApiError, extractApiData } from "@/lib/responseHandler"
 
 export interface UploadResult {
   url: string
   display_url?: string
   thumb_url?: string
   delete_url?: string
+  filename?: string
+  size?: number
+  mimeType?: string
   success: boolean
 }
 
 /**
- * Compress and resize an image client-side to prevent memory bloat and guarantee fast upload
+ * Converts a base64 data URL string into a binary Blob for multipart FormData upload.
+ */
+export function base64ToBlob(dataUrl: string, fallbackMime = "image/png"): Blob {
+  if (!dataUrl.includes(",")) {
+    return new Blob([dataUrl], { type: fallbackMime })
+  }
+  const [header, base64Data] = dataUrl.split(",")
+  const mimeMatch = header.match(/data:([^;]+);/)
+  const mimeType = mimeMatch ? mimeMatch[1] : fallbackMime
+  const byteString = typeof window !== "undefined" ? atob(base64Data) : Buffer.from(base64Data, "base64").toString("binary")
+  const ab = new ArrayBuffer(byteString.length)
+  const ia = new Uint8Array(ab)
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i)
+  }
+  return new Blob([ab], { type: mimeType })
+}
+
+/**
+ * Compress and resize an image client-side into a binary Blob for multipart upload.
  */
 export async function compressImage(
   fileOrBlob: File | Blob | string,
@@ -74,7 +85,6 @@ export async function compressImage(
       ctx.imageSmoothingQuality = "high"
       ctx.drawImage(img, 0, 0, width, height)
 
-      // Preserve PNG/WebP alpha transparency so transparent images don't turn black
       let mimeType = "image/jpeg"
       if (fileOrBlob instanceof File || fileOrBlob instanceof Blob) {
         if (fileOrBlob.type === "image/png" || fileOrBlob.type === "image/webp" || fileOrBlob.type === "image/svg+xml") {
@@ -110,91 +120,111 @@ export async function compressImage(
 }
 
 /**
- * Upload a File, Blob, or base64 data string to ImgBB
- * @param fileOrBase64 - File instance, Blob, or base64 data URL string
- * @param name - Optional name for the uploaded file
- * @param maxWidth - Max dimensions for auto-compression (default: 400 for avatars, 800 for docs)
- * @returns Promise<UploadResult>
+ * Uploads any File, Blob, or data URL to the backend Multer endpoint (`backend/uploads/`)
+ * via multipart/form-data payload. Strictly requires a real backend URL — never falls back
+ * to blob: or base64 data URLs.
  */
+export async function uploadMultipartFile(
+  fileOrBlobOrDataUrl: File | Blob | string,
+  options: {
+    endpoint?: string
+    fieldName?: string
+    name?: string
+    folder?: string
+    maxWidth?: number
+    compress?: boolean
+    metadata?: Record<string, any>
+    onUploadProgress?: (event: { loaded: number; total?: number; progress?: number }) => void
+  } = {}
+): Promise<UploadResult> {
+  const {
+    endpoint = "/files/upload",
+    fieldName = "file",
+    name = "upload",
+    folder = "uploads",
+    maxWidth = 800,
+    compress = true,
+    metadata = {},
+    onUploadProgress,
+  } = options
+
+  let binaryBlob: Blob
+  let fileName = name.replace(/[^a-zA-Z0-9._-]/g, "_")
+
+  if (fileOrBlobOrDataUrl instanceof File) {
+    fileName = fileOrBlobOrDataUrl.name || fileName
+    if (compress && fileOrBlobOrDataUrl.type.startsWith("image/") && typeof window !== "undefined") {
+      binaryBlob = await compressImage(fileOrBlobOrDataUrl, maxWidth, maxWidth, 0.92).catch(() => fileOrBlobOrDataUrl)
+    } else {
+      binaryBlob = fileOrBlobOrDataUrl
+    }
+  } else if (fileOrBlobOrDataUrl instanceof Blob) {
+    if (compress && fileOrBlobOrDataUrl.type.startsWith("image/") && typeof window !== "undefined") {
+      binaryBlob = await compressImage(fileOrBlobOrDataUrl, maxWidth, maxWidth, 0.92).catch(() => fileOrBlobOrDataUrl)
+    } else {
+      binaryBlob = fileOrBlobOrDataUrl
+    }
+  } else {
+    if (compress && typeof window !== "undefined" && fileOrBlobOrDataUrl.startsWith("data:image/")) {
+      binaryBlob = await compressImage(fileOrBlobOrDataUrl, maxWidth, maxWidth, 0.92).catch(() =>
+        base64ToBlob(fileOrBlobOrDataUrl)
+      )
+    } else {
+      binaryBlob = base64ToBlob(fileOrBlobOrDataUrl)
+    }
+  }
+
+  const ext = binaryBlob.type === "image/png" ? "png" : binaryBlob.type === "application/pdf" ? "pdf" : "jpg"
+  if (!fileName.includes(".")) {
+    fileName = `${fileName}.${ext}`
+  }
+
+  const formData = new FormData()
+  formData.append(fieldName, binaryBlob, fileName)
+  formData.append("name", fileName)
+  formData.append("folder", folder)
+
+  Object.entries(metadata).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, typeof value === "object" ? JSON.stringify(value) : String(value))
+    }
+  })
+
+  const response = await axiosInstance.postForm(endpoint, formData, {
+    onUploadProgress,
+  })
+
+  const resData = extractApiData<any>(response?.data, response?.status)
+  const fileUrl = resData?.url || resData?.file_url || resData?.path
+
+  if (!fileUrl || typeof fileUrl !== "string") {
+    throw new ApiError("Server did not return a valid uploaded file URL.", response?.status || 500, undefined, response?.data)
+  }
+
+  return {
+    url: fileUrl,
+    display_url: resData.display_url || fileUrl,
+    thumb_url: resData.thumb_url || fileUrl,
+    filename: resData.filename || fileName,
+    size: resData.size ?? binaryBlob.size,
+    mimeType: resData.mimeType || binaryBlob.type,
+    success: true,
+  }
+}
+
 export async function uploadToImgBB(
   fileOrBase64: File | Blob | string,
   name: string = "avatar",
   maxWidth: number = 400
 ): Promise<UploadResult> {
-  let uploadableBlob: Blob | string = fileOrBase64
-
-  // 1. Auto-compress image before upload while strictly preserving transparency
-  try {
-    if (typeof window !== "undefined") {
-      uploadableBlob = await compressImage(fileOrBase64, maxWidth, maxWidth, 0.92)
-    }
-  } catch (compErr) {
-    console.warn("Image pre-compression note:", compErr)
-  }
-
-  // 2. Attempt upload with API keys pool
-  for (const apiKey of IMGBB_API_KEYS) {
-    try {
-      const formData = new FormData()
-
-      if (typeof uploadableBlob === "string") {
-        const base64Clean = uploadableBlob.includes(",")
-          ? uploadableBlob.split(",")[1]
-          : uploadableBlob
-        formData.append("image", base64Clean)
-      } else {
-        const isPng = uploadableBlob.type === "image/png"
-        formData.append("image", uploadableBlob, `${name}.${isPng ? 'png' : 'jpg'}`)
-      }
-
-      formData.append("name", name.replace(/[^a-zA-Z0-9_-]/g, "_"))
-
-      const endpoint = `https://api.imgbb.com/1/upload?key=${apiKey}`
-      const response = await fetch(endpoint, {
-        method: "POST",
-        body: formData,
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data && data.success && data.data) {
-          return {
-            url: data.data.url || data.data.display_url,
-            display_url: data.data.display_url,
-            thumb_url: data.data.thumb?.url || data.data.medium?.url,
-            delete_url: data.data.delete_url,
-            success: true,
-          }
-        }
-      }
-    } catch (keyErr) {
-      console.warn(`ImgBB key ${apiKey.slice(0, 6)}... failed, trying next...`)
-    }
-  }
-
-  // 3. Fallback: Return clean compressed Base64 data URL (<40KB)
-  console.info("Using compressed high-efficiency data URL fallback for profile picture.")
-  const fallbackBase64 = await fileToBase64(uploadableBlob instanceof Blob ? uploadableBlob : fileOrBase64 instanceof Blob ? fileOrBase64 : new Blob())
-  return {
-    url: fallbackBase64,
-    display_url: fallbackBase64,
-    success: true,
-  }
-}
-
-export const uploadImageToImgBB = uploadToImgBB
-
-
-/**
- * Helper to convert File or Blob to Base64 data URL
- */
-export function fileToBase64(file: File | Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (typeof file === "string") return resolve(file)
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = (error) => reject(error)
-    reader.readAsDataURL(file)
+  return uploadMultipartFile(fileOrBase64, {
+    endpoint: "/files/upload",
+    fieldName: "file",
+    name,
+    folder: "uploads",
+    maxWidth,
+    compress: true,
   })
 }
 
+export const uploadImageToImgBB = uploadToImgBB

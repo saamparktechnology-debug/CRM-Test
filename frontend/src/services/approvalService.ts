@@ -226,7 +226,7 @@ export async function approveApprovalRequest(
         }).catch(() => {})
       }
     } else if (req.type === "subscription") {
-      const { getSubscriptions, updateSubscription } = await import("@/app/feature/subscriptions/service/subscriptionService")
+      const { getSubscriptions, updateSubscription } = await import("@/features/subscriptions/services/subscriptionService")
       const subs = await getSubscriptions(req.companyId)
       const matched = subs.find(s => String(s.id) === String(req.documentId))
       if (matched) {
@@ -321,7 +321,7 @@ export async function rejectApprovalRequest(
         }).catch(() => {})
       }
     } else if (req.type === "subscription") {
-      const { getSubscriptions, updateSubscription } = await import("@/app/feature/subscriptions/service/subscriptionService")
+      const { getSubscriptions, updateSubscription } = await import("@/features/subscriptions/services/subscriptionService")
       const subs = await getSubscriptions(req.companyId)
       const matched = subs.find(s => String(s.id) === String(req.documentId))
       if (matched) {

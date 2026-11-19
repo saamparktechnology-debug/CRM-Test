@@ -212,7 +212,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const { getStoredUserAccountsAsync } = await import("@/app/feature/users/service/userService")
+        const { getStoredUserAccountsAsync } = await import("@/features/users/services/userService")
         const accounts = await getStoredUserAccountsAsync()
         const myAcc = accounts.find((a) => a.email.toLowerCase().trim() === currentEmail)
         if (myAcc && myAcc.status === "Inactive") {
@@ -247,17 +247,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [isMounted, router])
 
-  // 4. Real-time individual user permissions synchronization
+  // 4. Real-time individual user permissions synchronization (single deduplicated call)
   React.useEffect(() => {
     if (!isMounted || !user) return
-    if (user.id) {
-      usePermissionStore.getState().fetchUserPermissions?.(String(user.id))
-    }
-    if (user.email) {
-      usePermissionStore.getState().fetchUserPermissions?.(user.email.toLowerCase().trim())
+    const targetKey = user.id ? String(user.id) : user.email ? user.email.toLowerCase().trim() : ""
+    if (targetKey && user.role !== "Super Admin") {
+      usePermissionStore.getState().fetchUserPermissions?.(targetKey)
     }
     usePermissionStore.getState().fetchRolePermissions?.()
-  }, [isMounted, user?.id, user?.email])
+  }, [isMounted, user?.id, user?.email, user?.role])
 
   // Prevent rendering protected content before hydration completes
   if (!isMounted) {

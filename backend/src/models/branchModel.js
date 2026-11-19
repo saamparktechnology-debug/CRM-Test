@@ -7,10 +7,18 @@ const ALLOWED_BRANCH_FIELDS = [
   "address",
   "city",
   "state",
+  "zip",
   "country",
   "phone",
   "email",
   "manager_id",
+  "manager_name",
+  "manager_phone",
+  "partner_name",
+  "partner_phone",
+  "partner_email",
+  "partner_type",
+  "revenue_share_pct",
   "is_active",
   "logo_url",
   "brand_name",
@@ -59,10 +67,13 @@ const ALLOWED_BRANCH_FIELDS = [
   "custom_stamps",
   "invoice_customization",
   "preview_invoice_type",
+  "preview_scale",
+  "zoom",
   "status",
 ];
 
 let cachedBranchColumns = null;
+let cachedIdIsString = null;
 
 async function ensureBranchColumns() {
   try {
@@ -113,7 +124,7 @@ async function ensureBranchColumns() {
       "stamp_scale DECIMAL(5,2) NULL",
       "signature_scale DECIMAL(5,2) NULL",
       "custom_stamps JSON NULL",
-      "invoice_customization JSON NULL",
+      "invoice_customization LONGTEXT NULL",
       "preview_invoice_type VARCHAR(50) NULL",
       "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
     ];
@@ -134,13 +145,26 @@ async function getExistingColumns() {
     const [cols] = await pool.execute("SHOW COLUMNS FROM branches");
     if (cols && cols.length > 0) {
       cachedBranchColumns = cols.map((c) => c.Field);
+      const idCol = cols.find((c) => c.Field === "id");
+      if (idCol) {
+        cachedIdIsString = !String(idCol.Extra || "")
+          .toLowerCase()
+          .includes("auto_increment");
+      }
       return cachedBranchColumns;
     }
   } catch (e) {}
   return ALLOWED_BRANCH_FIELDS;
 }
 
-function parseNumericId(rawId) {
+function normalizeBranchId(rawId) {
+  if (rawId === null || rawId === undefined) return null;
+  const trimmed = String(rawId).trim();
+  if (!trimmed || trimmed === "undefined" || trimmed === "null") return null;
+  return trimmed;
+}
+
+function parseNumericCompanyId(rawId) {
   if (rawId === null || rawId === undefined) return null;
   const n = Number(rawId);
   if (Number.isInteger(n) && n > 0) return n;
@@ -154,13 +178,23 @@ const branchModel = {
     const placeholders = [];
     const values = [];
 
-    const numCompanyId = Number(data.company_id);
-    if (!Number.isInteger(numCompanyId) || numCompanyId <= 0) {
+    const numCompanyId = parseNumericCompanyId(data.company_id);
+    if (!numCompanyId) {
       const err = new Error(
         "Valid numeric company_id is required to create a branch.",
       );
       err.statusCode = 400;
       throw err;
+    }
+
+    let generatedId = null;
+    if (cachedIdIsString) {
+      generatedId =
+        normalizeBranchId(data.id) ||
+        `br_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+      fields.push("id");
+      placeholders.push("?");
+      values.push(generatedId);
     }
 
     for (const key of ALLOWED_BRANCH_FIELDS) {
@@ -169,7 +203,7 @@ const branchModel = {
         placeholders.push("?");
         let val = data[key];
         if (key === "company_id") {
-          val = numCompanyId;
+          val = String(numCompanyId);
         } else if (key === "is_active") {
           val =
             val === 1 ||
@@ -195,7 +229,7 @@ const branchModel = {
     if (!fields.includes("company_id") && existingCols.includes("company_id")) {
       fields.push("company_id");
       placeholders.push("?");
-      values.push(numCompanyId);
+      values.push(String(numCompanyId));
     }
     if (!fields.includes("is_active") && existingCols.includes("is_active")) {
       fields.push("is_active");
@@ -207,55 +241,55 @@ const branchModel = {
       `INSERT INTO branches (${fields.join(", ")}) VALUES (${placeholders.join(", ")})`,
       values,
     );
-    return result.insertId;
+    return generatedId || result.insertId;
   },
 
   async findById(id) {
-    const numId = parseNumericId(id);
-    if (!numId) return null;
+    const branchId = normalizeBranchId(id);
+    if (!branchId) return null;
     const [rows] = await pool.execute(
-      `SELECT b.*, u.full_name as manager_name,
+      `SELECT b.*, COALESCE(b.manager_name, u.full_name) as manager_name,
        (SELECT COUNT(*) FROM sub_branches sb WHERE sb.branch_id = b.id) as sub_branch_count,
        (SELECT COUNT(*) FROM users u2 WHERE u2.branch_id = b.id AND u2.deleted_at IS NULL) as user_count
        FROM branches b
        LEFT JOIN users u ON b.manager_id = u.id
        WHERE b.id = ?
        LIMIT 1`,
-      [numId],
+      [branchId],
     );
     return rows && rows.length > 0 ? rows[0] : null;
   },
 
   async findByCompany(company_id) {
-    const numId = parseNumericId(company_id);
+    const numId = parseNumericCompanyId(company_id);
     if (!numId) return [];
     const [rows] = await pool.execute(
-      `SELECT b.*, u.full_name as manager_name,
+      `SELECT b.*, COALESCE(b.manager_name, u.full_name) as manager_name,
        (SELECT COUNT(*) FROM sub_branches sb WHERE sb.branch_id = b.id) as sub_branch_count,
        (SELECT COUNT(*) FROM users u2 WHERE u2.branch_id = b.id AND u2.deleted_at IS NULL) as user_count
        FROM branches b
        LEFT JOIN users u ON b.manager_id = u.id
        WHERE b.company_id = ?
-       ORDER BY b.id ASC`,
-      [numId],
+       ORDER BY b.created_at ASC`,
+      [String(numId)],
     );
     return rows || [];
   },
 
   async update(id, data) {
-    const numId = parseNumericId(id);
-    if (!numId) {
+    const branchId = normalizeBranchId(id);
+    if (!branchId) {
       const err = new Error(
-        `Invalid branch id "${id}". A valid numeric branch ID is required.`,
+        `Invalid branch id "${id}". A valid branch ID is required.`,
       );
       err.statusCode = 400;
       throw err;
     }
 
-    // Verify branch exists — NEVER create a new row on PUT!
+    // Verify branch exists — NEVER create a new row on PUT
     const [existingRows] = await pool.execute(
       "SELECT id FROM branches WHERE id = ? LIMIT 1",
-      [numId],
+      [branchId],
     );
     if (!existingRows || existingRows.length === 0) {
       return false;
@@ -272,10 +306,10 @@ const branchModel = {
         val !== undefined
       ) {
         if (key === "company_id") {
-          const parsedComp = parseNumericId(val);
+          const parsedComp = parseNumericCompanyId(val);
           if (!parsedComp) continue;
           fields.push("company_id = ?");
-          values.push(parsedComp);
+          values.push(String(parsedComp));
           continue;
         }
         if (key === "is_active") {
@@ -309,7 +343,7 @@ const branchModel = {
       fields.push("updated_at = NOW()");
     }
 
-    values.push(numId);
+    values.push(branchId);
     const [result] = await pool.execute(
       `UPDATE branches SET ${fields.join(", ")} WHERE id = ?`,
       values,
@@ -318,34 +352,34 @@ const branchModel = {
   },
 
   async delete(id) {
-    const numId = parseNumericId(id);
-    if (!numId) return false;
+    const branchId = normalizeBranchId(id);
+    if (!branchId) return false;
     const [result] = await pool.execute("DELETE FROM branches WHERE id = ?", [
-      numId,
+      branchId,
     ]);
     return (result?.affectedRows || 0) > 0;
   },
 
   async findAll() {
     const [rows] = await pool.execute(
-      `SELECT b.*, u.full_name as manager_name,
+      `SELECT b.*, COALESCE(b.manager_name, u.full_name) as manager_name,
        (SELECT COUNT(*) FROM sub_branches sb WHERE sb.branch_id = b.id) as sub_branch_count,
        (SELECT COUNT(*) FROM users u2 WHERE u2.branch_id = b.id AND u2.deleted_at IS NULL) as user_count
        FROM branches b
        LEFT JOIN users u ON b.manager_id = u.id
-       ORDER BY b.id ASC`,
+       ORDER BY b.created_at ASC`,
     );
     return rows || [];
   },
 
   async getStats(company_id) {
-    const numId = parseNumericId(company_id);
+    const numId = parseNumericCompanyId(company_id);
     if (!numId) return { total_branches: 0, active_branches: 0 };
     const [rows] = await pool.execute(
       `SELECT COUNT(*) as total_branches,
        SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_branches
        FROM branches WHERE company_id = ?`,
-      [numId],
+      [String(numId)],
     );
     return rows[0] || { total_branches: 0, active_branches: 0 };
   },

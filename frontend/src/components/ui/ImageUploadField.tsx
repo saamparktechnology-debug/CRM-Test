@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { UploadCloud, Image as ImageIcon, CheckCircle2, AlertCircle, X, Loader2, ExternalLink, RefreshCw } from "lucide-react"
+import { UploadCloud, CheckCircle2, AlertCircle, X, Loader2, ExternalLink, RefreshCw } from "lucide-react"
 import { uploadToImgBB } from "@/lib/imgbbUpload"
+import { getErrorMessage, resolveUploadUrl } from "@/lib/responseHandler"
 
 interface ImageUploadFieldProps {
   label: string
@@ -21,7 +22,7 @@ export function ImageUploadField({
   label,
   value,
   onChange,
-  placeholder = "https://... or upload from storage",
+  placeholder = "/uploads/... or https://...",
   helperText,
   uploadNamePrefix = "upload",
   aspectRatio = "square",
@@ -58,10 +59,10 @@ export function ImageUploadField({
         setUploadSuccess(true)
         setTimeout(() => setUploadSuccess(false), 4000)
       } else {
-        setUploadError("Upload failed. Please check your connection or try another image.")
+        setUploadError("Upload failed. Server did not return a valid image URL.")
       }
     } catch (err: any) {
-      setUploadError(err.message || "Failed to upload image via ImgBB.")
+      setUploadError(getErrorMessage(err, "Failed to upload image to server."))
     } finally {
       setIsUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -76,6 +77,7 @@ export function ImageUploadField({
   }
 
   const containerHeight = aspectRatio === "signature" ? "h-20" : aspectRatio === "wide" ? "h-28" : "h-28"
+  const resolvedSrc = resolveUploadUrl(value)
 
   return (
     <div className="space-y-1.5">
@@ -103,17 +105,16 @@ export function ImageUploadField({
           className="hidden"
         />
 
-        {value ? (
+        {resolvedSrc ? (
           /* Preview State */
           <div className={`relative ${containerHeight} w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-900/50 p-2 flex items-center justify-between gap-3 overflow-hidden group`}>
             <div className="flex items-center gap-3 min-w-0 flex-1 h-full">
               <div className="h-full w-24 shrink-0 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center p-1.5 shadow-2xs overflow-hidden">
                 <img
-                  src={value}
+                  src={resolvedSrc}
                   alt={label}
                   className="max-h-full max-w-full object-contain"
                   onError={(e) => {
-                    // Fallback on broken image
                     (e.currentTarget as HTMLElement).style.display = "none"
                   }}
                 />
@@ -123,11 +124,11 @@ export function ImageUploadField({
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">
-                    Uploaded via ImgBB
+                    Uploaded to Server
                   </span>
                 </div>
                 <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate font-mono">
-                  {value}
+                  {resolvedSrc}
                 </p>
                 <div className="flex items-center gap-2 pt-0.5">
                   <button
@@ -139,7 +140,7 @@ export function ImageUploadField({
                     <RefreshCw className="w-3 h-3" /> Change File
                   </button>
                   <a
-                    href={value}
+                    href={resolvedSrc}
                     target="_blank"
                     rel="noreferrer"
                     className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 flex items-center gap-0.5"
@@ -169,8 +170,8 @@ export function ImageUploadField({
             {isUploading ? (
               <div className="flex flex-col items-center gap-1.5 text-blue-600 dark:text-blue-400">
                 <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-xs font-bold">Uploading to ImgBB cloud...</span>
-                <span className="text-[10px] text-zinc-500">Compressing and generating high-res permanent URL</span>
+                <span className="text-xs font-bold">Uploading image...</span>
+                <span className="text-[10px] text-zinc-500">Saving file to server storage</span>
               </div>
             ) : (
               <>
@@ -178,10 +179,10 @@ export function ImageUploadField({
                   <UploadCloud className="w-5 h-5" />
                 </div>
                 <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
-                  Click to upload {(label || "image").toLowerCase()} from storage
+                  Click to upload {(label || "image").toLowerCase()}
                 </p>
                 <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  PNG, JPG, WebP, SVG up to 10MB (Free permanent ImgBB hosting)
+                  PNG, JPG, WebP, SVG up to 10MB
                 </p>
               </>
             )}
@@ -210,7 +211,7 @@ export function ImageUploadField({
         )}
         {uploadSuccess && (
           <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 pt-1">
-            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> Image uploaded successfully to ImgBB!
+            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> Image uploaded successfully!
           </p>
         )}
       </div>
