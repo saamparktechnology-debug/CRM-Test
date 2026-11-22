@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 export type MarketingPlanDuration =
   | "1 month"
@@ -6,75 +6,75 @@ export type MarketingPlanDuration =
   | "6 months"
   | "1 year"
   | "Weekly"
-  | "Custom Dates"
+  | "Custom Dates";
 
 export interface MarketingScheduleItem {
-  sl: number
-  date: string
-  done: boolean
-  remarks: string
-  type?: "poster" | "video"
+  sl: number;
+  date: string;
+  done: boolean;
+  remarks: string;
+  type?: "poster" | "video";
 }
 
 export interface MarketingPerformanceReport {
-  startDate?: string
-  endDate?: string
-  postsDelivered?: string
-  videosDelivered?: string
-  leadsGenerated?: number | string
-  reach?: number | string
-  followersGained?: number | string
+  startDate?: string;
+  endDate?: string;
+  postsDelivered?: string;
+  videosDelivered?: string;
+  leadsGenerated?: number | string;
+  reach?: number | string;
+  followersGained?: number | string;
 }
 
 export interface DigitalMarketingPackage {
-  enabled: boolean
-  formNumber?: string
-  planName: string
-  packageDuration: MarketingPlanDuration | string
-  startDate: string
-  expireDate: string
-  category?: string
-  specialNote?: string
+  enabled: boolean;
+  formNumber?: string;
+  planName: string;
+  packageDuration: MarketingPlanDuration | string;
+  startDate: string;
+  expireDate: string;
+  category?: string;
+  specialNote?: string;
 
   // Deliverables
-  postersCount: number
-  bannersCount?: number
-  leafletsCount?: number
-  videosCount: number
-  storyCount?: number
-  hasRealModelShoot?: boolean
-  modelShootDate?: string
-  modelShootNotes?: string
-  hasTotoAds?: boolean
-  totoAdsNotes?: string
-  targetLocations?: string
+  postersCount: number;
+  bannersCount?: number;
+  leafletsCount?: number;
+  videosCount: number;
+  storyCount?: number;
+  hasRealModelShoot?: boolean;
+  modelShootDate?: string;
+  modelShootNotes?: string;
+  hasTotoAds?: boolean;
+  totoAdsNotes?: string;
+  targetLocations?: string;
 
   // Offer & Multi-month Pricing
-  durationMonths?: number
-  baseMonthlyPrice?: number
-  discountPercent?: number
-  freeOfferText?: string
+  durationMonths?: number;
+  baseMonthlyPrice?: number;
+  discountPercent?: number;
+  freeOfferText?: string;
 
   // Display badges
-  expectedViews?: string
-  expectedLeads?: string
-  bestFor?: string
-  features?: string[]
+  expectedViews?: string;
+  expectedLeads?: string;
+  bestFor?: string;
+  features?: string[];
 
   // Platforms
-  platforms?: string[]
+  platforms?: string[];
 
   // Schedules
-  posterSchedule?: MarketingScheduleItem[]
-  videoSchedule?: MarketingScheduleItem[]
+  posterSchedule?: MarketingScheduleItem[];
+  videoSchedule?: MarketingScheduleItem[];
 
   // Performance
-  performance?: MarketingPerformanceReport
+  performance?: MarketingPerformanceReport;
 
   // Financials
-  packagePrice: number
-  adSpendBudget?: number
-  agencyFee?: number
+  packagePrice: number;
+  adSpendBudget?: number;
+  agencyFee?: number;
 }
 
 // 9 Packages from Saampark Consultancy Service Flyer
@@ -90,15 +90,16 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "10K Views/Month (Estimate)",
     expectedLeads: "Startup Traction",
     bestFor: "Startups & Small Businesses",
-    description: "8 Premium Posts, 1 AI Reel, 8 Story Designs, Festive Post, Page Setup",
+    description:
+      "8 Premium Posts, 1 AI Reel, 8 Story Designs, Festive Post, Page Setup",
     features: [
       "8 Premium Social Media Posts",
       "1 AI Reel",
       "8 Story Designs",
       "Festive Post",
       "Page Setup",
-      "10K Views/Month (Estimate)"
-    ]
+      "10K Views/Month (Estimate)",
+    ],
   },
   {
     id: "pkg-02",
@@ -111,7 +112,8 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "20K - 30K Views/Month (Estimate)",
     expectedLeads: "8 - 10 Leads/Month (Expected)",
     bestFor: "Growing Businesses",
-    description: "12 Premium Posts, 2 AI Reels, 12 Stories, Festive Post, Page Setup, Facebook & Instagram Management, Content Writing",
+    description:
+      "12 Premium Posts, 2 AI Reels, 12 Stories, Festive Post, Page Setup, Facebook & Instagram Management, Content Writing",
     features: [
       "12 Premium Social Media Posts",
       "2 AI Reels",
@@ -121,8 +123,8 @@ export const SAAMPARK_9_PACKAGES = [
       "Facebook & Instagram Management",
       "Content Writing",
       "20K - 30K Views/Month",
-      "8 - 10 Leads/Month"
-    ]
+      "8 - 10 Leads/Month",
+    ],
   },
   {
     id: "pkg-03",
@@ -135,7 +137,8 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "60K - 80K Views/Month (Estimate)",
     expectedLeads: "15 - 18 Leads/Month (Expected)",
     bestFor: "Established Businesses",
-    description: "16 Premium Posts, 4 AI Reels, 1 Promo Video (1 min), 16 Stories, Facebook Cover Page, Page Setup, Content Writing, Hashtag Research",
+    description:
+      "16 Premium Posts, 4 AI Reels, 1 Promo Video (1 min), 16 Stories, Facebook Cover Page, Page Setup, Content Writing, Hashtag Research",
     features: [
       "16 Premium Social Media Posts",
       "4 AI Reels",
@@ -146,8 +149,8 @@ export const SAAMPARK_9_PACKAGES = [
       "Content Writing",
       "Hashtag Research",
       "60K - 80K Views/Month",
-      "15 - 18 Leads/Month"
-    ]
+      "15 - 18 Leads/Month",
+    ],
   },
   {
     id: "pkg-04",
@@ -160,7 +163,8 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "110K - 120K Views/Month (Estimate)",
     expectedLeads: "30 - 35 Leads/Month (Expected)",
     bestFor: "Small & Growing Businesses",
-    description: "20 Premium Posts, 6 AI Reels, 2 Promo Videos, 20 Story Updates, Festive Posts, Page Setup, Facebook Cover Page, Content Writing",
+    description:
+      "20 Premium Posts, 6 AI Reels, 2 Promo Videos, 20 Story Updates, Festive Posts, Page Setup, Facebook Cover Page, Content Writing",
     features: [
       "20 Premium Social Media Posts",
       "6 AI Reels",
@@ -171,8 +175,8 @@ export const SAAMPARK_9_PACKAGES = [
       "Facebook Cover Page",
       "Content Writing",
       "110K - 120K Views/Month",
-      "30 - 35 Leads/Month"
-    ]
+      "30 - 35 Leads/Month",
+    ],
   },
   {
     id: "pkg-05",
@@ -185,7 +189,8 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "120K - 150K Views/Month (Estimate)",
     expectedLeads: "35 - 40 Leads/Month (Expected)",
     bestFor: "Growing Businesses",
-    description: "24 Premium Posts, 6 AI Reels, 3 Daily Stories, 3 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research",
+    description:
+      "24 Premium Posts, 6 AI Reels, 3 Daily Stories, 3 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research",
     features: [
       "24 Premium Social Media Posts",
       "6 AI Reels",
@@ -197,8 +202,8 @@ export const SAAMPARK_9_PACKAGES = [
       "Content Writing",
       "Hashtag Research",
       "120K - 150K Views/Month",
-      "35 - 40 Leads/Month"
-    ]
+      "35 - 40 Leads/Month",
+    ],
   },
   {
     id: "pkg-06",
@@ -211,7 +216,8 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "140K - 160K Views/Month (Estimate)",
     expectedLeads: "45 - 55 Leads/Month (Expected)",
     bestFor: "Established Businesses",
-    description: "30 Premium Posts, 8 AI Reels, 3 Daily Stories, 3 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research",
+    description:
+      "30 Premium Posts, 8 AI Reels, 3 Daily Stories, 3 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research",
     features: [
       "30 Premium Social Media Posts",
       "8 AI Reels",
@@ -223,8 +229,8 @@ export const SAAMPARK_9_PACKAGES = [
       "Content Writing",
       "Hashtag Research",
       "140K - 160K Views/Month",
-      "45 - 55 Leads/Month"
-    ]
+      "45 - 55 Leads/Month",
+    ],
   },
   {
     id: "pkg-07",
@@ -237,7 +243,8 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "200K - 230K Views/Month (Estimate)",
     expectedLeads: "60 - 70 Leads/Month (Expected)",
     bestFor: "Large Businesses",
-    description: "30 Premium Posts, 10 AI Reels, Daily Stories, 4 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research",
+    description:
+      "30 Premium Posts, 10 AI Reels, Daily Stories, 4 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research",
     features: [
       "30 Premium Social Media Posts",
       "10 AI Reels",
@@ -249,8 +256,8 @@ export const SAAMPARK_9_PACKAGES = [
       "Content Writing",
       "Hashtag Research",
       "200K - 230K Views/Month",
-      "60 - 70 Leads/Month"
-    ]
+      "60 - 70 Leads/Month",
+    ],
   },
   {
     id: "pkg-08",
@@ -263,7 +270,8 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "230K - 250K Views/Month (Estimate)",
     expectedLeads: "120 - 150 Leads/Month (Expected)",
     bestFor: "Multi-Brand Businesses",
-    description: "35 Premium Posts, 12 AI Reels, Daily Stories, 4 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research",
+    description:
+      "35 Premium Posts, 12 AI Reels, Daily Stories, 4 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research",
     features: [
       "35 Premium Social Media Posts",
       "12 AI Reels",
@@ -275,8 +283,8 @@ export const SAAMPARK_9_PACKAGES = [
       "Content Writing",
       "Hashtag Research",
       "230K - 250K Views/Month",
-      "120 - 150 Leads/Month"
-    ]
+      "120 - 150 Leads/Month",
+    ],
   },
   {
     id: "pkg-09",
@@ -289,7 +297,8 @@ export const SAAMPARK_9_PACKAGES = [
     expectedViews: "300K+ Views/Month (Estimate)",
     expectedLeads: "120 - 300 Leads/Month (Expected)",
     bestFor: "Maximum Business Growth",
-    description: "40 Premium Posts, 12 AI Reels, Daily Stories, 4 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research, Priority Support",
+    description:
+      "40 Premium Posts, 12 AI Reels, Daily Stories, 4 Promo Videos, Festive Posts, Page Setup, Facebook Cover Page, Content Writing, Hashtag Research, Priority Support",
     features: [
       "40 Premium Social Media Posts",
       "12 AI Reels",
@@ -302,60 +311,135 @@ export const SAAMPARK_9_PACKAGES = [
       "Hashtag Research",
       "Priority Support",
       "300K+ Views/Month",
-      "120 - 300 Leads/Month"
-    ]
-  }
-]
+      "120 - 300 Leads/Month",
+    ],
+  },
+];
 
-export const PRESET_MARKETING_PLANS = SAAMPARK_9_PACKAGES
+export const PRESET_MARKETING_PLANS = SAAMPARK_9_PACKAGES;
 
 export const DURATION_OFFERS = [
-  { label: "1 Month (Standard Plan)", value: "1 month", months: 1, discountPct: 0, offer: "" },
-  { label: "3 Months Plan (5% OFF)", value: "3 months", months: 3, discountPct: 5, offer: "5% OFF" },
-  { label: "6 Months Plan (10% OFF)", value: "6 months", months: 6, discountPct: 10, offer: "10% OFF" },
-  { label: "12 Months / 1 Year Plan (20% OFF + TOTO or Model FREE)", value: "1 year", months: 12, discountPct: 20, offer: "20% OFF + TOTO or Model FREE" },
-  { label: "Custom Duration & Offer", value: "custom", months: 1, discountPct: 0, offer: "Custom" },
-]
+  {
+    label: "1 Month (Standard Plan)",
+    value: "1 month",
+    months: 1,
+    discountPct: 0,
+    offer: "",
+  },
+  {
+    label: "3 Months Plan (5% OFF)",
+    value: "3 months",
+    months: 3,
+    discountPct: 5,
+    offer: "5% OFF",
+  },
+  {
+    label: "6 Months Plan (10% OFF)",
+    value: "6 months",
+    months: 6,
+    discountPct: 10,
+    offer: "10% OFF",
+  },
+  {
+    label: "12 Months / 1 Year Plan (20% OFF + TOTO or Model FREE)",
+    value: "1 year",
+    months: 12,
+    discountPct: 20,
+    offer: "20% OFF + TOTO or Model FREE",
+  },
+  {
+    label: "Custom Duration & Offer",
+    value: "custom",
+    months: 1,
+    discountPct: 0,
+    offer: "Custom",
+  },
+];
 
-export function calculatePackageTotal(baseMonthlyPrice: number, duration: string, customMonths?: number, customDiscountPct?: number, customOffer?: string) {
+export function calculatePackageTotal(
+  baseMonthlyPrice: number,
+  duration: string,
+  customMonths?: number,
+  customDiscountPct?: number,
+  customOffer?: string,
+  masterRules?: Array<{
+    months: number;
+    discountPct: number;
+    offerText?: string;
+    isActive?: boolean;
+  }>,
+) {
+  const rate = Math.max(0, Number(baseMonthlyPrice) || 0);
+
   if (duration === "custom") {
-    const m = Math.max(1, Number(customMonths) || 1)
-    const disc = Math.max(0, Math.min(100, Number(customDiscountPct) || 0))
-    const gross = baseMonthlyPrice * m
-    const discountAmount = Math.round(gross * (disc / 100))
-    const net = gross - discountAmount
+    const m = Math.max(1, Number(customMonths) || 1);
+    const disc = Math.max(0, Math.min(100, Number(customDiscountPct) || 0));
+    const gross = rate * m;
+    const discountAmount = Math.round(gross * (disc / 100));
     return {
       months: m,
       discountPct: disc,
       discountAmount,
-      netPrice: net,
-      offer: customOffer || `${disc > 0 ? `${disc}% OFF` : ""}`
-    }
+      netPrice: gross - discountAmount,
+      offer: customOffer || (disc > 0 ? `${disc}% OFF` : ""),
+    };
   }
-  const opt = DURATION_OFFERS.find(d => d.value === duration) || DURATION_OFFERS[0]
-  const gross = baseMonthlyPrice * opt.months
-  const discountAmount = Math.round(gross * (opt.discountPct / 100))
-  const net = gross - discountAmount
+
+  const fallbackOpt =
+    DURATION_OFFERS.find((d) => d.value === duration) || DURATION_OFFERS[0];
+  const months = fallbackOpt.months;
+  const masterMatch = Array.isArray(masterRules)
+    ? masterRules.find(
+        (r) => r.isActive !== false && Number(r.months) === months,
+      )
+    : undefined;
+
+  const discountPct = masterMatch
+    ? Math.max(0, Math.min(100, Number(masterMatch.discountPct) || 0))
+    : fallbackOpt.discountPct;
+  const offer = masterMatch
+    ? (masterMatch.offerText ?? (discountPct > 0 ? `${discountPct}% OFF` : ""))
+    : fallbackOpt.offer;
+  const gross = rate * months;
+  const discountAmount = Math.round(gross * (discountPct / 100));
+
   return {
-    months: opt.months,
-    discountPct: opt.discountPct,
+    months,
+    discountPct,
     discountAmount,
-    netPrice: net,
-    offer: opt.offer
-  }
+    netPrice: gross - discountAmount,
+    offer,
+  };
 }
 
-export function createDefaultMarketingPackage(planName = "Package 02 - Grow"): DigitalMarketingPackage {
-  const today = new Date()
-  const exp = new Date(today.getTime() + 30 * 86400000)
+export function createDefaultMarketingPackage(
+  planName = "Package 02 - Grow",
+): DigitalMarketingPackage {
+  const today = new Date();
+  const exp = new Date(today.getTime() + 30 * 86400000);
 
   const fmt = (d: Date) => {
-    const day = String(d.getDate()).padStart(2, "0")
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    return `${day}/${months[d.getMonth()]}/${d.getFullYear()}`
-  }
+    const day = String(d.getDate()).padStart(2, "0");
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return `${day}/${months[d.getMonth()]}/${d.getFullYear()}`;
+  };
 
-  const selectedPkg = SAAMPARK_9_PACKAGES.find(p => p.name.includes(planName)) || SAAMPARK_9_PACKAGES[1]
+  const selectedPkg =
+    SAAMPARK_9_PACKAGES.find((p) => p.name.includes(planName)) ||
+    SAAMPARK_9_PACKAGES[1];
 
   return {
     enabled: true,
@@ -380,5 +464,5 @@ export function createDefaultMarketingPackage(planName = "Package 02 - Grow"): D
     expectedLeads: selectedPkg.expectedLeads,
     bestFor: selectedPkg.bestFor,
     features: selectedPkg.features,
-  }
+  };
 }

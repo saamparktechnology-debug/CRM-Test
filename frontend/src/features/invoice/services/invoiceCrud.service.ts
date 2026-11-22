@@ -3,15 +3,19 @@ import {
   saveModuleDataToDB,
   filterGlobalDeletedItems,
   getLocalDeletedIds,
-} from "@/lib/storageSync"
-import { getClients, saveStoredClient } from "@/features/clients/services/clientService"
-import { recordActivityLog } from "@/services/activityLogService"
-import { InvoiceItem } from "../types/invoice.types"
+} from "@/lib/storageSync";
+import {
+  getClients,
+  saveStoredClient,
+} from "@/features/clients/services/clientService";
+import { recordActivityLog } from "@/services/activityLogService";
+import { InvoiceItem } from "../types/invoice.types";
 import {
   parseInvoiceDate,
   generateInvoiceNumber,
   parseCurrencyNumber,
-} from "./invoiceUtils.service"
+} from "./invoiceUtils.service";
+import { api } from "@/lib/api";
 
 export const getInvoices = async (
   companyId?: string,
@@ -115,12 +119,11 @@ export const addInvoice = async (
     !targetComp || targetComp === "all" ? "tech" : targetComp;
 
   // Fetch scoped and all in parallel for instant execution
-  const [currentScoped, currentAll] = await Promise.all([
-    fetchModuleDataFromDB<InvoiceItem[]>("invoices", [], effectiveComp).catch(
-      () => [],
-    ),
-    fetchModuleDataFromDB<InvoiceItem[]>("invoices", [], "all").catch(() => []),
-  ]);
+  const currentAll = await fetchModuleDataFromDB<InvoiceItem[]>(
+    "invoices",
+    [],
+    "all",
+  ).catch(() => []);
 
   const deletedIds = getLocalDeletedIds();
   let nextId = (invoice.id || "").trim();
@@ -227,30 +230,10 @@ export const addInvoice = async (
     } catch {}
   }
 
-  const updatedScoped = [
-    newInvoice,
-    ...(Array.isArray(currentScoped)
-      ? currentScoped.filter(
-          (i) =>
-            String(i.id).toUpperCase().trim() !== nextId.toUpperCase().trim(),
-        )
-      : []),
-  ];
-  const updatedAll = [
-    newInvoice,
-    ...(Array.isArray(currentAll)
-      ? currentAll.filter(
-          (i) =>
-            String(i.id).toUpperCase().trim() !== nextId.toUpperCase().trim(),
-        )
-      : []),
-  ];
+  // Send ONLY the newly created invoice — backend merges it into company & root keys
+  await saveModuleDataToDB("invoices", [newInvoice], effectiveComp);
 
-  // Sequential saves across target databases to eliminate concurrent write race conditions
-  await saveModuleDataToDB("invoices", updatedScoped, effectiveComp);
-  if (effectiveComp !== "all") {
-    await saveModuleDataToDB("invoices", updatedAll, "all").catch(() => {});
-  }
+  await saveModuleDataToDB("invoices", [newInvoice], effectiveComp);
 
   // Automatically ensure client user account exists and sync client directory
   if (newInvoice.clientEmail) {
@@ -353,7 +336,7 @@ export const updateInvoice = async (
     companyId: newCompanyId,
   };
 
-  // Cross-Company Transfer
+  // Cross-Company Transfer: remove from old company only when company changed
   if (newCompanyId !== oldCompanyId && oldCompanyId !== "all") {
     const oldList = await fetchModuleDataFromDB<InvoiceItem[]>(
       "invoices",
@@ -363,38 +346,22 @@ export const updateInvoice = async (
     const filteredOld = oldList.filter(
       (i) => String(i.id).toUpperCase().trim() !== strId,
     );
-    await saveModuleDataToDB("invoices", filteredOld, oldCompanyId);
-
-    const newList = await fetchModuleDataFromDB<InvoiceItem[]>(
-      "invoices",
-      [],
-      newCompanyId,
-    ).catch(() => []);
-    const updatedNew = [
-      finalInvoice,
-      ...newList.filter((i) => String(i.id).toUpperCase().trim() !== strId),
-    ];
-    await saveModuleDataToDB("invoices", updatedNew, newCompanyId);
-  } else {
-    const targetComp = companyId || newCompanyId;
-    const currentList = await fetchModuleDataFromDB<InvoiceItem[]>(
-      "invoices",
-      [],
-      targetComp,
-    ).catch(() => []);
-    const updatedList = [
-      finalInvoice,
-      ...currentList.filter((i) => String(i.id).toUpperCase().trim() !== strId),
-    ];
-    await saveModuleDataToDB("invoices", updatedList, targetComp);
+    await api.post("/store/invoices", {
+      data: filteredOld,
+      company_id: oldCompanyId,
+      mode: "replace",
+    });
   }
 
-  // Update in "all"
+  // Send ONLY the updated invoice — backend merges into company & root keys
+  const targetComp = companyId || newCompanyId;
+  await saveModuleDataToDB("invoices", [finalInvoice], targetComp);
+
+  // Build updated list in memory only for recalculating client totals
   const updatedAll = [
     finalInvoice,
     ...allInvoices.filter((i) => String(i.id).toUpperCase().trim() !== strId),
   ];
-  await saveModuleDataToDB("invoices", updatedAll, "all");
 
   // Update client billing stats
   try {
@@ -457,4 +424,3 @@ export const updateInvoice = async (
 
   return finalInvoice;
 };
-

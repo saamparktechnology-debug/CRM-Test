@@ -1,4 +1,4 @@
-import { fetchModuleDataFromDB, saveModuleDataToDB } from "@/lib/storageSync"
+import { fetchModuleDataFromDB, saveModuleDataToDB } from "@/lib/storageSync";
 
 export type ActivityType =
   | "permission"
@@ -13,110 +13,133 @@ export type ActivityType =
   | "user"
   | "company"
   | "branch"
-  | "general"
+  | "general";
 
 export interface ActivityLog {
-  id: string
-  companyId: string
-  companyName?: string
-  branchId?: string
-  branchName?: string
-  module?: string
-  action: string
-  description: string
-  type: ActivityType
-  timestamp: string
-  userName?: string
-  userEmail?: string
-  userRole?: string
-  details?: string
+  id: string;
+  userId?: number;
+  companyId: string;
+  companyName?: string;
+  branchId?: string;
+  branchName?: string;
+  module?: string;
+  action: string;
+  description: string;
+  type: ActivityType;
+  timestamp: string;
+  userName?: string;
+  userEmail?: string;
+  userRole?: string;
+  details?: string;
 }
 
-const LOCAL_STORAGE_KEY = "saampark_activity_logs_cache"
+const LOCAL_STORAGE_KEY = "saampark_activity_logs_cache";
 
 function getLocalLogs(): ActivityLog[] {
-  if (typeof window === "undefined") return []
+  if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return []
+    return [];
   }
 }
 
 function saveLocalLogs(logs: ActivityLog[]): void {
-  if (typeof window === "undefined") return
+  if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(logs.slice(0, 500)))
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(logs.slice(0, 500)));
   } catch {}
 }
 
-export const DEFAULT_ACTIVITY_LOGS: ActivityLog[] = []
+export const DEFAULT_ACTIVITY_LOGS: ActivityLog[] = [];
 
-export async function getActivityLogs(companyId?: string): Promise<ActivityLog[]> {
+export async function getActivityLogs(
+  companyId?: string,
+): Promise<ActivityLog[]> {
   try {
-    const scope = !companyId || companyId === "all" ? "all" : companyId
-    const stored = await fetchModuleDataFromDB<ActivityLog[]>("activity_logs", [], scope)
-    const local = getLocalLogs()
+    const scope = !companyId || companyId === "all" ? "all" : companyId;
+    const stored = await fetchModuleDataFromDB<ActivityLog[]>(
+      "activity_logs",
+      [],
+      scope,
+    );
+    const local = getLocalLogs();
 
     // Merge DB logs and local cached logs
-    const map = new Map<string, ActivityLog>()
-    
+    const map = new Map<string, ActivityLog>();
+
     // Add default logs if empty
     if ((!stored || stored.length === 0) && local.length === 0) {
-      DEFAULT_ACTIVITY_LOGS.forEach(l => map.set(l.id, l))
+      DEFAULT_ACTIVITY_LOGS.forEach((l) => map.set(l.id, l));
     }
 
     if (Array.isArray(stored)) {
-      stored.forEach(l => { if (l?.id) map.set(l.id, l) })
+      stored.forEach((l) => {
+        if (l?.id) map.set(l.id, l);
+      });
     }
-    local.forEach(l => { if (l?.id) map.set(l.id, l) })
+    local.forEach((l) => {
+      if (l?.id) map.set(l.id, l);
+    });
 
-    let list = Array.from(map.values())
+    let list = Array.from(map.values());
 
     if (companyId && companyId !== "all") {
-      const cNorm = String(companyId).toLowerCase().trim()
-      list = list.filter(l => !l.companyId || String(l.companyId).toLowerCase().trim() === cNorm)
+      const cNorm = String(companyId).toLowerCase().trim();
+      list = list.filter(
+        (l) =>
+          !l.companyId || String(l.companyId).toLowerCase().trim() === cNorm,
+      );
     }
 
-    return list.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    return list.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
   } catch (err) {
-    console.warn("getActivityLogs error:", err)
-    return getLocalLogs().length > 0 ? getLocalLogs() : DEFAULT_ACTIVITY_LOGS
+    console.warn("getActivityLogs error:", err);
+    return getLocalLogs().length > 0 ? getLocalLogs() : DEFAULT_ACTIVITY_LOGS;
   }
 }
 
-export async function recordActivityLog(item: Partial<ActivityLog>): Promise<ActivityLog> {
-  let uName = item.userName
-  let uEmail = item.userEmail
-  let uRole = item.userRole
-  let cId = item.companyId
-  let cName = item.companyName
-  let bId = item.branchId
-  let bName = item.branchName
+export async function recordActivityLog(
+  item: Partial<ActivityLog>,
+): Promise<ActivityLog> {
+  let uName = item.userName;
+  let uEmail = item.userEmail;
+  let uRole = item.userRole;
+  let cId = item.companyId;
+  let cName = item.companyName;
+  let bId = item.branchId;
+  let bName = item.branchName;
 
   if (typeof window !== "undefined") {
     try {
-      const { useAuthStore } = require("@/store/useAuthStore")
-      const auth = useAuthStore.getState()
-      const u = auth.user
+      const { useAuthStore } = require("@/store/useAuthStore");
+      const auth = useAuthStore.getState();
+      const u = auth.user;
       if (u) {
-        if (!uName) uName = u.name || u.email || "Administrator"
-        if (!uEmail) uEmail = u.email || ""
-        if (!uRole) uRole = u.role || "Admin"
+        if (!uName) uName = u.name || u.email || "Administrator";
+        if (!uEmail) uEmail = u.email || "";
+        if (!uRole) uRole = u.role || "Admin";
       }
-      if (!cId) cId = auth.activeCompanyId || u?.companyId || "tech"
-      if (!bId) bId = auth.activeBranchId || u?.branchId
-      
-      const comp = auth.companies?.find((c: any) => c.id === cId || c.slug === cId)
-      if (comp && !cName) cName = comp.name
-      const branch = auth.branches?.find((b: any) => b.id === bId)
-      if (branch && !bName) bName = branch.name
+      if (!cId) cId = auth.activeCompanyId || u?.companyId || "tech";
+      if (!bId) bId = auth.activeBranchId || u?.branchId;
+
+      const comp = auth.companies?.find(
+        (c: any) => c.id === cId || c.slug === cId,
+      );
+      if (comp && !cName) cName = comp.name;
+      const branch = auth.branches?.find((b: any) => b.id === bId);
+      if (branch && !bName) bName = branch.name;
     } catch {}
   }
 
   const newLog: ActivityLog = {
-    id: item.id || `act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    id:
+      item.id ||
+      `act-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     companyId: cId || "tech",
     companyName: cName || "Saampark Group",
     branchId: bId,
@@ -130,40 +153,52 @@ export async function recordActivityLog(item: Partial<ActivityLog>): Promise<Act
     userEmail: uEmail,
     userRole: uRole,
     details: item.details,
-  }
+  };
 
   try {
     // 1. Save to local storage for immediate zero-latency feedback
-    const local = getLocalLogs()
-    const updatedLocal = [newLog, ...local.filter(l => l.id !== newLog.id)].slice(0, 500)
-    saveLocalLogs(updatedLocal)
+    const local = getLocalLogs();
+    const updatedLocal = [
+      newLog,
+      ...local.filter((l) => l.id !== newLog.id),
+    ].slice(0, 500);
+    saveLocalLogs(updatedLocal);
 
     // 2. Dispatch custom event for real-time reactivity in open UI tabs
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("saampark_activity_logged", { detail: newLog }))
-      window.dispatchEvent(new Event("storage"))
+      window.dispatchEvent(
+        new CustomEvent("saampark_activity_logged", { detail: newLog }),
+      );
+      window.dispatchEvent(new Event("storage"));
     }
 
     // 3. Persist to MySQL database via app_data / store API
-    const allDb = await fetchModuleDataFromDB<ActivityLog[]>("activity_logs", [], "all").catch(() => [])
-    const updatedDb = [newLog, ...(Array.isArray(allDb) ? allDb.filter(l => l.id !== newLog.id) : [])].slice(0, 500)
-    await saveModuleDataToDB("activity_logs", updatedDb, "all")
+    const allDb = await fetchModuleDataFromDB<ActivityLog[]>(
+      "activity_logs",
+      [],
+      "all",
+    ).catch(() => []);
+    const updatedDb = [
+      newLog,
+      ...(Array.isArray(allDb) ? allDb.filter((l) => l.id !== newLog.id) : []),
+    ].slice(0, 500);
+    await saveModuleDataToDB("activity_logs", updatedDb, "all");
   } catch (e) {
-    console.warn("recordActivityLog error:", e)
+    console.warn("recordActivityLog error:", e);
   }
 
-  return newLog
+  return newLog;
 }
 
 export async function clearAllActivityLogs(): Promise<boolean> {
   try {
     if (typeof window !== "undefined") {
-      localStorage.removeItem(LOCAL_STORAGE_KEY)
-      window.dispatchEvent(new CustomEvent("saampark_activity_logged"))
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      window.dispatchEvent(new CustomEvent("saampark_activity_logged"));
     }
-    await saveModuleDataToDB("activity_logs", [], "all")
-    return true
+    await saveModuleDataToDB("activity_logs", [], "all");
+    return true;
   } catch {
-    return false
+    return false;
   }
 }

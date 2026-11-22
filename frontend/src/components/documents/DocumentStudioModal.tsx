@@ -2279,14 +2279,42 @@ export function DocumentStudioModal({
     calculatedSubtotal - calculatedDiscount + numSetupCharge,
   );
 
+  // Load Subscription Discount Master rules once for active company
+  const [subDiscountRules, setSubDiscountRules] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    import("@/features/subscriptions/services/subscriptionDiscountMaster.service")
+      .then(({ getSubscriptionDiscountRules }) =>
+        getSubscriptionDiscountRules(companyId),
+      )
+      .then((rules) => setSubDiscountRules(rules))
+      .catch(() => {});
+  }, [companyId]);
+
+  // GST computed on post-discount taxableBase (proportional across items)
   const calculatedGst = React.useMemo(() => {
     if (docScheme === "nongst") return 0;
-    return items.reduce((sum, it) => {
-      const base = (it.rate || 0) * (it.qty || 1);
-      const rate = it.gstRate !== undefined ? it.gstRate : 18;
-      return sum + Math.round(base * (rate / 100));
+    if (calculatedSubtotal <= 0) {
+      return numSetupCharge > 0 ? Math.round(numSetupCharge * 0.18) : 0;
+    }
+    const discountRatio = Math.max(
+      0,
+      (calculatedSubtotal - calculatedDiscount) / calculatedSubtotal,
+    );
+    const itemsGst = items.reduce((sum, it) => {
+      const lineBase =
+        (Number(it.rate) || 0) * (Number(it.qty) || 1) * discountRatio;
+      const gstRate = it.gstRate !== undefined ? Number(it.gstRate) : 18;
+      return sum + Math.round(lineBase * (gstRate / 100));
     }, 0);
-  }, [items, docScheme]);
+    const setupGst = numSetupCharge > 0 ? Math.round(numSetupCharge * 0.18) : 0;
+    return itemsGst + setupGst;
+  }, [
+    items,
+    docScheme,
+    calculatedSubtotal,
+    calculatedDiscount,
+    numSetupCharge,
+  ]);
 
   const grandTotal = taxableBase + calculatedGst;
   const effectiveCreditDeduction =
@@ -2300,7 +2328,7 @@ export function DocumentStudioModal({
     () => __ctrlRef.current,
   );
 
-  // 1. Part Payment (EMI) Calculations (Total - Advance = Remaining / Months)
+  // 1. Part Payment (EMI) Calculations
   const numEmiAdvance =
     typeof emiAdvanceAmount === "number" ? Math.max(0, emiAdvanceAmount) : 0;
   const effectiveEmiAdvance = Math.min(netPayable, numEmiAdvance);
@@ -2310,13 +2338,43 @@ export function DocumentStudioModal({
       ? Math.round(emiRemainingBalance / emiTenureMonths)
       : emiRemainingBalance;
 
-  // 2. Subscription Calculations (Multi-month + Advance prepaid)
-  const defaultSubRate = items.length > 0 ? items[0]?.rate || 100 : 100;
+  // 2. Subscription Calculations (Strictly x * n with Master Discount — NEVER x * n * n)
+  const durationMonths = Math.max(1, Number(subscriptionDurationMonths) || 1);
+  const totalSubCycles =
+    subscriptionCycle === "Quarterly"
+      ? Math.max(1, Math.ceil(durationMonths / 3))
+      : subscriptionCycle === "Yearly"
+        ? Math.max(1, Math.ceil(durationMonths / 12))
+        : subscriptionCycle === "Weekly"
+          ? Math.max(1, Math.round(durationMonths * 4))
+          : durationMonths;
+
+  // Always use the per-cycle (monthly) base rate, NOT the already-multiplied packagePrice
+  const defaultSubRate = isMarketing
+    ? Number(marketingPackage?.baseMonthlyPrice || items[0]?.rate || 0)
+    : Number(items[0]?.rate || 0);
+
   const activeSubRate =
     typeof subscriptionRate === "number" && subscriptionRate > 0
       ? subscriptionRate
       : defaultSubRate;
-  const subContractTotal = activeSubRate * (subscriptionDurationMonths || 6);
+
+  const matchedMasterRule = subDiscountRules.find(
+    (r) => r.isActive !== false && Number(r.months) === durationMonths,
+  );
+  const subDiscountPct = matchedMasterRule
+    ? Number(matchedMasterRule.discountPct) || 0
+    : 0;
+  const subGrossTotal = activeSubRate * totalSubCycles;
+  const subDiscountAmount = Math.round(subGrossTotal * (subDiscountPct / 100));
+  const subTaxableTotal = Math.max(
+    0,
+    subGrossTotal - subDiscountAmount + numSetupCharge,
+  );
+  const subGstAmount =
+    docScheme === "gst" ? Math.round(subTaxableTotal * 0.18) : 0;
+  const subContractTotal = subTaxableTotal + subGstAmount;
+
   const numSubAdvance =
     typeof subscriptionAdvance === "number"
       ? Math.max(0, subscriptionAdvance)
@@ -2325,14 +2383,11 @@ export function DocumentStudioModal({
   const subPrepaidCycles =
     activeSubRate > 0
       ? Math.min(
-          subscriptionDurationMonths,
+          totalSubCycles,
           Math.floor(effectiveSubAdvance / activeSubRate),
         )
       : 0;
-  const subRemainingCycles = Math.max(
-    0,
-    subscriptionDurationMonths - subPrepaidCycles,
-  );
+  const subRemainingCycles = Math.max(0, totalSubCycles - subPrepaidCycles);
   const subBalanceDue = Math.max(0, subContractTotal - effectiveSubAdvance);
   const subNextBillingDate = calculateCycleFutureDate(
     issueDate,
