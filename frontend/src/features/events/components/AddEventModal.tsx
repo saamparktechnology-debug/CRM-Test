@@ -1,18 +1,32 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useMasterBundle } from "@/features/masters/hooks/useMasters"
-import { motion, AnimatePresence } from "framer-motion"
-import { X, Check, Paperclip, Mic, Lock, Users, Globe, Building2 } from "lucide-react"
-import { CalendarEvent, EventLabel, EventTypeOption, EventAudience } from "../types"
-import { useAuthStore } from "@/store/useAuthStore"
+import * as React from "react";
+import { useMasterBundle } from "@/features/masters/hooks/useMasters";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X,
+  Check,
+  Paperclip,
+  Mic,
+  Lock,
+  Users,
+  Globe,
+  Building2,
+} from "lucide-react";
+import {
+  CalendarEvent,
+  EventLabel,
+  EventTypeOption,
+  EventAudience,
+} from "../types";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface AddEventModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (event: Partial<CalendarEvent>) => void
-  initialDate?: string
-  labels: EventLabel[]
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (event: Partial<CalendarEvent>) => void;
+  initialDate?: string;
+  labels: EventLabel[];
 }
 
 const COLOR_SWATCHES = [
@@ -29,7 +43,7 @@ const COLOR_SWATCHES = [
   "#1e293b", // Navy
   "#d8b4fe", // Lavender / Light Purple
   "#3b82f6", // Royal Blue
-]
+];
 
 export function AddEventModal({
   isOpen,
@@ -38,40 +52,45 @@ export function AddEventModal({
   initialDate,
   labels,
 }: AddEventModalProps) {
-  const { data: masterBundle } = useMasterBundle()
-  const { user, activeCompanyId, activeBranchId } = useAuthStore()
-  const isAdmin = user?.role === "Super Admin" || user?.role === "Admin"
+  const { data: masterBundle } = useMasterBundle();
+  const { user, activeCompanyId, activeBranchId } = useAuthStore();
+  const isAdmin = user?.role === "Super Admin" || user?.role === "Admin";
 
-  const todayStr = React.useMemo(() => new Date().toISOString().split("T")[0], [])
-  const [title, setTitle] = React.useState("")
-  const [description, setDescription] = React.useState("")
-  const [startDate, setStartDate] = React.useState(initialDate || todayStr)
-  const [startTime, setStartTime] = React.useState("09:00")
-  const [endDate, setEndDate] = React.useState(initialDate || todayStr)
-  const [endTime, setEndTime] = React.useState("10:00")
-  const [location, setLocation] = React.useState("")
-  const [selectedLabel, setSelectedLabel] = React.useState("")
-  const [client, setClient] = React.useState("")
-  const [isPublicHoliday, setIsPublicHoliday] = React.useState(false)
-  const [audience, setAudience] = React.useState<EventAudience>(isAdmin ? "all" : "only_me")
-  const [isRepeat, setIsRepeat] = React.useState(false)
-  const [selectedColor, setSelectedColor] = React.useState(COLOR_SWATCHES[12]) // Default Royal Blue
+  const todayStr = React.useMemo(
+    () => new Date().toISOString().split("T")[0],
+    [],
+  );
+  const [title, setTitle] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [startDate, setStartDate] = React.useState(initialDate || todayStr);
+  const [startTime, setStartTime] = React.useState("09:00");
+  const [endDate, setEndDate] = React.useState(initialDate || todayStr);
+  const [endTime, setEndTime] = React.useState("10:00");
+  const [location, setLocation] = React.useState("");
+  const [selectedLabel, setSelectedLabel] = React.useState("");
+  const [client, setClient] = React.useState("");
+  const [isPublicHoliday, setIsPublicHoliday] = React.useState(false);
+  const [audience, setAudience] = React.useState<EventAudience>(
+    isAdmin ? "all" : "only_me",
+  );
+  const [isRepeat, setIsRepeat] = React.useState(false);
+  const [selectedColor, setSelectedColor] = React.useState(COLOR_SWATCHES[12]); // Default Royal Blue
 
   React.useEffect(() => {
     if (initialDate) {
-      setStartDate(initialDate)
-      setEndDate(initialDate)
+      setStartDate(initialDate);
+      setEndDate(initialDate);
     }
     if (!isAdmin) {
-      setAudience("only_me")
+      setAudience("only_me");
     }
-  }, [initialDate, isOpen, isAdmin])
+  }, [initialDate, isOpen, isAdmin]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) return
+    e.preventDefault();
+    if (!title.trim()) return;
 
     onSave({
       id: `evt_${Date.now()}`,
@@ -98,14 +117,14 @@ export function AddEventModal({
       companyId: activeCompanyId || user?.companyId || "tech",
       branchId: activeBranchId || user?.branchId || undefined,
       createdAt: new Date().toISOString(),
-    })
+    });
 
     // Reset form
-    setTitle("")
-    setDescription("")
-    setLocation("")
-    onClose()
-  }
+    setTitle("");
+    setDescription("");
+    setLocation("");
+    onClose();
+  };
 
   return (
     <AnimatePresence>
@@ -132,7 +151,9 @@ export function AddEventModal({
           <form onSubmit={handleSubmit} className="space-y-4 text-sm">
             {/* Title */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <label className="text-slate-600 dark:text-slate-400 font-medium">Title</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium">
+                Title
+              </label>
               <input
                 type="text"
                 required
@@ -145,7 +166,9 @@ export function AddEventModal({
 
             {/* Description */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-start">
-              <label className="text-slate-600 dark:text-slate-400 font-medium pt-2">Description</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium pt-2">
+                Description
+              </label>
               <textarea
                 rows={3}
                 value={description}
@@ -157,7 +180,9 @@ export function AddEventModal({
 
             {/* Start Date & Time */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <label className="text-slate-600 dark:text-slate-400 font-medium">Start date</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium">
+                Start date
+              </label>
               <div className="md:col-span-3 grid grid-cols-3 gap-3">
                 <input
                   type="date"
@@ -177,7 +202,9 @@ export function AddEventModal({
 
             {/* End Date & Time */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <label className="text-slate-600 dark:text-slate-400 font-medium">End date</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium">
+                End date
+              </label>
               <div className="md:col-span-3 grid grid-cols-3 gap-3">
                 <input
                   type="date"
@@ -197,7 +224,9 @@ export function AddEventModal({
 
             {/* Location */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <label className="text-slate-600 dark:text-slate-400 font-medium">Location</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium">
+                Location
+              </label>
               <input
                 type="text"
                 value={location}
@@ -209,7 +238,9 @@ export function AddEventModal({
 
             {/* Labels */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <label className="text-slate-600 dark:text-slate-400 font-medium">Labels</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium">
+                Labels
+              </label>
               <select
                 value={selectedLabel}
                 onChange={(e) => setSelectedLabel(e.target.value)}
@@ -217,15 +248,18 @@ export function AddEventModal({
               >
                 <option value="">Labels</option>
                 {(masterBundle?.options?.["followup_type"] || []).map((opt) => (
-                  <option key={opt.id} value={opt.value}>{opt.label}</option>
-                ))}
+                  <option key={opt.id} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
               </select>
             </div>
 
             {/* Client */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <label className="text-slate-600 dark:text-slate-400 font-medium">Client</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium">
+                Client
+              </label>
               <select
                 value={client}
                 onChange={(e) => setClient(e.target.value)}
@@ -233,20 +267,26 @@ export function AddEventModal({
               >
                 <option value="">Client</option>
                 <option value="Acme Corporation">Acme Corporation</option>
-                <option value="SAAMPARK Tech Client">SAAMPARK Tech Client</option>
+                <option value="SAAMPARK Tech Client">
+                  SAAMPARK Tech Client
+                </option>
                 <option value="Global Digital Ltd">Global Digital Ltd</option>
               </select>
             </div>
 
             {/* Public Holiday Toggle */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <label className="text-slate-600 dark:text-slate-400 font-medium">Public holiday</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium">
+                Public holiday
+              </label>
               <div className="md:col-span-3 flex items-center">
                 <button
                   type="button"
                   onClick={() => setIsPublicHoliday(!isPublicHoliday)}
                   className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
-                    isPublicHoliday ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"
+                    isPublicHoliday
+                      ? "bg-blue-600"
+                      : "bg-slate-300 dark:bg-slate-700"
                   }`}
                 >
                   <div
@@ -266,10 +306,26 @@ export function AddEventModal({
                 </label>
                 <div className="md:col-span-3 space-y-2">
                   {[
-                    { id: "only_me", label: "🔒 Only Me (Private)", desc: "Visible and manageable only by you" },
-                    { id: "only_clients", label: "🏢 Only Clients", desc: "Broadcast reminder visible to all clients" },
-                    { id: "only_teams", label: "👥 Only Teams", desc: "Broadcast reminder visible to all team members / devs" },
-                    { id: "all", label: "🌐 All (Everyone)", desc: "Broadcast to all clients, teams, and admins" },
+                    {
+                      id: "only_me",
+                      label: "🔒 Only Me (Private)",
+                      desc: "Visible and manageable only by you",
+                    },
+                    {
+                      id: "only_clients",
+                      label: "🏢 Only Clients",
+                      desc: "Broadcast reminder visible to all clients",
+                    },
+                    {
+                      id: "only_teams",
+                      label: "👥 Only Teams",
+                      desc: "Broadcast reminder visible to all team members / devs",
+                    },
+                    {
+                      id: "all",
+                      label: "🌐 All (Everyone)",
+                      desc: "Broadcast to all clients, teams, and admins",
+                    },
                   ].map((opt) => (
                     <label
                       key={opt.id}
@@ -300,17 +356,24 @@ export function AddEventModal({
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-                <label className="text-slate-600 dark:text-slate-400 font-medium">Visibility</label>
+                <label className="text-slate-600 dark:text-slate-400 font-medium">
+                  Visibility
+                </label>
                 <div className="md:col-span-3 flex items-center gap-2 p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs font-semibold text-blue-900 dark:text-blue-200">
                   <span>🔒</span>
-                  <span>Personal Private Reminder (Only visible and removable by you)</span>
+                  <span>
+                    Personal Private Reminder (Only visible and removable by
+                    you)
+                  </span>
                 </div>
               </div>
             )}
 
             {/* Repeat Toggle */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <label className="text-slate-600 dark:text-slate-400 font-medium">Repeat</label>
+              <label className="text-slate-600 dark:text-slate-400 font-medium">
+                Repeat
+              </label>
               <div className="md:col-span-3 flex items-center">
                 <button
                   type="button"
@@ -331,7 +394,7 @@ export function AddEventModal({
             {/* Color Swatches Selector */}
             <div className="flex items-center flex-wrap gap-2 justify-center py-2 border-t border-b border-slate-100 dark:border-slate-800">
               {COLOR_SWATCHES.map((color) => {
-                const isSelected = selectedColor === color
+                const isSelected = selectedColor === color;
                 return (
                   <button
                     key={color}
@@ -339,12 +402,16 @@ export function AddEventModal({
                     onClick={() => setSelectedColor(color)}
                     style={{ backgroundColor: color }}
                     className={`w-6 h-6 rounded-sm transition-transform flex items-center justify-center ${
-                      isSelected ? "ring-2 ring-offset-2 ring-blue-500 scale-110" : "hover:scale-105"
+                      isSelected
+                        ? "ring-2 ring-offset-2 ring-blue-500 scale-110"
+                        : "hover:scale-105"
                     }`}
                   >
-                    {isSelected && <Check size={12} className="text-white drop-shadow" />}
+                    {isSelected && (
+                      <Check size={12} className="text-white drop-shadow" />
+                    )}
                   </button>
-                )
+                );
               })}
             </div>
 
@@ -385,5 +452,5 @@ export function AddEventModal({
         </motion.div>
       </div>
     </AnimatePresence>
-  )
+  );
 }
