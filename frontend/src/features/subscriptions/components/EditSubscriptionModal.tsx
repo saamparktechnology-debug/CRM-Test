@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   X, 
@@ -34,6 +35,7 @@ export function EditSubscriptionModal({
   onSave,
   teamMembers = []
 }: EditSubscriptionModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const [planName, setPlanName] = React.useState("")
   const [amount, setAmount] = React.useState("")
   const [billingCycle, setBillingCycle] = React.useState<BillingCycle>("Monthly")
@@ -221,12 +223,9 @@ export function EditSubscriptionModal({
                   onChange={(e) => setBillingCycle(e.target.value as BillingCycle)}
                   className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden font-medium"
                 >
-                  <option value="Weekly">Weekly (Every 7 Days)</option>
-                  <option value="Monthly">Monthly (Every 30 Days)</option>
-                  <option value="Quarterly">Quarterly (Every 3 Months)</option>
-                  <option value="Semi-Annual">Semi-Annual (Every 6 Months)</option>
-                  <option value="Annual">Annual (Every Year)</option>
-                  <option value="Custom Days">Custom Days Interval</option>
+                  {(masterBundle?.options?.["billing_unit"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               </div>
             </div>

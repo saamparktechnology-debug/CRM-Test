@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { 
   Target, Plus, RefreshCw, Search, Filter, 
   TrendingUp, Download, Phone, Mail, ExternalLink,
@@ -13,6 +14,7 @@ import { usePermissionStore } from "@/store/usePermissionStore"
 import { Button } from "@/components/ui/Button"
 
 export default function MarketingLeadsPage() {
+  const { data: masterBundle } = useMasterBundle()
   const { user } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
   const isAdmin = user?.role === "Super Admin" || user?.role === "Admin"
@@ -247,9 +249,9 @@ export default function MarketingLeadsPage() {
             className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-200 outline-none cursor-pointer"
           >
             <option value="all">All Sources</option>
-            <option value="meta ads">Meta Ads</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="google ads">Google Ads</option>
+                {(masterBundle?.options?.["lead_source"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
 
           {/* Status Filter */}
@@ -259,9 +261,9 @@ export default function MarketingLeadsPage() {
             className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-200 outline-none cursor-pointer"
           >
             <option value="all">All Pipeline Stages</option>
-            <option value="new">New</option>
-            <option value="contacted">Contacted</option>
-            <option value="converted">Converted</option>
+                {(masterBundle?.options?.["lead_stage"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
         </div>
       </div>
@@ -343,9 +345,9 @@ export default function MarketingLeadsPage() {
                         onChange={(e) => handleStatusChange(l.id, e.target.value as any)}
                         className="px-2 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-bold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
                       >
-                        <option value="New">New</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Converted">Converted ✓</option>
+                        {(masterBundle?.options?.["lead_stage"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                       </select>
                     </td>
                   </tr>
@@ -424,9 +426,9 @@ export default function MarketingLeadsPage() {
                     onChange={(e) => setNewLeadSource(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-900 dark:text-zinc-100 outline-none"
                   >
-                    <option value="Meta Ads">Meta Ads</option>
-                    <option value="WhatsApp">WhatsApp</option>
-                    <option value="Google Ads">Google Ads</option>
+                    {(masterBundle?.options?.["lead_source"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
 

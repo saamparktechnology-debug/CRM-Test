@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { X, Plus, Check, Calendar, Clock, Wrench, FileText, User as UserIcon, Tag, Building, MapPin } from "lucide-react"
 import { Lead, LeadStatus, LeadType } from "@/features/leads/types"
 import { addLead, parseLeadDate, formatLeadReminderDate, MONTH_NAMES_SHORT } from "@/features/leads/services/leadService"
@@ -19,6 +20,7 @@ import {
 import { formatDateForInput, formatDateForDisplay, formatTimeForInput, formatTimeForDisplay, type AddLeadModalProps, STANDARD_SOURCES } from "@/features/leads/components/addleadmodal-sections/AddLeadModalHelpers"
 
 export function AddLeadModalSection3({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { status, setStatus, isNoReminder, setIsNoReminder, reminderDate, setReminderDate, reminderTime, setReminderTime, reminderNotes, setReminderNotes, user, caller, setCaller, setOwner, teamMembers } = ctrl;
   return (
     <>
@@ -30,14 +32,9 @@ export function AddLeadModalSection3({ ctrl }: { ctrl: any }) {
               onChange={(e) => setStatus(e.target.value as LeadStatus)}
               className="col-span-3 px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-zinc-800 dark:text-zinc-200 font-semibold text-xs"
             >
-              <option value="New">New</option>
-              <option value="Qualified">Qualified</option>
-              <option value="Discussion">Discussion</option>
-              <option value="Negotiation">Negotiation</option>
-              <option value="Store Visit">Store Visit</option>
-              <option value="Our Office Visit">Our Office Visit</option>
-              <option value="Won">Won</option>
-              <option value="Lost">Lost</option>
+              {(masterBundle?.options?.["lead_stage"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
 

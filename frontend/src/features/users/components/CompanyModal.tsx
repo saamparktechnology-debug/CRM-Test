@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Building, DollarSign, Image, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/Button"
@@ -12,6 +13,7 @@ interface CompanyModalProps {
 }
 
 export function CompanyModal({ isOpen, onClose }: CompanyModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const { addCompany, fetchCompanies } = useAuthStore()
 
   const [name, setName] = React.useState("")
@@ -127,11 +129,9 @@ export function CompanyModal({ isOpen, onClose }: CompanyModalProps) {
                   onChange={(e) => setCurrencySymbol(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs focus:outline-hidden"
                 >
-                  <option value="₹">₹ (INR)</option>
-                  <option value="$">$ (USD)</option>
-                  <option value="€">€ (EUR)</option>
-                  <option value="£">£ (GBP)</option>
-                  <option value="AED">AED (Dirham)</option>
+                  {(masterBundle?.options?.["currency"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               </div>
             </div>

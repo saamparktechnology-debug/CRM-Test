@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion } from "framer-motion"
 import { Search, Filter, Shield, ShieldCheck, Edit2, Trash2, CheckCircle2, XCircle, Clock, Building2, Mail, Phone, Lock, MapPin } from "lucide-react"
 import { UserItem, UserRole, UserStatus } from "../types"
@@ -31,6 +32,7 @@ const STATUS_ICONS: Record<UserStatus, React.ReactNode> = {
 }
 
 export function UserList({ users, onEdit, onToggleStatus, onDelete, onManageUserModules, onViewOverview }: UserListProps) {
+  const { data: masterBundle } = useMasterBundle()
   const { user: currentUser, companies } = useAuthStore()
   const { getModulesForUser, canPerformAction } = usePermissionStore()
 
@@ -122,10 +124,9 @@ export function UserList({ users, onEdit, onToggleStatus, onDelete, onManageUser
               className="px-3 py-2 rounded-xl liquid-glass-input text-xs font-semibold focus:outline-hidden cursor-pointer"
             >
               <option value="All">All KYC</option>
-              <option value="Processing">Pending Approval ({pendingKycCount})</option>
-              <option value="Verified">Verified</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Pending">Unsubmitted</option>
+                {(masterBundle?.options?.["order_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
 
@@ -137,10 +138,9 @@ export function UserList({ users, onEdit, onToggleStatus, onDelete, onManageUser
               className="px-3 py-2 rounded-xl liquid-glass-input text-xs font-semibold focus:outline-hidden cursor-pointer"
             >
               <option value="All">All Roles</option>
-              {isSuperAdmin && <option value="Super Admin">Super Admin</option>}
-              <option value="Admin">Admin</option>
-              <option value="Teams">Teams</option>
-              <option value="Clients">Clients</option>
+                {(masterBundle?.options?.["user_role"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
 
@@ -152,9 +152,9 @@ export function UserList({ users, onEdit, onToggleStatus, onDelete, onManageUser
               className="px-3 py-2 rounded-xl liquid-glass-input text-xs font-semibold focus:outline-hidden cursor-pointer"
             >
               <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Pending">Pending</option>
+                {(masterBundle?.options?.["followup_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
         </div>

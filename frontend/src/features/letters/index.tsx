@@ -1,5 +1,6 @@
 "use client"
 import { deleteLetter } from "./services/letterService"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 
 import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -15,6 +16,7 @@ import { LetterComposerModal } from "./components/LetterComposerModal"
 import { LetterViewModal } from "./components/LetterViewModal"
 
 export default function LettersMain() {
+  const { data: masterBundle } = useMasterBundle()
   const { user, activeCompanyId } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
 
@@ -157,13 +159,9 @@ export default function LettersMain() {
             className="px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden cursor-pointer w-full sm:w-auto"
           >
             <option value="all">All Letter Types</option>
-            <option value="offer_letter">Offer Letters</option>
-            <option value="office_close">Office Close Notices</option>
-            <option value="appointment">Appointment Letters</option>
-            <option value="experience">Experience Letters</option>
-            <option value="warning">Warning Notices</option>
-            <option value="announcement">Announcements</option>
-            <option value="custom">Custom Letters</option>
+                {(masterBundle?.options?.["letter_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
         </div>
       </div>

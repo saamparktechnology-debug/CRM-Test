@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { FolderOpen, Search, Upload, AlertTriangle } from "lucide-react"
 import { useAuthStore } from "@/store/useAuthStore"
@@ -18,6 +19,7 @@ import { UploadDocumentModal } from "./components/UploadDocumentModal"
 import { DocumentTable } from "./components/DocumentTable"
 
 export default function DocumentsMain() {
+  const { data: masterBundle } = useMasterBundle()
   const { user } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
 
@@ -133,10 +135,9 @@ export default function DocumentsMain() {
           className="px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden cursor-pointer"
         >
           <option value="all">All Categories</option>
-          <option value="General">General</option>
-          <option value="Contracts">Contracts</option>
-          <option value="Invoices">Invoices</option>
-          <option value="Legal">Legal</option>
+          {(masterBundle?.options?.["document_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
         </select>
       </div>
 

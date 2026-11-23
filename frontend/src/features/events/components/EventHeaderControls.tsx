@@ -14,14 +14,7 @@ interface EventHeaderControlsProps {
   onOpenAddEvent: () => void
 }
 
-const DEFAULT_EVENT_TYPES: EventTypeOption[] = [
-  "Events",
-  "Leave",
-  "Task start date",
-  "Task deadline",
-  "Project start date",
-  "Project deadline",
-]
+const DEFAULT_EVENT_TYPES: EventTypeOption[] = []
 
 export function EventHeaderControls({
   selectedLabel,

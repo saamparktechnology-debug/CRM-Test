@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   X, Clock, Calendar, User, Building2, MapPin, CheckCircle2, 
@@ -36,6 +37,7 @@ export default function DayPunchModal({
   detail,
   onUpdatePunch
 }: DayPunchModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const { user } = useAuthStore()
   const isAdmin = user?.role === "Super Admin" || user?.role === "Admin"
 
@@ -430,13 +432,9 @@ export default function DayPunchModal({
                     onChange={(e) => setStatus(e.target.value)}
                     className="w-full px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-zinc-900 dark:text-zinc-100"
                   >
-                    <option value="Present">Present</option>
-                    <option value="Half Day">Half Day</option>
-                    <option value="Late">Late</option>
-                    <option value="On Leave">On Leave</option>
-                    <option value="Absent">Absent</option>
-                    <option value="Holiday">Holiday</option>
-                    <option value="Day Off">Day Off</option>
+                    {(masterBundle?.options?.["attendance_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>

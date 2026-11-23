@@ -29,17 +29,7 @@ const COLOR_SWATCHES = [
   "#3b82f6", // Royal Blue
 ]
 
-const DEFAULT_CLIENT_LABELS: ClientLabelItem[] = [
-  { id: "lbl_1", name: "50% Probability", color: "#eab308" },
-  { id: "lbl_2", name: "90% Probability", color: "#84cc16" },
-  { id: "lbl_3", name: "Call this week", color: "#c026d3" },
-  { id: "lbl_4", name: "Corporate", color: "#d8b4fe" },
-  { id: "lbl_5", name: "Inactive", color: "#94a3b8" },
-  { id: "lbl_6", name: "Potential", color: "#3b82f6" },
-  { id: "lbl_7", name: "Referral", color: "#2dd4bf" },
-  { id: "lbl_8", name: "Satisfied", color: "#65a30d" },
-  { id: "lbl_9", name: "Unsatisfied", color: "#38bdf8" },
-]
+const DEFAULT_CLIENT_LABELS: ClientLabelItem[] = []
 
 export function ManageClientLabelsModal({
   isOpen,

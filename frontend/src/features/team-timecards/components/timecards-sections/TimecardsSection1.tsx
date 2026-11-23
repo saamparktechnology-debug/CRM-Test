@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Clock, Plus, Search, Calendar, CheckCircle2, AlertCircle, 
@@ -17,6 +18,7 @@ import MonthlyAttendanceMatrix from "@/features/attendance/components/MonthlyAtt
 import { type TimeCardRecord } from "@/features/team-timecards/components/timecards-sections/TimecardsHelpers"
 
 export function TimecardsSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { viewLayout, isTeamMember, isClockedIn, selectedWorkMode, setSelectedWorkMode, isOnBreak, formatLiveSeconds, secondsElapsed, handleBreakToggle, handleUserClockToggle, isAdminOrSuper, setEditingCardId, setManualForm, scopedTeamMembers, setIsAddModalOpen, handleExportCSV, todayPresentCount, activeClockedInCount, lateArrivalsCount, onBreakCount, totalCompletedHours, setActiveTab, activeTab, companyScopedTimecards, selectedDateFilter, setSelectedDateFilter, selectedMemberFilter, setSelectedMemberFilter, searchQuery, setSearchQuery, filteredTimecards, user, formatDuration, handleVerifyTimecard, handleEditTimecard, handleDeleteTimecard, isAddModalOpen, editingCardId, handleManualAddSubmit, manualForm } = ctrl;
   return (
     <>
@@ -62,8 +64,9 @@ export function TimecardsSection1({ ctrl }: { ctrl: any }) {
                   className="text-xs bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-2.5 py-2 text-slate-800 dark:text-zinc-200 font-bold outline-none cursor-pointer"
                 >
                   <option value="Office">🏢 Office</option>
-                  <option value="Work From Home">🏠 Work From Home</option>
-                  <option value="Field / Client Visit">🚗 Field Visit</option>
+                {(masterBundle?.options?.["work_location_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               )}
 
@@ -590,8 +593,9 @@ export function TimecardsSection1({ ctrl }: { ctrl: any }) {
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="Office">🏢 Office (HQ)</option>
-                      <option value="Work From Home">🏠 Work From Home</option>
-                      <option value="Field / Client Visit">🚗 Field / On-Site</option>
+                {(masterBundle?.options?.["work_location_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
                 </div>

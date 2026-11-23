@@ -1,4 +1,4 @@
-export type UserRole = "Super Admin" | "Admin" | "Clients" | "Teams";
+export type UserRole = "Super Admin" | "Admin" | "Clients" | "Teams" | "Referer";
 export type UserStatus = "Active" | "Inactive" | "Pending";
 
 export type KycStatus = "Pending" | "Processing" | "Verified" | "Rejected";

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import {
   Heart,
   Upload,
@@ -28,6 +29,7 @@ import { formatDisplayDate } from "@/lib/utils"
 import { type TaskListProps, statusBadgeStyles, labelBadgeStyles } from "@/features/tasks/components/tasklist-sections/TaskListHelpers"
 
 export function TaskListSection2({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { canDeleteTask, selectedTaskIds, filteredTasks, toggleSelectAll, toggleSelectRow, onSelectTask, allUsers, canEditTask, onUpdateTaskStatus, onDeleteTask } = ctrl;
   return (
     <>
@@ -194,10 +196,9 @@ export function TaskListSection2({ ctrl }: { ctrl: any }) {
                             statusBadgeStyles[t.status] || "bg-zinc-100 text-zinc-600"
                           }`}
                         >
-                          <option value="To do" className="bg-white text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">To Do</option>
-                          <option value="In progress" className="bg-white text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">In Progress</option>
-                          <option value="Review" className="bg-white text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">Review</option>
-                          <option value="Done" className="bg-white text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">Done</option>
+                          {(masterBundle?.options?.["enquiry_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                         </select>
                       ) : (
                         <span

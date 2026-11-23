@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Check, HelpCircle, User, Building, MapPin } from "lucide-react"
 import { ClientItem } from "@/features/clients/types"
@@ -12,6 +13,7 @@ import { lookupPincode } from "@/lib/pincodeService"
 import { type AddClientModalProps } from "@/features/clients/components/addclientmodal-sections/AddClientModalHelpers"
 
 export function AddClientModalSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isSuperOrAdmin, availableSubBranchesForBranch, selectedCompanyId, handleCompanyChange, selectableCompanies, isBranchLocked, branches, user, selectedBranchId, handleBranchChange, availableBranches, selectedSubBranchId, setSelectedSubBranchId, type, setType, companyName, setCompanyName, designation, setDesignation, customDesignation, setCustomDesignation, owner, setOwner, ownersList, managers, setManagers } = ctrl;
   return (
     <>
@@ -143,13 +145,9 @@ export function AddClientModalSection1({ ctrl }: { ctrl: any }) {
                   onChange={(e) => setDesignation(e.target.value)}
                   className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
                 >
-                  <option value="Proprietor">Proprietor</option>
-                  <option value="Manager">Manager</option>
-                  <option value="Founder">Founder</option>
-                  <option value="CEO">CEO</option>
-                  <option value="Director">Director</option>
-                  <option value="Partner">Partner</option>
-                  <option value="Other">Other (Custom)</option>
+                  {(masterBundle?.options?.["client_designation"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
                 {designation === "Other" && (
                   <input

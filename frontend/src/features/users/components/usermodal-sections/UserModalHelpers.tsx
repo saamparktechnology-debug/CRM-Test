@@ -73,13 +73,4 @@ export const MODULE_CATEGORIES: { name: string; icon: string; modules: ModuleNam
   },
 ]
 
-export const DEPARTMENT_SUGGESTIONS = [
-  "Sales & Marketing",
-  "Software Development",
-  "Accounts & Finance",
-  "Customer Support",
-  "Design & Creative",
-  "Operations",
-  "Executive Management",
-  "Human Resources",
-]
+export const DEPARTMENT_SUGGESTIONS: string[] = []

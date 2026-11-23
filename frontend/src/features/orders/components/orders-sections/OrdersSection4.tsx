@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Plus, 
@@ -50,6 +51,7 @@ import { usePermissionStore } from "@/store/usePermissionStore"
 import { type OrderStatus, type PaymentStatus, type OrderItem, INITIAL_ORDERS } from "@/features/orders/components/orders-sections/OrdersHelpers"
 
 export function OrdersSection4({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isAddModalOpen, setIsAddModalOpen, handleCreateOrder, availableClients, client, setClient, setClientEmail, availableProjects, project, setProject, totalAmount, setTotalAmount, deliveryDate, setDeliveryDate, paymentStatus, setPaymentStatus, orderStatus, setOrderStatus, notes, setNotes, isInvoiceModalOpen, selectedInvoice, setIsInvoiceModalOpen } = ctrl;
   return (
     <>
@@ -158,9 +160,9 @@ export function OrdersSection4({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200"
                     >
-                      <option value="Unpaid">Unpaid</option>
-                      <option value="Partially paid">Partially paid</option>
-                      <option value="Paid">Paid</option>
+                      {(masterBundle?.options?.["order_payment_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
                   <div>
@@ -170,10 +172,9 @@ export function OrdersSection4({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setOrderStatus(e.target.value as OrderStatus)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200"
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Completed">Completed</option>
-                      <option value="Cancelled">Cancelled</option>
+                      {(masterBundle?.options?.["order_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useMasterOptions } from "@/features/masters/hooks/useMasters"
 import * as React from "react"
 import { 
   X, Check, DollarSign, Calculator, UserCheck, Users, Calendar, Briefcase, FileText, 
@@ -137,23 +138,29 @@ export function AddClientProjectModal({
   const [customCategory, setCustomCategory] = React.useState("")
   const [isCustomCategory, setIsCustomCategory] = React.useState(false)
 
-  const STANDARD_CATEGORIES = [
-    "Website Development",
-    "Software Development",
-    "Android / iOS App",
-    "Digital Marketing & SEO",
-    "UI/UX & Graphics Design",
-    "Cloud & Domain Hosting",
-    "Print & Media Works",
-    "General Consulting (Non-GST)",
-  ]
+  const { options: primaryCategoryMaster } = useMasterOptions("primary_category")
+  const { options: servicePresetMaster } = useMasterOptions("service_preset")
+  const STANDARD_CATEGORIES = React.useMemo(
+    () => primaryCategoryMaster.filter((o) => !o.metadata?.isOther && o.value !== "Other").map((o) => o.value),
+    [primaryCategoryMaster]
+  )
+  const dynamicServicePresets = React.useMemo(
+    () => servicePresetMaster.map((o) => ({
+      name: o.label,
+      sac: o.metadata?.sac || o.code || "998313",
+      gst: Number(o.metadata?.gst ?? 18),
+      unit: o.metadata?.unit || "Project",
+      rate: Number(o.metadata?.rate ?? 0),
+    })),
+    [servicePresetMaster]
+  )
 
   const effectiveCategory = (isCustomCategory || category === "custom")
     ? (customCategory.trim() || "Custom Category")
     : category
 
   const handleCategorySelect = (val: string) => {
-    if (val === "custom") {
+    if (val === "custom" || val === "Other") {
       setIsCustomCategory(true)
       setCategory("custom")
       if (!projectTitle || STANDARD_CATEGORIES.includes(projectTitle) || projectTitle === category) {

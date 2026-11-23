@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { MessageSquare, Plus, Search } from "lucide-react"
 import { useAuthStore } from "@/store/useAuthStore"
@@ -16,6 +17,7 @@ import { EnquiryModal } from "./components/EnquiryModal"
 import { EnquiryTable } from "./components/EnquiryTable"
 
 export default function EnquiriesMain() {
+  const { data: masterBundle } = useMasterBundle()
   const { user } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
 
@@ -94,10 +96,9 @@ export default function EnquiriesMain() {
             className="px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden cursor-pointer"
           >
             <option value="all">All Status</option>
-            <option value="New">New</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Closed">Closed</option>
+            {(masterBundle?.options?.["enquiry_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
           <select
             value={priorityFilter}
@@ -105,10 +106,9 @@ export default function EnquiriesMain() {
             className="px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden cursor-pointer"
           >
             <option value="all">All Priority</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-            <option value="Urgent">Urgent</option>
+            {(masterBundle?.options?.["enquiry_priority"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
         </div>
       </div>

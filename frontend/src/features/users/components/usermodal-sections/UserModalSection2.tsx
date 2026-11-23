@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   X, User, Mail, Shield, Building, Phone, Lock, UserCheck, ShieldCheck, 
@@ -28,7 +29,8 @@ import { createNotification } from "@/services/notificationService"
 import { type UserModalProps, MODULE_CATEGORIES, DEPARTMENT_SUGGESTIONS } from "@/features/users/components/usermodal-sections/UserModalHelpers"
 
 export function UserModalSection2({ ctrl }: { ctrl: any }) {
-  const { setScopeType, scopeType, isCompanyLocked, selectedCompanyId, setSelectedCompanyId, setSelectedBranchId, setSelectedSubBranchId, editingUser, setEmployeeId, isCurrentSuperAdmin, availableCompanies, availableBranches, selectedBranchId, availableSubBranches, selectedSubBranchId, role, department, setDepartment, employeeId, designation, setDesignation, commissionRate, setCommissionRate, joiningDate, setJoiningDate, ctc, setCtc, autoSendOfferLetter, setAutoSendOfferLetter, kycStatus, setKycStatus, isEditingRootSuperAdmin, status, setStatus } = ctrl;
+  const { data: masterBundle } = useMasterBundle()
+  const { setScopeType, scopeType, isCompanyLocked, selectedCompanyId, setSelectedCompanyId, setSelectedBranchId, setSelectedSubBranchId, editingUser, setEmployeeId, isCurrentSuperAdmin, availableCompanies, availableBranches, selectedBranchId, availableSubBranches, selectedSubBranchId, role, department, setDepartment, employeeId, designation, setDesignation, referByCategory, setReferByCategory, commissionRate, setCommissionRate, joiningDate, setJoiningDate, ctc, setCtc, autoSendOfferLetter, setAutoSendOfferLetter, kycStatus, setKycStatus, isEditingRootSuperAdmin, status, setStatus } = ctrl;
   return (
     <>
       <div className="p-5 rounded-2xl bg-slate-50/70 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-[0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] space-y-4">
@@ -230,7 +232,7 @@ export function UserModalSection2({ ctrl }: { ctrl: any }) {
                   )}
 
                   {/* Role Specific: Teams (Department, Designation, Commission %) */}
-                  {role === "Teams" && (
+                  {(role === "Teams" || role === "Referer") && (
                     <>
                       <div className="sm:col-span-2">
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -241,7 +243,21 @@ export function UserModalSection2({ ctrl }: { ctrl: any }) {
                           value={department}
                           onChange={(e) => setDepartment(e.target.value)}
                           placeholder="e.g. Sales & Marketing, Engineering, Support"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#090d16]/90 border border-slate-300 dark:border-white/15 text-xs text-slate-900 dark:text-white focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] shadow-xs dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] outline-hidden font-medium mb-2 transition-all"
+                        />
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mt-3 mb-1.5">
+                          Refer By Category
+                        </label>
+                        <select
+                          value={referByCategory || ""}
+                          onChange={(e) => setReferByCategory?.(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#090d16]/90 border border-slate-300 dark:border-white/15 text-xs text-slate-900 dark:text-white outline-hidden font-medium"
+                        >
+                          <option value="">-- Select Refer By Category --</option>
+                          {(masterBundle?.options?.["refer_by_category"] || []).map((opt) => (
+                            <option key={opt.id} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                        <input type="hidden" className="hidden px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#090d16]/90 border border-slate-300 dark:border-white/15 text-xs text-slate-900 dark:text-white focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] shadow-xs dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] outline-hidden font-medium mb-2 transition-all"
                         />
                         <div className="flex flex-wrap gap-1.5">
                           {DEPARTMENT_SUGGESTIONS.map((dept) => (
@@ -379,10 +395,9 @@ export function UserModalSection2({ ctrl }: { ctrl: any }) {
                         onChange={(e) => setKycStatus(e.target.value as any)}
                         className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#090d16]/90 border border-slate-300 dark:border-white/15 text-xs text-slate-900 dark:text-white focus:border-blue-500 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] shadow-xs dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)] outline-hidden font-medium transition-all"
                       >
-                        <option value="Pending">⏳ Pending Verification</option>
-                        <option value="Processing">🔄 In Processing</option>
-                        <option value="Verified">✅ Verified Account</option>
-                        <option value="Rejected">❌ Rejected / Incomplete</option>
+                        {(masterBundle?.options?.["order_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                       </select>
                     </div>
                   )}

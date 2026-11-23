@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   X, 
@@ -39,6 +40,7 @@ export function RecordPayoutModal({
   onClose,
   onSuccess,
 }: RecordPayoutModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const currentPeriod = new Date().toLocaleString("en-US", { month: "long", year: "numeric" })
   const [period, setPeriod] = React.useState(currentPeriod)
   const [payoutType, setPayoutType] = React.useState<PayoutType>("Monthly Salary")
@@ -206,13 +208,9 @@ export function RecordPayoutModal({
                   onChange={(e) => setPayoutType(e.target.value as PayoutType)}
                   className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium focus:outline-hidden"
                 >
-                  <option value="Monthly Salary">Monthly Salary + Commission</option>
-                  <option value="Custom Amount">✨ Custom Payment Amount</option>
-                  <option value="Project Share / Milestone Payout">🚀 Project Share / Milestone Payout</option>
-                  <option value="Subscription Commission">Subscription Commission Only</option>
-                  <option value="Bonus / Incentive">Bonus / Performance Incentive</option>
-                  <option value="Advance">Salary Advance</option>
-                  <option value="Full Settlement">Full Final Settlement</option>
+                  {(masterBundle?.options?.["payroll_payout_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               </div>
             </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { 
   X, Check, Bold, Italic, Underline, List, ListOrdered, Table, Link2, Code, Sparkles, 
   Minus, Maximize2, Users, UserCheck, Search, Percent, ExternalLink, Globe, GitBranch, 
@@ -16,6 +17,7 @@ import { ProjectCompletionModal } from "@/features/projects/components/ProjectCo
 import { type EditProjectModalProps, toDateInputValue } from "@/features/projects/components/editprojectmodal-sections/EditProjectModalHelpers"
 
 export function EditProjectModalSection4({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { description, setDescription, startDate, setStartDate, deadline, setDeadline, project, price, setPrice, labelsList, handleRemoveLabel, newLabelInput, setNewLabelInput, handleAddLabel, status, setStatus } = ctrl;
   return (
     <>
@@ -194,13 +196,9 @@ export function EditProjectModalSection4({ ctrl }: { ctrl: any }) {
               onChange={(e) => setStatus(e.target.value as ProjectStatus)}
               className="col-span-3 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-zinc-800 dark:text-zinc-200 font-semibold"
             >
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Under Review">Under Review</option>
-              <option value="Hold">Hold</option>
-              <option value="Completed">Completed</option>
-              <option value="Finished">Finished</option>
-              <option value="Cancelled">Cancelled</option>
+              {(masterBundle?.options?.["project_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
     </>

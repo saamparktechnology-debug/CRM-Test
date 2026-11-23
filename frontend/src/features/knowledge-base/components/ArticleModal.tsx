@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { KnowledgeArticle, KnowledgeArticleFormValues } from "../types"
@@ -22,6 +23,7 @@ export function ArticleModal({
   onChange,
   onSubmit,
 }: ArticleModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   return (
     <AnimatePresence>
       {isOpen && (
@@ -57,11 +59,9 @@ export function ArticleModal({
                     onChange={(e) => onChange("category", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>General</option>
-                    <option>Getting Started</option>
-                    <option>FAQ</option>
-                    <option>Tutorials</option>
-                    <option>API Docs</option>
+                    {(masterBundle?.options?.["kb_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
                 <div>

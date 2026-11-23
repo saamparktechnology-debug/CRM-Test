@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import {
   ArrowLeft,
   Star,
@@ -90,6 +91,7 @@ import {
 } from "@/features/projects/components/projectdetailview-sections/ProjectDetailViewHelpers";
 
 export function ProjectDetailViewSection2({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const {
     selectedProject,
     setIsStarred,
@@ -170,13 +172,9 @@ export function ProjectDetailViewSection2({ ctrl }: { ctrl: any }) {
                       : "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800"
             }`}
           >
-            <option value="Open">Open</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Under Review">Under Review</option>
-            <option value="Hold">Hold</option>
-            <option value="Completed">Completed</option>
-            <option value="Finished">Finished</option>
-            <option value="Cancelled">Cancelled</option>
+            {(masterBundle?.options?.["project_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
         </div>
 

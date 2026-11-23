@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { 
   X, Check, DollarSign, Calculator, UserCheck, Users, Calendar, Briefcase, FileText, 
   Coins, RefreshCw, Layers, CreditCard, Building2, Mail, Phone, MapPin, 
@@ -22,6 +23,7 @@ import { lookupPincode } from "@/lib/pincodeService"
 import { type AddClientProjectModalProps, type ServiceFormItem, type FormDiscountItem, type AssignedMemberAllocation, SERVICE_PRESETS } from "@/features/clients/components/addclientprojectmodal-sections/AddClientProjectModalHelpers"
 
 export function AddClientProjectModalSection7({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { setPaymentModel, paymentModel, totalAmount, setPaymentStatus, paymentStatus, subscriptionMonths, setSubscriptionMonths, setInstallmentsCount, setPartPayTiming, partPayTiming, setPartInitialPayment, deadline, setDeadline, calculated3MonthDate, partInitialPayment, effectiveAdvance, remainingDue, setAdvanceAmount, advanceAmount, billingCycle, setBillingCycle } = ctrl;
   return (
     <>
@@ -314,9 +316,9 @@ export function AddClientProjectModalSection7({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setBillingCycle(e.target.value as any)}
                       className="w-full px-2.5 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-bold text-xs"
                     >
-                      <option value="Monthly">Monthly Recurring</option>
-                      <option value="Quarterly">Quarterly (Every 3 Months)</option>
-                      <option value="Yearly">Yearly (Annual Plan)</option>
+                      {(masterBundle?.options?.["billing_cycle"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
 

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Plus, Download, CreditCard, RefreshCw, X, Send, 
@@ -46,6 +47,7 @@ import { exportToExcel, printPDFReport } from "@/lib/exportUtils"
 import { confirmTwoStepDelete } from "@/lib/confirmDialog"
 
 export function SubscriptionsSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isAddSubModalOpen, setIsAddSubModalOpen, setSelectedSubModelTab, selectedSubModelTab, handleCreateSubscriptionSubmit, setSubTaxType, subTaxType, dailyLateFeeInput, setDailyLateFeeInput, assignedTeamMemberEmail, setAssignedTeamMemberEmail, teamMembers, teamSharePctInput, setTeamSharePctInput, setIsCustomClient, isCustomClient, clientSearchQuery, setClientSearchQuery, newClientName, setNewClientName, availableClients, customClientEmail, setCustomClientEmail, customClientPhone, setCustomClientPhone, customClientCompany, setCustomClientCompany, setIsCustomPackage, isCustomPackage, selectedPackageId, setSelectedPackageId, customPackageName, setCustomPackageName, customPackagePrice, setCustomPackagePrice, customPackageCycle, setCustomPackageCycle, customDeliverablesText, setCustomDeliverablesText, regularPlanName, setRegularPlanName, regularAmount, setRegularAmount, regularCycle, setRegularCycle, customDaysCount, setCustomDaysCount, regularStartDate, setRegularStartDate, regularNextDate, setRegularNextDate, emiPlanName, setEmiPlanName, emiTotalAmount, setEmiTotalAmount, emiDownPayment, setEmiDownPayment, isEmiCustomTenure, emiTenureMonths, setIsEmiCustomTenure, setEmiTenureMonths } = ctrl;
   return (
     <>
@@ -419,10 +421,9 @@ export function SubscriptionsSection1({ ctrl }: { ctrl: any }) {
                               onChange={(e) => setCustomPackageCycle(e.target.value as BillingCycle)}
                               className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold"
                             >
-                              <option value="Monthly">Monthly</option>
-                              <option value="Quarterly">Quarterly</option>
-                              <option value="Half-Yearly">Half-Yearly</option>
-                              <option value="Annually">Annually</option>
+                              {(masterBundle?.options?.["billing_cycle"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                             </select>
                           </div>
                         </div>
@@ -487,13 +488,9 @@ export function SubscriptionsSection1({ ctrl }: { ctrl: any }) {
                           onChange={(e) => setRegularCycle(e.target.value as BillingCycle)}
                           className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold"
                         >
-                          <option value="Daily">Daily</option>
-                          <option value="Weekly">Weekly (Every 7 Days)</option>
-                          <option value="Monthly">Monthly Retainer</option>
-                          <option value="Quarterly">Quarterly (Every 3 Months)</option>
-                          <option value="Half-Yearly">Half-Yearly (Every 6 Months)</option>
-                          <option value="Annually">Annual Contract (Yearly)</option>
-                          <option value="Custom Days">Custom Interval (Days)</option>
+                          {(masterBundle?.options?.["billing_unit"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                         </select>
                       </div>
                     </div>
@@ -608,12 +605,9 @@ export function SubscriptionsSection1({ ctrl }: { ctrl: any }) {
                           }}
                           className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold cursor-pointer"
                         >
-                          <option value="2">2 Mo</option>
-                          <option value="3">3 Mo</option>
-                          <option value="4">4 Mo</option>
-                          <option value="6">6 Mo</option>
-                          <option value="12">12 M</option>
-                          <option value="custom">Custom</option>
+                          {(masterBundle?.options?.["duration_offer"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                         </select>
                         {isEmiCustomTenure && (
                           <input

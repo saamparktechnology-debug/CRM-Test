@@ -26,19 +26,7 @@ import { api } from "@/lib/api";
 import { uploadToImgBB } from "@/lib/imgbbUpload";
 import { createNotification } from "@/services/notificationService";
 
-export const RELATIONSHIP_OPTIONS = [
-  "Father",
-  "Mother",
-  "Spouse",
-  "Brother",
-  "Sister",
-  "Son",
-  "Daughter",
-  "Guardian",
-  "Friend",
-  "Relative",
-  "Other",
-];
+export const RELATIONSHIP_OPTIONS: string[] = [];
 
 export function checkIsVerified(u: any): boolean {
   if (!u) return false;

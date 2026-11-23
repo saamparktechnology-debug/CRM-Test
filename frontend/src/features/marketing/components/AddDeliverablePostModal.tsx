@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Upload, Sparkles, Check, Image as ImageIcon, Video, UserCheck, Share2 } from "lucide-react"
 import { MarketingCampaign, MarketingPost } from "../types"
@@ -20,6 +21,7 @@ export default function AddDeliverablePostModal({
   campaign,
   onPostAdded
 }: AddDeliverablePostModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   const [service, setService] = React.useState<string>("Poster")
@@ -158,11 +160,9 @@ export default function AddDeliverablePostModal({
                 onChange={(e) => setPlatform(e.target.value as any)}
                 className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-zinc-900 dark:text-zinc-100"
               >
-                <option value="Meta">Meta (IG / FB)</option>
-                <option value="Instagram">Instagram</option>
-                <option value="Facebook">Facebook</option>
-                <option value="YouTube">YouTube</option>
-                <option value="LinkedIn">LinkedIn</option>
+                {(masterBundle?.options?.["marketing_platform"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 
@@ -260,10 +260,9 @@ export default function AddDeliverablePostModal({
                 onChange={(e) => setStatus(e.target.value as any)}
                 className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-zinc-900 dark:text-zinc-100"
               >
-                <option value="Posted">Posted (Live)</option>
-                <option value="Scheduled">Scheduled</option>
-                <option value="In Review">Client Review</option>
-                <option value="Draft">Draft</option>
+                {(masterBundle?.options?.["marketing_post_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 

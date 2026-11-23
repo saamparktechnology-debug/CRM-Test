@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { TaxRate, TaxRateFormValues } from "../types"
@@ -22,6 +23,7 @@ export function TaxRateModal({
   onChange,
   onSubmit,
 }: TaxRateModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   return (
     <AnimatePresence>
       {isOpen && (
@@ -71,13 +73,9 @@ export function TaxRateModal({
                     onChange={(e) => onChange("type", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>GST</option>
-                    <option>IGST</option>
-                    <option>SGST</option>
-                    <option>CGST</option>
-                    <option>VAT</option>
-                    <option>Service Tax</option>
-                    <option>Other</option>
+                    {(masterBundle?.options?.["tax_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>

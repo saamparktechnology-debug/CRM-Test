@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { UploadCloud, X, FileCheck } from "lucide-react"
 import { DocumentFormValues } from "../types"
@@ -20,6 +21,7 @@ export function UploadDocumentModal({
   onChange,
   onSubmit,
 }: UploadDocumentModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   return (
     <AnimatePresence>
       {isOpen && (
@@ -80,10 +82,9 @@ export function UploadDocumentModal({
                     onChange={(e) => onChange("category", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>General</option>
-                    <option>Contracts</option>
-                    <option>Invoices</option>
-                    <option>Legal</option>
+                    {(masterBundle?.options?.["document_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
                 <div>
@@ -93,11 +94,9 @@ export function UploadDocumentModal({
                     onChange={(e) => onChange("type", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>PDF</option>
-                    <option>DOC</option>
-                    <option>XLS</option>
-                    <option>Image</option>
-                    <option>Other</option>
+                    {(masterBundle?.options?.["document_file_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>

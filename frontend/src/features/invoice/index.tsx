@@ -230,6 +230,7 @@ function InvoicesContent() {
       <DocumentStudioModal
         isOpen={form.isEditModalOpen}
         mode="invoice"
+        initialData={form.editingInvoice}
         editDocument={form.editingInvoice}
         onClose={() => {
           form.setIsEditModalOpen(false)

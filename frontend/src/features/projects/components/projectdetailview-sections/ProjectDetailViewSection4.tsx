@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import {
   ArrowLeft,
   Star,
@@ -64,6 +65,7 @@ import { DigitalMarketingPackage, createDefaultMarketingPackage } from "@/types/
 import { type ProjectDetailViewProps, DONUT_COLORS } from "@/features/projects/components/projectdetailview-sections/ProjectDetailViewHelpers"
 
 export function ProjectDetailViewSection4({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isMilestoneModalOpen, editingMilestoneId, setIsMilestoneModalOpen, msTitle, setMsTitle, msStage, setMsStage, msStatus, setMsStatus, msNotes, setMsNotes, msCredentials, setMsCredentials, isSavingMilestone, handleSaveMilestone, isInvoiceModalOpen, setIsInvoiceModalOpen, selectedProject, invDescription, setInvDescription, invAmount, setInvAmount, invGstRate, setInvGstRate, invDate, setInvDate, invDueDate, setInvDueDate, invStatus, setInvStatus, isSavingInvoice, handleSaveProjectInvoice } = ctrl;
   return (
     <>
@@ -105,13 +107,9 @@ export function ProjectDetailViewSection4({ ctrl }: { ctrl: any }) {
                     onChange={(e) => setMsStage(e.target.value as any)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200"
                   >
-                    <option value="Frontend">Frontend Development</option>
-                    <option value="Backend">Backend & Database</option>
-                    <option value="Design">UI/UX Design</option>
-                    <option value="Testing">Testing & QA</option>
-                    <option value="Deployment">Live Deployment</option>
-                    <option value="Credentials">Credentials & Access</option>
-                    <option value="Custom">Custom Milestone</option>
+                    {(masterBundle?.options?.["milestone_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
 
@@ -122,10 +120,9 @@ export function ProjectDetailViewSection4({ ctrl }: { ctrl: any }) {
                     onChange={(e) => setMsStatus(e.target.value as any)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 font-bold"
                   >
-                    <option value="Completed">Completed ✅</option>
-                    <option value="In Progress">In Progress ⏳</option>
-                    <option value="Pending">Pending ⏸️</option>
-                    <option value="Hold">On Hold 🛑</option>
+                    {(masterBundle?.options?.["enquiry_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>
@@ -235,11 +232,9 @@ export function ProjectDetailViewSection4({ ctrl }: { ctrl: any }) {
                     onChange={(e) => setInvGstRate(Number(e.target.value))}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200"
                   >
-                    <option value={0}>0% (Non-GST / Exempt)</option>
-                    <option value={5}>5% GST</option>
-                    <option value={12}>12% GST</option>
-                    <option value={18}>18% Standard GST</option>
-                    <option value={28}>28% GST</option>
+                    {(masterBundle?.options?.["tax_slab"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>
@@ -297,10 +292,9 @@ export function ProjectDetailViewSection4({ ctrl }: { ctrl: any }) {
                     onChange={(e) => setInvStatus(e.target.value as InvoiceStatus)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 font-bold text-xs"
                   >
-                    <option value="Payment Pending">Payment Pending</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Partially paid">Partially Paid</option>
-                    <option value="Fully paid">Fully Paid</option>
+                    {(masterBundle?.options?.["order_payment_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>

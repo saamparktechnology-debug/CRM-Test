@@ -59,11 +59,4 @@ export interface AddLeadModalProps {
   onLeadAdded: (newLead: Lead) => void
 }
 
-export const STANDARD_SOURCES = [
-  "Social Media",
-  "Meta Ads",
-  "Google Ads",
-  "Local Market",
-  "Store Visit",
-  "My Leads",
-]
+export const STANDARD_SOURCES: string[] = []

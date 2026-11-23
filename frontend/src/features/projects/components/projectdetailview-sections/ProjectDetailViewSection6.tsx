@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import {
   ArrowLeft,
   Star,
@@ -90,6 +91,7 @@ import {
 } from "@/features/projects/components/projectdetailview-sections/ProjectDetailViewHelpers";
 
 export function ProjectDetailViewSection6({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const {
     isUpdateProgressModalOpen,
     selectedProject,
@@ -177,13 +179,9 @@ export function ProjectDetailViewSection6({ ctrl }: { ctrl: any }) {
                 onChange={(e) => setStatusValue(e.target.value)}
                 className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold outline-none focus:border-blue-500"
               >
-                <option value="Open">Open (Pending Kickoff)</option>
-                <option value="In Progress">
-                  In Progress (Active Development)
-                </option>
-                <option value="Under Review">Under Review (Client / QA)</option>
-                <option value="Hold">On Hold</option>
-                <option value="Completed">Completed (100% Delivered)</option>
+                {(masterBundle?.options?.["enquiry_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 

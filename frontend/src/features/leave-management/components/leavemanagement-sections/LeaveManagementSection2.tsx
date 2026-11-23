@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Calendar, Plus, Search, Edit, Trash2, X, Check, XCircle, Clock, 
@@ -14,6 +15,7 @@ import { LeaveRequest, LeaveTab as Tab, LeaveType } from "@/features/leave-manag
 import { useInvalidateLeaveQueries, useLeaveRequestsQuery, useLeaveTeamMembersQuery, useLeaveTypesQuery } from "@/features/leave-management/hooks/useLeaveManagement"
 
 export function LeaveManagementSection2({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { activeTab, searchQuery, setSearchQuery, canApprove, setViewScope, viewScope, statusFilter, setStatusFilter, scopedRequests, handleApprove, handleReject } = ctrl;
   return (
     <>
@@ -56,9 +58,9 @@ export function LeaveManagementSection2({ ctrl }: { ctrl: any }) {
                 className="px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden cursor-pointer font-medium"
               >
                 <option value="all">All Statuses</option>
-                <option value="Pending">Pending Review</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
+                {(masterBundle?.options?.["leave_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
           </div>

@@ -9,17 +9,7 @@ import { recordActivityLog } from "@/services/activityLogService"
 import { normalizeCompanyId } from "../../leads/services/leadService"
 
 // ── Default client labels seeded to DB ─────────────────────────────────────
-const DEFAULT_CLIENT_LABELS: ClientLabelItem[] = [
-  { id: "clbl_1", name: "50% Probability", color: "#eab308" },
-  { id: "clbl_2", name: "90% Probability", color: "#84cc16" },
-  { id: "clbl_3", name: "Call this week", color: "#c026d3" },
-  { id: "clbl_4", name: "Corporate", color: "#d8b4fe" },
-  { id: "clbl_5", name: "Inactive", color: "#94a3b8" },
-  { id: "clbl_6", name: "Potential", color: "#3b82f6" },
-  { id: "clbl_7", name: "Referral", color: "#2dd4bf" },
-  { id: "clbl_8", name: "Satisfied", color: "#65a30d" },
-  { id: "clbl_9", name: "Unsatisfied", color: "#38bdf8" },
-]
+const DEFAULT_CLIENT_LABELS: ClientLabelItem[] = []
 
 export function getClientTimestamp(c: ClientItem): number {
   if (typeof c.createdAt === "number") return c.createdAt
@@ -570,20 +560,7 @@ export function formatDisplayEmail(email?: string): string {
 
 // ── Client Categories & Levels ──────────────────────────────────────────────
 
-export const DEFAULT_CLIENT_CATEGORIES: string[] = [
-  "Level 1",
-  "Level 2",
-  "Level 3",
-  "Enterprise",
-  "Corporate",
-  "Standard",
-  "VIP",
-  "Gold",
-  "Silver",
-  "Wholesale",
-  "Retail",
-  "Partner",
-]
+export const DEFAULT_CLIENT_CATEGORIES: string[] = []
 
 /** Fetch all client categories/levels from MySQL */
 export async function getClientCategories(companyId?: string): Promise<string[]> {

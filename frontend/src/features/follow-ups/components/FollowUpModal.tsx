@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { FollowUp, FollowUpFormValues } from "../types"
@@ -22,6 +23,7 @@ export function FollowUpModal({
   onChange,
   onSubmit,
 }: FollowUpModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   return (
     <AnimatePresence>
       {isOpen && (
@@ -57,10 +59,9 @@ export function FollowUpModal({
                     onChange={(e) => onChange("type", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>Call</option>
-                    <option>Email</option>
-                    <option>Meeting</option>
-                    <option>Visit</option>
+                    {(masterBundle?.options?.["followup_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
                 <div>
@@ -81,9 +82,9 @@ export function FollowUpModal({
                     onChange={(e) => onChange("status", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>Pending</option>
-                    <option>Completed</option>
-                    <option>Cancelled</option>
+                    {(masterBundle?.options?.["followup_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
                 <div>

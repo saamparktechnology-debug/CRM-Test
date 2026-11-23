@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { Plus, Search, ShoppingCart } from "lucide-react"
 import { useAuthStore } from "@/store/useAuthStore"
@@ -16,6 +17,7 @@ import { PurchaseOrderModal } from "./components/PurchaseOrderModal"
 import { PurchaseOrderTable } from "./components/PurchaseOrderTable"
 
 export default function PurchaseOrdersMain() {
+  const { data: masterBundle } = useMasterBundle()
   const { user, activeCompanyId } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
 
@@ -96,10 +98,9 @@ export default function PurchaseOrdersMain() {
           className="px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden cursor-pointer"
         >
           <option value="all">All Status</option>
-          <option value="Draft">Draft</option>
-          <option value="Sent">Sent</option>
-          <option value="Received">Received</option>
-          <option value="Cancelled">Cancelled</option>
+          {(masterBundle?.options?.["po_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
         </select>
       </div>
 

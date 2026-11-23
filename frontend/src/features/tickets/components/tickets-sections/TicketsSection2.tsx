@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   HeadphonesIcon, Plus, Search, CheckCircle2, AlertCircle, 
@@ -16,6 +17,7 @@ import { uploadToImgBB } from "@/lib/imgbbUpload"
 import { confirmTwoStepDelete } from "@/lib/confirmDialog"
 
 export function TicketsSection2({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { selectedTicket, setSelectedTicket, canResolveTicket, newStatus, setNewStatus, resolutionInput, setResolutionInput, resFileInputRef, handleUploadResolutionFiles, isUploadingResFile, resolutionAttachments, setResolutionAttachments, handleSaveResolution } = ctrl;
   return (
     <>
@@ -164,12 +166,9 @@ export function TicketsSection2({ ctrl }: { ctrl: any }) {
                           onChange={(e) => setNewStatus(e.target.value as TicketStatus)}
                           className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden font-bold"
                         >
-                          <option value="New">New</option>
-                          <option value="Open">Open</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Under Review">Under Review</option>
-                          <option value="Resolved">Resolved (Confirm & Close)</option>
-                          <option value="Closed">Closed</option>
+                          {(masterBundle?.options?.["ticket_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                         </select>
                       </div>
                     </div>

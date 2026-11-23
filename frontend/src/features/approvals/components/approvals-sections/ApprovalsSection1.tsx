@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   ShieldCheck, Check, X, Eye, Clock, AlertTriangle, Search, Filter, 
@@ -15,6 +16,7 @@ import { useApprovalsQuery, useApproveRequestMutation, useRejectRequestMutation,
 import { executeWithFeedback } from "@/store/useActionFeedbackStore"
 
 export function ApprovalsSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { loadRequests, pendingCount, loading, pendingAmount, approvedCount, rejectedCount, requests, setStatusFilter, statusFilter, searchQuery, setSearchQuery, typeFilter, setTypeFilter } = ctrl;
   return (
     <>
@@ -145,9 +147,9 @@ export function ApprovalsSection1({ ctrl }: { ctrl: any }) {
             className="px-3 py-1.5 text-xs rounded-xl bg-surface-hover border border-border text-foreground font-semibold focus:outline-hidden cursor-pointer"
           >
             <option value="all">All Types</option>
-            <option value="invoice">Bills / Invoices</option>
-            <option value="quotation">Quotations</option>
-            <option value="subscription">Subscriptions</option>
+                {(masterBundle?.options?.["approval_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
         </div>
       </div>

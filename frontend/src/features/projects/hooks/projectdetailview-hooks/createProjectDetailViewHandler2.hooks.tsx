@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import {
   ArrowLeft,
   Star,
@@ -231,10 +232,9 @@ export function createProjectDetailViewHandler2(getCtrl: () => any) {
                               onChange={(e) => handleUpdateInvoiceRowStatus(inv.id, e.target.value as InvoiceStatus)}
                               className="text-[11px] px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium cursor-pointer"
                             >
-                              <option value="Payment Pending">Pending</option>
-                              <option value="Partially paid">Partially Paid</option>
-                              <option value="Fully paid">Fully Paid</option>
-                              <option value="Draft">Draft</option>
+                              {(ctrl?.masterBundle?.options?.["order_payment_status"] || []).map((opt: any) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                             </select>
                           </div>
                         </td>

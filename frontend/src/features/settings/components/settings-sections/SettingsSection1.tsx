@@ -1,6 +1,7 @@
 "use client"
 
 import { CompanyApiService } from "@/features/companies/services/companyService"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { api } from "@/lib/api"
 import * as React from "react"
 import { motion } from "framer-motion"
@@ -35,6 +36,7 @@ import { EntityModulePermissionsTab } from "@/features/settings/components/Entit
 import { type SettingsTab } from "@/features/settings/components/settings-sections/SettingsHelpers"
 
 export function SettingsSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { activeTab, handleSaveProfile, avatar, name, fileInputRef, isUploadingAvatar, user, handlePhotoUpload, setAvatar, isSuperAdmin, setName, email, phone, setPhone, department, setDepartment, location, setLocation, jobTitle, setJobTitle, skills, setSkills, bio, setBio, username, setUsername, handleOpenUsernameConfirm, usernameStatus, isSavingUsername, usernameStatusMsg, currentPassword, setCurrentPassword, newPassword, setNewPassword, confirmPassword, setConfirmPassword, loading } = ctrl;
   return (
     <>
@@ -174,11 +176,9 @@ export function SettingsSection1({ ctrl }: { ctrl: any }) {
                   onChange={(e) => setDepartment(e.target.value)}
                   className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-1 focus:ring-blue-500"
                 >
-                  <option value="Software & IT Engineering">Software & IT Engineering</option>
-                  <option value="Digital Marketing & Research">Digital Marketing & Research</option>
-                  <option value="Sales & Business Development">Sales & Business Development</option>
-                  <option value="Client Relationship & Support">Client Relationship & Support</option>
-                  <option value="Operations & Finance">Operations & Finance</option>
+                  {(masterBundle?.options?.["department"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               ) : (
                 <input

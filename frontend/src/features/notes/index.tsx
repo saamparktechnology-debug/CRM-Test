@@ -1,5 +1,6 @@
 "use client"
 import { markGlobalItemDeleted } from "@/lib/storageSync"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 
 import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -22,6 +23,7 @@ const colorMap: Record<NoteColor, string> = {
 }
 
 export default function NotesMain() {
+  const { data: masterBundle } = useMasterBundle()
   const { user, activeCompanyId } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
 
@@ -390,11 +392,9 @@ export default function NotesMain() {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                     >
-                      <option value="General Announcement">General Announcement</option>
-                      <option value="Project Deliverable">Project Deliverable</option>
-                      <option value="Client Notice">Client Notice</option>
-                      <option value="Internal Protocol">Internal Protocol</option>
-                      <option value="Personal Scratchpad">Personal Scratchpad</option>
+                      {(masterBundle?.options?.["note_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
 

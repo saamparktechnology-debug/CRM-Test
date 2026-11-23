@@ -1,37 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import { 
-  X, Check, DollarSign, Calculator, UserCheck, Users, Calendar, Briefcase, FileText, 
-  Coins, RefreshCw, Layers, CreditCard, Building2, Mail, Phone, MapPin, 
-  Plus, Trash2, Tag, ChevronDown, ChevronUp, Sparkles, Search, Receipt,
-  ShieldCheck, AlertCircle, Eye, Landmark, QrCode, Award, Clock, CheckCircle2, ListChecks
+  X, Calculator, FileText, 
+  Sparkles, Receipt
 } from "lucide-react"
-import { useAuthStore, Company, Branch, SubBranch, getCompanyLogoUrl, getCanonicalCompanyId, getSelectableCompanies, getUserEntityScope, isMatchingCompany } from "@/store/useAuthStore"
-import { getClients, saveStoredClient } from "@/features/clients/services/clientService"
-import { ClientItem } from "@/features/clients/types"
-import { 
-  InvoiceItem, 
-  InvoiceLineItem, 
-  AppliedDiscount,
-  AssignedMemberAttribution,
-  addInvoice, 
-  updateInvoice, 
-  generateInvoiceNumber, 
-  getInvoices 
-} from "@/features/invoice/services/invoiceService"
-import { UserService } from "@/services/apiServices"
-import { QuotationService, EstimateService } from "@/services/salesService"
-import { numberToIndianWords } from "@/features/invoice/components/OfficialInvoiceDocument"
-import { lookupPincode } from "@/lib/pincodeService"
-import { addSubscription, saveInstallmentRecord } from "@/features/subscriptions/services/subscriptionService"
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
-import { executeWithFeedback } from "@/store/useActionFeedbackStore"
-import { DigitalMarketingPackageBuilder } from "@/components/documents/DigitalMarketingPackageBuilder"
-import { DigitalMarketingPackage, createDefaultMarketingPackage } from "@/types/digitalMarketing"
-import { type DocumentStudioModalProps, SERVICE_PRESETS } from "@/components/documents/components/documentstudiomodal-sections/DocumentStudioModalHelpers"
 
 export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
   const { isMarketing, mode, docScheme, modalTitle, docNumber, activeCompany, taxableBase, calculatedGst, grandTotal, onClose, setCurrentStep, currentStep } = ctrl;
@@ -103,7 +76,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
                   currentStep === 1 ? "border-purple-600 text-purple-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                1. 🎯 Marketing Client &amp; Focus
+                1. Entity &amp; Client
               </button>
               <button
                 type="button"
@@ -112,7 +85,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
                   currentStep === 2 ? "border-purple-600 text-purple-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                2. 📱 Retainer Deliverables Quota
+                2. Growth Package
               </button>
               <button
                 type="button"
@@ -121,7 +94,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
                   currentStep === 3 ? "border-purple-600 text-purple-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                3. 💳 Pricing &amp; Commercial SLAs
+                3. Settlement &amp; Notes
               </button>
             </div>
           ) : mode === "quotation" ? (
@@ -133,7 +106,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
                   currentStep === 1 ? "border-indigo-600 text-indigo-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                1. Project &amp; Client Overview
+                1. Entity &amp; Client
               </button>
               <button
                 type="button"
@@ -151,7 +124,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
                   currentStep === 3 ? "border-indigo-600 text-indigo-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                3. Commercial Value &amp; Milestones
+                3. Pricing &amp; Terms
               </button>
             </div>
           ) : mode === "estimate" ? (
@@ -176,7 +149,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
               </button>
             </div>
           ) : (
-            <div className="flex sm:grid sm:grid-cols-3 min-w-full">
+            <div className="flex sm:grid sm:grid-cols-2 min-w-full">
               <button
                 type="button"
                 onClick={() => setCurrentStep(1)}
@@ -184,7 +157,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
                   currentStep === 1 ? "border-teal-600 text-teal-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                1. Entity &amp; Scheme
+                1. Entity &amp; Client Details
               </button>
               <button
                 type="button"
@@ -193,16 +166,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
                   currentStep === 2 ? "border-teal-600 text-teal-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
                 }`}
               >
-                2. Client &amp; Reference
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(3)}
-                className={`py-2.5 sm:py-3 px-3.5 border-b-2 text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap flex-1 ${
-                  currentStep === 3 ? "border-teal-600 text-teal-600 bg-white dark:bg-zinc-900 font-bold" : "border-transparent text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                3. Items &amp; Settlement
+                2. Items &amp; Settlement
               </button>
             </div>
           )}

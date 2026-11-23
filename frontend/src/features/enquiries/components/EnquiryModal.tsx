@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { Enquiry, EnquiryFormValues } from "../types"
@@ -22,6 +23,7 @@ export function EnquiryModal({
   onChange,
   onSubmit,
 }: EnquiryModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   return (
     <AnimatePresence>
       {isOpen && (
@@ -57,11 +59,9 @@ export function EnquiryModal({
                     onChange={(e) => onChange("source", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>Website</option>
-                    <option>Phone</option>
-                    <option>Email</option>
-                    <option>Referral</option>
-                    <option>Social Media</option>
+                    {(masterBundle?.options?.["lead_source"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
                 <div>
@@ -71,10 +71,9 @@ export function EnquiryModal({
                     onChange={(e) => onChange("priority", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
-                    <option>Urgent</option>
+                    {(masterBundle?.options?.["enquiry_priority"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>
@@ -86,10 +85,9 @@ export function EnquiryModal({
                     onChange={(e) => onChange("status", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>New</option>
-                    <option>In Progress</option>
-                    <option>Resolved</option>
-                    <option>Closed</option>
+                    {(masterBundle?.options?.["enquiry_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
                 <div>

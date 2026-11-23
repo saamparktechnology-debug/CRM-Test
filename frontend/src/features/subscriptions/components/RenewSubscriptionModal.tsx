@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion } from "framer-motion"
 import { X, RefreshCw, Calendar, FileText, CheckCircle2, Sparkles } from "lucide-react"
 import { Subscription } from "../types"
@@ -28,6 +29,7 @@ export function RenewSubscriptionModal({
   onClose,
   onConfirm,
 }: RenewSubscriptionModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const [nextDate, setNextDate] = React.useState("")
   const [generateInvoice, setGenerateInvoice] = React.useState(true)
   const [isPaid, setIsPaid] = React.useState(true)
@@ -178,11 +180,9 @@ export function RenewSubscriptionModal({
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-emerald-200 dark:border-zinc-700 rounded-lg text-xs font-semibold"
                   >
-                    <option value="UPI Transfer">⚡ UPI Transfer (GPay / PhonePe / Paytm)</option>
-                    <option value="Bank NEFT/RTGS">🏦 Direct Bank NEFT / RTGS</option>
-                    <option value="Net Banking">🌐 Corporate Net Banking</option>
-                    <option value="Debit/Credit Card">💳 Debit / Credit Card</option>
-                    <option value="Cash Deposit">💵 Direct Cash Remittance</option>
+                    {(masterBundle?.options?.["client_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
 

@@ -3,6 +3,8 @@ export interface PincodeLookupResult {
   district?: string
   state?: string
   country?: string
+  block?: string
+  blocks?: string[]
   places: string[]
   districts: string[]
   states: string[]
@@ -35,12 +37,15 @@ export async function lookupPincode(pincode: string): Promise<PincodeLookupResul
         const places = Array.from(new Set(postOffices.map((p: any) => p.Name).filter(Boolean))) as string[]
         const districts = Array.from(new Set(postOffices.map((p: any) => p.District).filter(Boolean))) as string[]
         const states = Array.from(new Set(postOffices.map((p: any) => p.State).filter(Boolean))) as string[]
+        const blocks = Array.from(new Set(postOffices.map((p: any) => p.Block || p.Taluk).filter((b: any) => b && b !== "NA"))) as string[]
 
         return {
           status: "Success",
           district: districts[0] || "",
           state: states[0] || "",
           country: postOffices[0]?.Country || "India",
+          block: blocks[0] || "",
+          blocks,
           places,
           districts,
           states,

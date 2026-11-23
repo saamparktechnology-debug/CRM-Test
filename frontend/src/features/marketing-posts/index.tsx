@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { 
   FileText, Plus, RefreshCw, Search, Eye, Filter, 
   Video, Image as ImageIcon, Sparkles, TrendingUp, 
@@ -15,6 +16,7 @@ import AddDeliverablePostModal from "@/features/marketing/components/AddDelivera
 import { Button } from "@/components/ui/Button"
 
 export default function MarketingPostsPage() {
+  const { data: masterBundle } = useMasterBundle()
   const { user } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
   const isAdmin = user?.role === "Super Admin" || user?.role === "Admin"
@@ -180,10 +182,9 @@ export default function MarketingPostsPage() {
             className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-200 outline-none cursor-pointer"
           >
             <option value="all">All Services</option>
-            <option value="poster">Poster</option>
-            <option value="video">Video</option>
-            <option value="real model">Real Model Video</option>
-            <option value="tutor">Tutor / Custom</option>
+                {(masterBundle?.options?.["marketing_post_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
 
           {/* Status Filter */}
@@ -193,10 +194,9 @@ export default function MarketingPostsPage() {
             className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold text-zinc-700 dark:text-zinc-200 outline-none cursor-pointer"
           >
             <option value="all">All Status</option>
-            <option value="posted">Posted</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="in review">In Review</option>
-            <option value="draft">Draft</option>
+                {(masterBundle?.options?.["meeting_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
 
           {/* Grid vs Table View Toggle */}

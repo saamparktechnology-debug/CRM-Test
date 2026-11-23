@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Check, Paperclip, Mic, Lock, Users, Globe, Building2 } from "lucide-react"
 import { CalendarEvent, EventLabel, EventTypeOption, EventAudience } from "../types"
@@ -37,6 +38,7 @@ export function AddEventModal({
   initialDate,
   labels,
 }: AddEventModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const { user, activeCompanyId, activeBranchId } = useAuthStore()
   const isAdmin = user?.role === "Super Admin" || user?.role === "Admin"
 
@@ -214,13 +216,9 @@ export function AddEventModal({
                 className="md:col-span-3 px-3.5 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Labels</option>
-                <option value="Call">Call</option>
-                <option value="Email">Email</option>
-                <option value="Visit">Visit</option>
-                {labels.map((lbl) => (
-                  <option key={lbl.id} value={lbl.name}>
-                    {lbl.name}
-                  </option>
+                {(masterBundle?.options?.["followup_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 ))}
               </select>
             </div>

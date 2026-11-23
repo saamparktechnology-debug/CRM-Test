@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import {
   Tag,
   Upload,
@@ -32,6 +33,7 @@ import { formatDisplayDate } from "@/lib/utils";
 import { type ProjectListProps } from "@/features/projects/components/projectlist-sections/ProjectListHelpers";
 
 export function ProjectListSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const {
     filteredProjects,
     onSelectProjectDetail,
@@ -416,13 +418,9 @@ export function ProjectListSection1({ ctrl }: { ctrl: any }) {
                                 : "text-blue-600 border-blue-300"
                       }`}
                     >
-                      <option value="Open">Open</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Under Review">Under Review</option>
-                      <option value="Hold">Hold</option>
-                      <option value="Completed">Completed</option>
-                      <option value="Finished">Finished</option>
-                      <option value="Cancelled">Cancelled</option>
+                      {(masterBundle?.options?.["project_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
 
                     {(p.status === "Completed" || p.status === "Finished") && (

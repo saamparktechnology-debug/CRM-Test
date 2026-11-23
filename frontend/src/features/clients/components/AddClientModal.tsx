@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Check, HelpCircle, User, Building, MapPin } from "lucide-react"
 import { ClientItem } from "../types"
@@ -22,6 +23,7 @@ export function AddClientModal({
   onSave,
   initialData,
 }: AddClientModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const __ctrlRef = React.useRef<any>({});
   let __ctrl: any = {};
 
@@ -323,8 +325,9 @@ return (
                 className="md:col-span-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="INR">Keep it blank to use the default (INR - ₹)</option>
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
+                {(masterBundle?.options?.["currency"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 
@@ -348,11 +351,9 @@ return (
                 onChange={(e) => setLabel(e.target.value)}
                 className="md:col-span-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="Corporate">Corporate</option>
-                <option value="Unsatisfied">Unsatisfied</option>
-                <option value="Referral">Referral</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Potential">Potential</option>
+                {(masterBundle?.options?.["client_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 

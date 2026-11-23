@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   DollarSign, Plus, Search, Check, Clock, Edit, X, 
@@ -19,6 +20,7 @@ import { executeWithFeedback } from "@/store/useActionFeedbackStore"
 import { type PayrollItem } from "@/features/payroll/components/payroll-sections/PayrollHelpers"
 
 export function PayrollSection2({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isPayoutModalOpen, setIsPayoutModalOpen, handleSubmitPayoutRequest, payoutReqType, setPayoutReqType, payoutReqAmount, setPayoutReqAmount, user, payoutReqNotes, setPayoutReqNotes, isSubmittingPayoutReq, isPayslipModalOpen, selectedPayslipItem, setIsPayslipModalOpen, calculateStatutoryPayslip, totalEarnedIncentives, teamMetrics } = ctrl;
   return (
     <>
@@ -56,9 +58,9 @@ export function PayrollSection2({ ctrl }: { ctrl: any }) {
                     onChange={(e: any) => setPayoutReqType(e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none cursor-pointer"
                   >
-                    <option value="Monthly Salary Payout">Monthly Salary Payout</option>
-                    <option value="Salary Advance">Salary Advance</option>
-                    <option value="Expense Reimbursement">Expense Reimbursement / Claim</option>
+                    {(masterBundle?.options?.["payroll_payout_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
 

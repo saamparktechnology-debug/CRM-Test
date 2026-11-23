@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Folder, Plus, Search, ExternalLink, Download, Copy, 
@@ -14,6 +15,7 @@ import { fileFeatureService } from "./services/fileService"
 import { isRecordAssignedToClient, isRecordAssignedToTeamMember } from "@/lib/clientScopeUtils"
 
 export default function FilesMain() {
+  const { data: masterBundle } = useMasterBundle()
   const { user, activeCompanyId } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
 
@@ -332,11 +334,9 @@ export default function FilesMain() {
                       onChange={(e) => setLinkType(e.target.value as any)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden font-semibold"
                     >
-                      <option value="Google Drive">Google Drive Link</option>
-                      <option value="Dropbox">Dropbox Folder</option>
-                      <option value="OneDrive">OneDrive Document</option>
-                      <option value="Cloud Link">Figma / External Cloud URL</option>
-                      <option value="Direct Upload">Direct File Upload</option>
+                      {(masterBundle?.options?.["file_storage_provider"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
 
@@ -347,11 +347,9 @@ export default function FilesMain() {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden"
                     >
-                      <option value="Project Deliverables">Project Deliverables</option>
-                      <option value="Contracts & Legal">Contracts & Legal</option>
-                      <option value="Designs & Assets">Designs & Assets</option>
-                      <option value="Technical Specs">Technical Specs</option>
-                      <option value="Invoices & Finance">Invoices & Finance</option>
+                      {(masterBundle?.options?.["document_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
                 </div>

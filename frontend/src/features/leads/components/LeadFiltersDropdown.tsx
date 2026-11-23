@@ -15,13 +15,7 @@ interface LeadFiltersDropdownProps {
   onOpenManageLabelsModal?: () => void
 }
 
-const DEFAULT_SOURCES = [
-  "Social Media",
-  "Meta Ads",
-  "Google Ads",
-  "Local Market",
-  "My Leads",
-]
+const DEFAULT_SOURCES: string[] = []
 
 export function LeadFiltersDropdown({
   isOpen,

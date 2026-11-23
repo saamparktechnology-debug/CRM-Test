@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { CheckCircle2, X, Sparkles, Check } from "lucide-react"
 import { Button } from "@/components/ui/Button"
@@ -33,6 +34,7 @@ export function RecordPaymentModal({
   setPaymentRef,
   handleConfirmPayment,
 }: RecordPaymentModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   return (
       <AnimatePresence>
         {paymentModalInvoice && (
@@ -203,13 +205,9 @@ export function RecordPaymentModal({
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200"
                   >
-                    <option value="UPI / Net Banking">UPI / Net Banking</option>
-                    <option value="Razorpay">Razorpay / Payment Gateway</option>
-                    <option value="Bank Wire Transfer">
-                      Bank Wire / NEFT / RTGS
-                    </option>
-                    <option value="Cheque">Cheque</option>
-                    <option value="Cash">Cash</option>
+                    {(masterBundle?.options?.["payment_method"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
 

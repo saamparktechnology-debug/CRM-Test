@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react";
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion } from "framer-motion";
 import {
   ShieldCheck,
@@ -28,6 +29,7 @@ import { createNotification } from "@/services/notificationService";
 import { RELATIONSHIP_OPTIONS, checkIsVerified, type ContentProps } from "@/components/auth/components/employeekycgate-sections/EmployeeKycGateHelpers"
 
 export function EmployeeKycGateSection2({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { showForm, kycStatus, user, handleSubmitKyc, passportPhotoUrl, setPassportPhotoUrl, handleFileUpload, uploadingPassport, fullName, setFullName, fatherOrGuardianName, setFatherOrGuardianName, dob, setDob, gender, setGender, phone, setPhone, bloodGroup, setBloodGroup, maritalStatus, setMaritalStatus, ec1Name, setEc1Name, ec1Relation, setEc1Relation, ec1CustomRelation, setEc1CustomRelation, ec1Phone, setEc1Phone, ec2Name, setEc2Name, ec2Relation, setEc2Relation, ec2CustomRelation, setEc2CustomRelation, ec2Phone, setEc2Phone, pincode, handlePincodeLookup, pinLookupStatus, pinLookupMsg, availablePostOffices, selectedPostOffice, setSelectedPostOffice, city, setCity, district, setDistrict, state, setState, streetAddress, setStreetAddress, landmark, setLandmark, docType, setDocType, docNumber, setDocNumber, docFrontUrl, setDocFrontUrl, uploadingFront, docBackUrl, setDocBackUrl, uploadingBack, panNumber, setPanNumber, panDocUrl, setPanDocUrl, uploadingPan, bankName, setBankName, accountHolderName, setAccountHolderName, bankBranch, setBankBranch, accountNumber, setAccountNumber, confirmAccountNumber, setConfirmAccountNumber, ifscCode, setIfscCode, upiId, setUpiId, bankProofUrl, setBankProofUrl, uploadingBankProof, declarationAccepted, setDeclarationAccepted, formError, rawKyc, setIsReuploading, isSubmitting } = ctrl;
   return (
     <>
@@ -169,9 +171,9 @@ export function EmployeeKycGateSection2({ ctrl }: { ctrl: any }) {
                         onChange={(e) => setGender(e.target.value)}
                         className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden cursor-pointer"
                       >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
+                        {(masterBundle?.options?.["gender"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                       </select>
                     </div>
 
@@ -225,9 +227,9 @@ export function EmployeeKycGateSection2({ ctrl }: { ctrl: any }) {
                           onChange={(e) => setMaritalStatus(e.target.value)}
                           className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden cursor-pointer"
                         >
-                          <option value="Single">Single</option>
-                          <option value="Married">Married</option>
-                          <option value="Other">Other</option>
+                          {(masterBundle?.options?.["marital_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                         </select>
                       </div>
                     </div>
@@ -655,13 +657,9 @@ export function EmployeeKycGateSection2({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setDocType(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden cursor-pointer"
                     >
-                      <option value="Aadhaar Card">
-                        Aadhaar Card (12 Digits)
-                      </option>
-                      <option value="PAN Card">PAN Card (10 Characters)</option>
-                      <option value="Voter ID">Voter ID / EPIC Card</option>
-                      <option value="Passport">Passport</option>
-                      <option value="Driving License">Driving License</option>
+                      {(masterBundle?.options?.["kyc_id_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
 

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   FileText, Plus, Search, Edit, Trash2, X, Send, 
@@ -20,6 +21,7 @@ import { formatDisplayDate } from "@/lib/utils"
 import { type LineItem, type Estimate } from "@/features/estimates/components/estimates-sections/EstimatesHelpers"
 
 export function EstimatesSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { canAdd, setEditingItem, setIsStudioOpen, filtered, searchQuery, setSearchQuery, statusFilter, setStatusFilter, openSendModal, setViewingItem, canEdit, openEditModal, canDelete, setDeleteConfirm } = ctrl;
   return (
     <>
@@ -105,7 +107,9 @@ export function EstimatesSection1({ ctrl }: { ctrl: any }) {
           <input type="text" placeholder="Search by number, customer, email..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-2 text-xs liquid-glass-input rounded-xl focus:outline-hidden" />
         </div>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 text-xs liquid-glass-input rounded-xl focus:outline-hidden cursor-pointer font-semibold">
-          <option value="all">All Statuses</option><option value="Draft">Draft</option><option value="Sent">Sent</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option>
+          <option value="all">All Statuses</option>{(masterBundle?.options?.["estimate_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
         </select>
       </div>
 

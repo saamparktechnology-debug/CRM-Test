@@ -38,7 +38,7 @@ import { createDocumentStudioModalAction20 } from "@/components/documents/hooks/
 
 export function createDocumentStudioModalFn50(getCtrl: () => any) {
   return (...__args: any[]) => {
-    const { setClientPincode, setIsPincodeLoading, setPincodePlaces, setPincodeDistricts, setPincodeStates, setClientState, setClientDistrict, setClientCity, setClientAddress } = getCtrl();
+    const { setClientPincode, setIsPincodeLoading, setPincodePlaces, setPincodeBlocks, setPincodeDistricts, setPincodeStates, setClientState, setClientDistrict, setClientCity, setClientPoliceStation, setClientAddress } = getCtrl();
     const __fn: any = async (pin: string) => {
     setClientPincode(pin)
     const cleanPin = pin.trim().replace(/\D/g, "")
@@ -48,6 +48,8 @@ export function createDocumentStudioModalFn50(getCtrl: () => any) {
       setIsPincodeLoading(false)
       if (res && res.status === "Success") {
         setPincodePlaces(res.places || [])
+        setPincodeBlocks?.(res.blocks || [])
+        if (res.block) setClientPoliceStation?.(res.block)
         setPincodeDistricts(res.districts || [])
         setPincodeStates(res.states || [])
         if (res.state) setClientState(res.state)

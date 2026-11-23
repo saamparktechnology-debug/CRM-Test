@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { X, Check, Users, Shield, UserCheck, Search, Percent, Sparkles, Building2 } from "lucide-react"
 import { Project, ProjectType, ProjectMember, ProjectMilestone } from "@/features/projects/types"
 import { addProject } from "@/features/projects/services/projectService"
@@ -12,6 +13,7 @@ import { executeWithFeedback } from "@/store/useActionFeedbackStore"
 import { type AddProjectModalProps } from "@/features/projects/components/addprojectmodal-sections/AddProjectModalHelpers"
 
 export function AddProjectModalSection3({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { description, setDescription, startDate, setStartDate, deadline, setDeadline, baseAmount, setBaseAmount, setupCharge, setSetupCharge, discount, setDiscount, gstRate, setGstRate, numericComputedPrice, price, setPrice, labels, setLabels } = ctrl;
   return (
     <>
@@ -108,11 +110,9 @@ export function AddProjectModalSection3({ ctrl }: { ctrl: any }) {
                     onChange={(e) => setGstRate(Number(e.target.value))}
                     className="w-full px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md text-zinc-800 dark:text-zinc-200 font-semibold"
                   >
-                    <option value={0}>0% (Non-GST / Exempt)</option>
-                    <option value={5}>5%</option>
-                    <option value={12}>12%</option>
-                    <option value={18}>18% (Standard GST)</option>
-                    <option value={28}>28%</option>
+                    {(masterBundle?.options?.["tax_slab"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>

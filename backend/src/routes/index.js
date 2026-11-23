@@ -59,4 +59,7 @@ router.use('/dashboard', require('./dashboardRoutes'));
 // NEW: Expenses
 router.use('/expenses', require('./expenseRoutes'));
 
+// Dynamic Master Data (Super Admin)
+router.use('/masters', require('./masterRoutes'));
+
 module.exports = router;

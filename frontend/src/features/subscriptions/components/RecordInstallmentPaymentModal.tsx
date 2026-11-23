@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion } from "framer-motion"
 import { X, CheckCircle2, DollarSign, CreditCard, Calendar, Building2 } from "lucide-react"
 import { InstallmentItem, InstallmentScheduleItem } from "../types"
@@ -25,6 +26,7 @@ export function RecordInstallmentPaymentModal({
   onClose,
   onConfirm,
 }: RecordInstallmentPaymentModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const [amountPaid, setAmountPaid] = React.useState<number>(scheduleItem?.amount || 0)
   const [paymentMethod, setPaymentMethod] = React.useState<string>("UPI Transfer")
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -126,11 +128,9 @@ export function RecordInstallmentPaymentModal({
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden font-medium"
             >
-              <option value="UPI / QR Transfer">UPI / QR Code Transfer</option>
-              <option value="NEFT / RTGS Bank Transfer">NEFT / RTGS Bank Transfer</option>
-              <option value="Debit / Credit Card">Debit / Credit Card</option>
-              <option value="Cash / Cheque">Cash / Cheque</option>
-              <option value="Net Banking">Net Banking</option>
+              {(masterBundle?.options?.["payment_method"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
 

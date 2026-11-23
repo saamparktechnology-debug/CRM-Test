@@ -101,7 +101,7 @@ export function AddClientProjectModalSection3({ ctrl }: { ctrl: any }) {
                       {cat}
                     </option>
                   ))}
-                  <option value="custom">✨ + Custom Category...</option>
+                  <option value="Other">Other</option>
                 </select>
               )}
             </div>

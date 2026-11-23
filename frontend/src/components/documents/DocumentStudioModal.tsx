@@ -97,12 +97,14 @@ import { createDocumentStudioModalFn52 } from "@/components/documents/hooks/docu
 export function DocumentStudioModal({
   isOpen,
   mode = "invoice",
-  initialData,
+  initialData: rawInitialData,
+  editDocument,
   prefilledClient,
   isMarketingMode = false,
   onClose,
   onSaveSuccess,
 }: DocumentStudioModalProps) {
+  const initialData = rawInitialData || editDocument;
   const __ctrl: any = {
     get isOpen() {
       try {
@@ -790,6 +792,24 @@ export function DocumentStudioModal({
         return undefined;
       }
     },
+    get pincodeBlocks() { try { return pincodeBlocks; } catch { return []; } },
+    get setPincodeBlocks() { return setPincodeBlocks; },
+    get clientPoliceStation() { try { return clientPoliceStation; } catch { return ""; } },
+    get setClientPoliceStation() { return setClientPoliceStation; },
+    get clientDob() { try { return clientDob; } catch { return ""; } },
+    get setClientDob() { return setClientDob; },
+    get referByCategory() { try { return referByCategory; } catch { return ""; } },
+    get setReferByCategory() { return setReferByCategory; },
+    get referredByName() { try { return referredByName; } catch { return ""; } },
+    get setReferredByName() { return setReferredByName; },
+    get isSplitPayment() { try { return isSplitPayment; } catch { return false; } },
+    get setIsSplitPayment() { return setIsSplitPayment; },
+    get splitPayments() { try { return splitPayments; } catch { return []; } },
+    get setSplitPayments() { return setSplitPayments; },
+    get emiCustomSchedule() { try { return emiCustomSchedule; } catch { return []; } },
+    get setEmiCustomSchedule() { return setEmiCustomSchedule; },
+    get availableReferers() { try { return availableReferers; } catch { return []; } },
+    get setAvailableReferers() { return setAvailableReferers; },
     get pincodeDistricts() {
       try {
         return pincodeDistricts;
@@ -1745,6 +1765,7 @@ export function DocumentStudioModal({
   }, [subBranches, branchId]);
 
   // Team Member Attribution (For Invoices)
+  const [availableReferers, setAvailableReferers] = React.useState<any[]>([]);
   const [availableTeamMembers, setAvailableTeamMembers] = React.useState<any[]>(
     [],
   );
@@ -1862,6 +1883,18 @@ export function DocumentStudioModal({
   const [clientState, setClientState] = React.useState("");
   const [clientGst, setClientGst] = React.useState("");
   const [pincodePlaces, setPincodePlaces] = React.useState<string[]>([]);
+  const [pincodeBlocks, setPincodeBlocks] = React.useState<string[]>([]);
+  const [clientPoliceStation, setClientPoliceStation] = React.useState<string>(initialData?.clientPoliceStation || "");
+  const [clientDob, setClientDob] = React.useState<string>(initialData?.clientDob || "");
+  const [referByCategory, setReferByCategory] = React.useState<string>(initialData?.referByCategory || "");
+  const [referredByName, setReferredByName] = React.useState<string>(initialData?.referredByName || "");
+  const [isSplitPayment, setIsSplitPayment] = React.useState<boolean>(Boolean(initialData?.splitPayments?.length));
+  const [splitPayments, setSplitPayments] = React.useState<Array<{ id: string; method: string; amount: number | ""; reference: string }>>(
+    initialData?.splitPayments || [{ id: "sp-1", method: "UPI / Net Banking", amount: "", reference: "" }]
+  );
+  const [emiCustomSchedule, setEmiCustomSchedule] = React.useState<Array<{ id: string; dueDate: string; amount: number | "" }>>(
+    initialData?.emiCustomSchedule || []
+  );
   const [pincodeDistricts, setPincodeDistricts] = React.useState<string[]>([]);
   const [pincodeStates, setPincodeStates] = React.useState<string[]>([]);
   const [isPincodeLoading, setIsPincodeLoading] =
@@ -1923,7 +1956,7 @@ export function DocumentStudioModal({
     return (
       initialData?.primaryCategory ||
       initialData?.category ||
-      (initialData?.isMarketingRetainer ? "Digital Marketing" : "Website")
+      (initialData?.isMarketingRetainer ? "Digital Marketing" : "Website Development")
     );
   });
   const [customPrimaryCategory, setCustomPrimaryCategory] =
@@ -2416,7 +2449,7 @@ export function DocumentStudioModal({
         ? "Create Commercial Project Quotation & Tender"
         : "Create Project Cost Estimate";
 
-  const totalSteps = isMarketing ? 3 : mode === "estimate" ? 2 : 3;
+  const totalSteps = isMarketing ? 3 : (mode === "estimate" || mode === "invoice") ? 2 : 3;
 
   __ctrlRef.current = __ctrl;
   return (

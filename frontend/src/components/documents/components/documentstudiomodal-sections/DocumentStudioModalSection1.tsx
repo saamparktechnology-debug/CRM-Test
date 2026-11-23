@@ -1,4 +1,9 @@
 "use client";
+import {
+  useMasterBundle,
+  useMasterOptions,
+  useMasterMutations,
+} from "@/features/masters/hooks/useMasters";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -86,6 +91,12 @@ import {
 } from "@/components/documents/components/documentstudiomodal-sections/DocumentStudioModalHelpers";
 
 export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle();
+  const { options: primaryCategoryOpts } = useMasterOptions("primary_category");
+  const { options: servicePresetOpts } = useMasterOptions("service_preset");
+  const { createOption: createMasterOption } = useMasterMutations();
+  const [savingCustomCat, setSavingCustomCat] = React.useState(false);
+
   const {
     isMarketing,
     currentStep,
@@ -209,6 +220,21 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
     customDesignation,
     setCustomDesignation,
     clientCity,
+    clientDob,
+    setClientDob,
+    clientPoliceStation,
+    setClientPoliceStation,
+    pincodeBlocks,
+    referByCategory,
+    setReferByCategory,
+    referredByName,
+    setReferredByName,
+    isSplitPayment,
+    setIsSplitPayment,
+    splitPayments,
+    setSplitPayments,
+    emiCustomSchedule,
+    setEmiCustomSchedule,
     handleAddDeliverable,
     deliverables,
     handleRemoveDeliverable,
@@ -227,6 +253,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
     assignedMembers,
     handleUpdateAssignedMember,
     availableTeamMembers,
+    availableReferers,
     handleRemoveAssignedMember,
     isPincodeLoading,
     pincodePlaces,
@@ -250,6 +277,77 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
     effectiveSubAdvance,
     subPrepaidCycles,
   } = ctrl;
+
+  const dynamicServicePresets = React.useMemo(() => {
+    const all = servicePresetOpts.map((o: any) => ({
+      name: o.label,
+      primaryCategory: o.metadata?.primary_category || "",
+      sac: o.metadata?.sac || o.code || "998313",
+      gst: Number(o.metadata?.gst ?? 18),
+      unit: o.metadata?.unit || "Project",
+      rate: Number(o.metadata?.rate ?? 0),
+    }));
+    const cat = String(primaryCategory || "")
+      .trim()
+      .toLowerCase();
+    if (!cat || cat === "other" || cat === "custom") return all;
+    return all.filter(
+      (p: any) => p.primaryCategory.trim().toLowerCase() === cat,
+    );
+  }, [servicePresetOpts, primaryCategory]);
+  const [customPrimaryCategory, setCustomPrimaryCategory] = React.useState("");
+
+  React.useEffect(() => {
+    if (!primaryCategoryOpts || primaryCategoryOpts.length === 0) return;
+    const exists = primaryCategoryOpts.some(
+      (o: any) => o.value === primaryCategory || o.label === primaryCategory,
+    );
+    if (
+      !exists &&
+      primaryCategory !== "Other" &&
+      primaryCategory !== "Custom"
+    ) {
+      const def =
+        primaryCategoryOpts.find((o: any) => Boolean(o.is_default)) ||
+        primaryCategoryOpts[0];
+      if (def?.value && setPrimaryCategory) setPrimaryCategory(def.value);
+    }
+  }, [primaryCategoryOpts, primaryCategory, setPrimaryCategory]);
+
+  React.useEffect(() => {
+    if (mode !== "invoice" || isMarketing || ctrl.initialData) return;
+    if (!dynamicServicePresets || dynamicServicePresets.length === 0) return;
+    if (
+      Array.isArray(items) &&
+      items.length === 1 &&
+      !items[0]?.serviceName &&
+      (!items[0]?.rate || Number(items[0]?.rate) === 0)
+    ) {
+      const firstPreset = dynamicServicePresets[0];
+      const baseRate = Number(firstPreset.rate || 0);
+      const gstRate = docScheme === "gst" ? Number(firstPreset.gst ?? 18) : 0;
+      const gstAmt = Math.round(baseRate * (gstRate / 100));
+      setItems?.([
+        {
+          ...items[0],
+          serviceName: firstPreset.name,
+          sacCode: docScheme === "gst" ? firstPreset.sac || "998313" : "",
+          unit: firstPreset.unit || "Project",
+          rate: baseRate,
+          gstRate,
+          gstAmount: gstAmt,
+          totalAmount: baseRate + gstAmt,
+        },
+      ]);
+    }
+  }, [mode, isMarketing, dynamicServicePresets, docScheme]);
+
+  const isOtherPrimary =
+    primaryCategory === "Other" ||
+    primaryCategory === "Custom" ||
+    primaryCategoryOpts.some(
+      (o: any) => o.value === primaryCategory && o.metadata?.isOther,
+    );
   return (
     <>
       {isMarketing ? (
@@ -495,15 +593,13 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setClientDesignation(e.target.value)}
                       className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
                     >
-                      <option value="Proprietor">Proprietor</option>
-                      <option value="Founder">Founder</option>
-                      <option value="Managing Director">
-                        Managing Director
-                      </option>
-                      <option value="Marketing Head">Marketing Head</option>
-                      <option value="CEO">CEO</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Partner">Partner</option>
+                      {(
+                        masterBundle?.options?.["client_designation"] || []
+                      ).map((opt: any) => (
+                        <option key={opt.id} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -801,12 +897,13 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                       }
                       className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
                     >
-                      <option value="1">1 Month (Trial / One-off)</option>
-                      <option value="3">3 Months (Quarterly Retainer)</option>
-                      <option value="6">6 Months (Half-Yearly Retainer)</option>
-                      <option value="12">
-                        12 Months (Annual Growth Retainer)
-                      </option>
+                      {(masterBundle?.options?.["duration_offer"] || []).map(
+                        (opt: any) => (
+                          <option key={opt.id} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ),
+                      )}
                     </select>
                   </div>
 
@@ -1269,10 +1366,13 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                           }
                           className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-xs font-semibold"
                         >
-                          <option value="Monthly">Monthly Retainer</option>
-                          <option value="Weekly">Weekly Sprint</option>
-                          <option value="Quarterly">Quarterly Retainer</option>
-                          <option value="Yearly">Annual Retainer</option>
+                          {(masterBundle?.options?.["billing_unit"] || []).map(
+                            (opt: any) => (
+                              <option key={opt.id} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ),
+                          )}
                         </select>
                       </div>
                       <div>
@@ -1288,10 +1388,13 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                           }
                           className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-xs font-semibold"
                         >
-                          <option value="1">1 Month</option>
-                          <option value="3">3 Months (Standard)</option>
-                          <option value="6">6 Months</option>
-                          <option value="12">12 Months (1 Year)</option>
+                          {(
+                            masterBundle?.options?.["duration_offer"] || []
+                          ).map((opt: any) => (
+                            <option key={opt.id} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -2015,23 +2118,24 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                           }}
                           className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 shadow-2xs cursor-pointer focus:ring-2 focus:ring-indigo-500"
                         >
-                          <option value="Website">Website Development</option>
-                          <option value="Custom Software">
-                            Custom Software Application
-                          </option>
-                          <option value="Android / iOS Mobile App">
-                            Android / iOS Mobile App
-                          </option>
-                          <option value="Cloud Infrastructure">
-                            Cloud Infrastructure &amp; Domain
-                          </option>
-                          <option value="Digital Marketing">
-                            Digital Marketing &amp; Social Media Retainer
-                          </option>
-                          <option value="Custom">
-                            Custom / Other Services
-                          </option>
+                          {primaryCategoryOpts.map((opt: any) => (
+                            <option key={opt.id} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
                         </select>
+                        {isOtherPrimary && (
+                          <input
+                            type="text"
+                            value={customPrimaryCategory}
+                            onChange={(e) => {
+                              setCustomPrimaryCategory(e.target.value);
+                              setPrimaryCategory(e.target.value || "Other");
+                            }}
+                            placeholder="Enter custom category name..."
+                            className="mt-2 w-full px-3 py-2 text-xs font-semibold rounded-xl border border-indigo-300 dark:border-indigo-700 bg-indigo-50/40 dark:bg-indigo-950/20"
+                          />
+                        )}
                       </div>
 
                       <div>
@@ -2229,13 +2333,13 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                           onChange={(e) => setClientDesignation(e.target.value)}
                           className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
                         >
-                          <option value="Proprietor">Proprietor</option>
-                          <option value="Manager">Manager</option>
-                          <option value="Founder">Founder</option>
-                          <option value="CEO">CEO</option>
-                          <option value="Director">Director</option>
-                          <option value="Partner">Partner</option>
-                          <option value="Other">Other (Custom)</option>
+                          {(
+                            masterBundle?.options?.["client_designation"] || []
+                          ).map((opt: any) => (
+                            <option key={opt.id} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
                         </select>
                         {clientDesignation === "Other" && (
                           <Input
@@ -2531,6 +2635,55 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         onChange={(e) => {
                           const cat = e.target.value;
                           setPrimaryCategory(cat);
+                          if (cat !== "Digital Marketing") {
+                            const catLow = String(cat || "")
+                              .trim()
+                              .toLowerCase();
+                            const firstForCat = servicePresetOpts
+                              .map((o: any) => ({
+                                name: o.label,
+                                primaryCategory: String(
+                                  o.metadata?.primary_category || "",
+                                )
+                                  .trim()
+                                  .toLowerCase(),
+                                sac: o.metadata?.sac || o.code || "998313",
+                                gst: Number(o.metadata?.gst ?? 18),
+                                unit: o.metadata?.unit || "Project",
+                                rate: Number(o.metadata?.rate ?? 0),
+                              }))
+                              .find((p: any) => p.primaryCategory === catLow);
+                            if (items.length === 1) {
+                              const baseRate = firstForCat
+                                ? firstForCat.rate
+                                : 0;
+                              const gstRate =
+                                docScheme === "gst"
+                                  ? firstForCat
+                                    ? firstForCat.gst
+                                    : 18
+                                  : 0;
+                              const gstAmt = Math.round(
+                                baseRate * (gstRate / 100),
+                              );
+                              setItems([
+                                {
+                                  ...items[0],
+                                  serviceName: firstForCat
+                                    ? firstForCat.name
+                                    : "",
+                                  sacCode: firstForCat ? firstForCat.sac : "",
+                                  unit: firstForCat
+                                    ? firstForCat.unit
+                                    : "Project",
+                                  rate: baseRate,
+                                  gstRate,
+                                  gstAmount: gstAmt,
+                                  totalAmount: baseRate + gstAmt,
+                                },
+                              ]);
+                            }
+                          }
                           if (cat === "Digital Marketing") {
                             const defaultPkg =
                               createDefaultMarketingPackage(
@@ -2621,20 +2774,11 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         }}
                         className="px-3.5 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 shadow-2xs cursor-pointer focus:ring-2 focus:ring-indigo-500"
                       >
-                        <option value="Website">Website Development</option>
-                        <option value="Custom Software">
-                          Custom Software Application
-                        </option>
-                        <option value="Android / iOS Mobile App">
-                          Android / iOS Mobile App
-                        </option>
-                        <option value="Cloud Infrastructure">
-                          Cloud Infrastructure & Domain
-                        </option>
-                        <option value="Digital Marketing">
-                          Digital Marketing & Social Media Retainer
-                        </option>
-                        <option value="Custom">Custom / Other Services</option>
+                        {primaryCategoryOpts.map((opt: any) => (
+                          <option key={opt.id} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -2744,12 +2888,12 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                               <div className="space-y-1">
                                 <select
                                   value={
-                                    SERVICE_PRESETS.some(
+                                    dynamicServicePresets.some(
                                       (p) =>
                                         p.name.toLowerCase() ===
                                         (item.serviceName || "").toLowerCase(),
                                     )
-                                      ? SERVICE_PRESETS.find(
+                                      ? dynamicServicePresets.find(
                                           (p) =>
                                             p.name.toLowerCase() ===
                                             (
@@ -2764,7 +2908,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                     const val = e.target.value;
                                     if (val === "custom") {
                                       if (
-                                        SERVICE_PRESETS.some(
+                                        dynamicServicePresets.some(
                                           (p) => p.name === item.serviceName,
                                         )
                                       ) {
@@ -2775,7 +2919,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                         );
                                       }
                                     } else if (val) {
-                                      const preset = SERVICE_PRESETS.find(
+                                      const preset = dynamicServicePresets.find(
                                         (p) => p.name === val,
                                       );
                                       if (preset) {
@@ -2807,7 +2951,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                   <option value="" disabled>
                                     Select Preset or Custom...
                                   </option>
-                                  {SERVICE_PRESETS.map((preset) => (
+                                  {dynamicServicePresets.map((preset) => (
                                     <option
                                       key={preset.name}
                                       value={preset.name}
@@ -3314,60 +3458,36 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
               {/* Step 1: Entity, Scheme & Attribution */}
               {currentStep === 1 && (
                 <div className="space-y-5">
-                  {/* Scheme Switcher */}
-                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
-                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 block border-b border-zinc-200 dark:border-zinc-700/60 pb-2 text-xs">
-                      Invoicing Scheme &amp; Tax Mode
+                  {/* Compact Invoicing Scheme & Tax Mode */}
+                  <div className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 text-xs">
+                      Tax Mode:
                     </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div
+                    <div className="grid grid-cols-2 gap-2 flex-1 sm:max-w-md">
+                      <button
+                        type="button"
                         onClick={() => handleSchemeChange("gst")}
-                        className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                           docScheme === "gst"
-                            ? "border-teal-600 bg-teal-50/50 dark:bg-teal-950/30 shadow-xs"
-                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300"
+                            ? "border-teal-600 bg-teal-600 text-white shadow-xs"
+                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
                         }`}
                       >
-                        <div
-                          className={`p-2 rounded-lg ${docScheme === "gst" ? "bg-teal-600 text-white" : "bg-zinc-100 text-zinc-500"}`}
-                        >
-                          <Building2 size={16} />
-                        </div>
-                        <div>
-                          <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                            GST Tax Invoicing (Standard 18%)
-                          </div>
-                          <div className="text-[11px] text-zinc-500 mt-0.5">
-                            Includes HSN/SAC codes, CGST/SGST/IGST breakdown,
-                            and Company GSTIN.
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
+                        <Building2 size={13} />
+                        <span>GST (18%)</span>
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleSchemeChange("nongst")}
-                        className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                           docScheme === "nongst"
-                            ? "border-sky-600 bg-sky-50/50 dark:bg-sky-950/30 shadow-xs"
-                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300"
+                            ? "border-sky-600 bg-sky-600 text-white shadow-xs"
+                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
                         }`}
                       >
-                        <div
-                          className={`p-2 rounded-lg ${docScheme === "nongst" ? "bg-sky-600 text-white" : "bg-zinc-100 text-zinc-500"}`}
-                        >
-                          <Receipt size={16} />
-                        </div>
-                        <div>
-                          <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                            Non-GST / Commercial Billing (0% Tax)
-                          </div>
-                          <div className="text-[11px] text-zinc-500 mt-0.5">
-                            No tax added to line items. Links Non-GST bank
-                            profile automatically.
-                          </div>
-                        </div>
-                      </div>
+                        <Receipt size={13} />
+                        <span>Non-GST (0%)</span>
+                      </button>
                     </div>
                   </div>
 
@@ -3579,12 +3699,58 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                       </div>
                     )}
                   </div>
-                </div>
-              )}
 
-              {/* Step 2: Client & Dates */}
-              {currentStep === 2 && (
-                <div className="space-y-5">
+                  {/* Referred By (Optional) */}
+                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
+                    <span className="font-extrabold text-zinc-800 dark:text-zinc-200 text-xs flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
+                      <UserCheck size={15} className="text-teal-600" />
+                      <span>Referred By (Optional)</span>
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">
+                          Refer By Category
+                        </label>
+                        <select
+                          value={referByCategory || ""}
+                          onChange={(e) => setReferByCategory?.(e.target.value)}
+                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
+                        >
+                          <option value="">
+                            -- Select Refer By Category --
+                          </option>
+                          {(
+                            masterBundle?.options?.["refer_by_category"] || []
+                          ).map((opt: any) => (
+                            <option key={opt.id} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">
+                          Referer / Referred By
+                        </label>
+                        <select
+                          value={referredByName || ""}
+                          onChange={(e) => setReferredByName?.(e.target.value)}
+                          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
+                        >
+                          <option value="">-- Select Referer --</option>
+                          {(availableReferers && availableReferers.length > 0
+                            ? availableReferers
+                            : availableTeamMembers || []
+                          ).map((m: any) => (
+                            <option key={m.id} value={m.name}>
+                              {m.name} ({m.role || "User"})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
                     <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700/60 pb-2">
                       <span className="font-extrabold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
@@ -3709,13 +3875,13 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                           onChange={(e) => setClientDesignation(e.target.value)}
                           className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
                         >
-                          <option value="Proprietor">Proprietor</option>
-                          <option value="Manager">Manager</option>
-                          <option value="Founder">Founder</option>
-                          <option value="CEO">CEO</option>
-                          <option value="Director">Director</option>
-                          <option value="Partner">Partner</option>
-                          <option value="Other">Other (Custom)</option>
+                          {(
+                            masterBundle?.options?.["client_designation"] || []
+                          ).map((opt: any) => (
+                            <option key={opt.id} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
                         </select>
                         {clientDesignation === "Other" && (
                           <Input
@@ -3773,6 +3939,18 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                           value={clientEmail}
                           onChange={(e) => setClientEmail(e.target.value)}
                           placeholder="client@company.com"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">
+                          Client Date of Birth (DOB)
+                        </label>
+                        <Input
+                          type="date"
+                          value={clientDob || ""}
+                          onChange={(e) => setClientDob?.(e.target.value)}
+                          className="text-xs font-mono font-bold"
                         />
                       </div>
 
@@ -3847,6 +4025,41 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                             value={clientCity}
                             onChange={(e) => setClientCity(e.target.value)}
                             placeholder="City"
+                          />
+                        )}
+                      </div>
+
+                      {/* Police Station / Block Dropdown from Pincode API */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">
+                          Police Station / Block
+                        </label>
+                        {pincodeBlocks && pincodeBlocks.length > 0 ? (
+                          <select
+                            value={clientPoliceStation || ""}
+                            onChange={(e) =>
+                              setClientPoliceStation?.(e.target.value)
+                            }
+                            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
+                          >
+                            <option value="">
+                              -- Select Police Station / Block --
+                            </option>
+                            {Array.from(new Set(pincodeBlocks || [])).map(
+                              (b: any) => (
+                                <option key={b} value={b}>
+                                  {b}
+                                </option>
+                              ),
+                            )}
+                          </select>
+                        ) : (
+                          <Input
+                            value={clientPoliceStation || ""}
+                            onChange={(e) =>
+                              setClientPoliceStation?.(e.target.value)
+                            }
+                            placeholder="Police Station / Block"
                           />
                         )}
                       </div>
@@ -3937,7 +4150,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
               )}
 
               {/* Step 3: Line Items & Calculation */}
-              {currentStep === 3 && (
+              {currentStep === 2 && (
                 <div className="space-y-5">
                   {/* Primary Service Category Selector & Marketing Package Configurator */}
                   <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-3">
@@ -3956,6 +4169,65 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         onChange={(e) => {
                           const cat = e.target.value;
                           setPrimaryCategory(cat);
+                          if (cat !== "Digital Marketing") {
+                            const catLow = String(cat || "")
+                              .trim()
+                              .toLowerCase();
+                            const firstForCat = servicePresetOpts
+                              .map((o: any) => ({
+                                name: o.label,
+                                primaryCategory: String(
+                                  o.metadata?.primary_category || "",
+                                )
+                                  .trim()
+                                  .toLowerCase(),
+                                sac: o.metadata?.sac || o.code || "998313",
+                                gst: Number(o.metadata?.gst ?? 18),
+                                unit: o.metadata?.unit || "Project",
+                                rate: Number(o.metadata?.rate ?? 0),
+                              }))
+                              .find((p: any) => p.primaryCategory === catLow);
+                            if (firstForCat) {
+                              const baseRate = Number(firstForCat.rate || 0);
+                              const gstRate =
+                                docScheme === "gst"
+                                  ? Number(firstForCat.gst ?? 18)
+                                  : 0;
+                              const gstAmt = Math.round(
+                                baseRate * (gstRate / 100),
+                              );
+                              setItems([
+                                {
+                                  id: items[0]?.id || `item_${Date.now()}`,
+                                  serviceName: firstForCat.name,
+                                  sacCode:
+                                    docScheme === "gst" ? firstForCat.sac : "",
+                                  qty: 1,
+                                  unit: firstForCat.unit || "Project",
+                                  rate: baseRate,
+                                  gstRate,
+                                  gstAmount: gstAmt,
+                                  charges: [],
+                                  totalAmount: baseRate + gstAmt,
+                                },
+                              ]);
+                            } else {
+                              setItems([
+                                {
+                                  id: `item_${Date.now()}`,
+                                  serviceName: "",
+                                  sacCode: "",
+                                  qty: 1,
+                                  unit: "Project",
+                                  rate: "" as any,
+                                  gstRate: docScheme === "gst" ? 18 : 0,
+                                  gstAmount: 0,
+                                  charges: [],
+                                  totalAmount: 0,
+                                },
+                              ]);
+                            }
+                          }
                           if (cat === "Digital Marketing") {
                             const defaultPkg =
                               createDefaultMarketingPackage(
@@ -4012,20 +4284,11 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         }}
                         className="px-3.5 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 shadow-2xs cursor-pointer focus:ring-2 focus:ring-teal-500"
                       >
-                        <option value="Website">Website Development</option>
-                        <option value="Custom Software">
-                          Custom Software Application
-                        </option>
-                        <option value="Android / iOS Mobile App">
-                          Android / iOS Mobile App
-                        </option>
-                        <option value="Cloud Infrastructure">
-                          Cloud Infrastructure & Domain
-                        </option>
-                        <option value="Digital Marketing">
-                          Digital Marketing & Social Media Retainer
-                        </option>
-                        <option value="Custom">Custom / Other Services</option>
+                        {primaryCategoryOpts.map((opt: any) => (
+                          <option key={opt.id} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -4135,14 +4398,14 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                 <div className="space-y-1.5">
                                   <select
                                     value={
-                                      SERVICE_PRESETS.some(
+                                      dynamicServicePresets.some(
                                         (p) =>
                                           p.name.toLowerCase() ===
                                           (
                                             item.serviceName || ""
                                           ).toLowerCase(),
                                       )
-                                        ? SERVICE_PRESETS.find(
+                                        ? dynamicServicePresets.find(
                                             (p) =>
                                               p.name.toLowerCase() ===
                                               (
@@ -4157,7 +4420,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                       const val = e.target.value;
                                       if (val === "custom") {
                                         if (
-                                          SERVICE_PRESETS.some(
+                                          dynamicServicePresets.some(
                                             (p) => p.name === item.serviceName,
                                           )
                                         ) {
@@ -4168,9 +4431,10 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                           );
                                         }
                                       } else if (val) {
-                                        const preset = SERVICE_PRESETS.find(
-                                          (p) => p.name === val,
-                                        );
+                                        const preset =
+                                          dynamicServicePresets.find(
+                                            (p) => p.name === val,
+                                          );
                                         if (preset) {
                                           handleUpdateItem(
                                             item.id,
@@ -4206,7 +4470,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                     <option value="" disabled>
                                       Select Preset or Custom...
                                     </option>
-                                    {SERVICE_PRESETS.map((preset) => (
+                                    {dynamicServicePresets.map((preset) => (
                                       <option
                                         key={preset.name}
                                         value={preset.name}
@@ -4285,13 +4549,20 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                   }
                                   className="w-full px-2 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold"
                                 >
-                                  <option value="Qty">Qty</option>
-                                  <option value="Unit">Unit</option>
-                                  <option value="Module">Module</option>
-                                  <option value="Sprint">Sprint</option>
-                                  <option value="Weekly">Weekly</option>
-                                  <option value="Monthly">Monthly</option>
-                                  <option value="Yearly">Yearly</option>
+                                  {!(
+                                    masterBundle?.options?.["billing_unit"] ||
+                                    []
+                                  ).some((o: any) => o.value === "Project") && (
+                                    <option value="Project">Project</option>
+                                  )}
+                                  {(
+                                    masterBundle?.options?.["billing_unit"] ||
+                                    []
+                                  ).map((opt: any) => (
+                                    <option key={opt.id} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
                                 </select>
                               </div>
                               <div
@@ -4321,49 +4592,6 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                                   }
                                   className="font-bold text-emerald-600"
                                 />
-                              </div>
-
-                              {/* Deliverable Time & Detailed Description Fields */}
-                              <div className="sm:col-span-12 grid grid-cols-1 sm:grid-cols-12 gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800">
-                                <div className="sm:col-span-4">
-                                  <label className="block text-[10px] font-bold text-teal-700 dark:text-teal-400 mb-0.5 flex items-center gap-1">
-                                    <Clock size={11} />
-                                    <span>
-                                      Deliverable Time (Timeline SLA) *
-                                    </span>
-                                  </label>
-                                  <Input
-                                    value={(item as any).deliverableTime || ""}
-                                    onChange={(e) =>
-                                      handleUpdateItem(
-                                        item.id,
-                                        "deliverableTime",
-                                        e.target.value,
-                                      )
-                                    }
-                                    placeholder="e.g. 2 Weeks / 10 Business Days"
-                                    className="font-semibold text-xs text-teal-800 dark:text-teal-300"
-                                  />
-                                </div>
-                                <div className="sm:col-span-8">
-                                  <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">
-                                    Module Description &amp; Technical Scope
-                                    (Features &amp; Specifications)
-                                  </label>
-                                  <textarea
-                                    rows={2}
-                                    value={item.description || ""}
-                                    onChange={(e) =>
-                                      handleUpdateItem(
-                                        item.id,
-                                        "description",
-                                        e.target.value,
-                                      )
-                                    }
-                                    placeholder="Detailed specifications, features, technical architecture, database schemas, deliverables checklist..."
-                                    className="w-full px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-normal resize-y"
-                                  />
-                                </div>
                               </div>
                             </div>
                           </div>
@@ -4529,24 +4757,6 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                           }
                         />
                       </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-zinc-600 dark:text-zinc-400 mb-0.5">
-                          Platform / Setup Charge (₹)
-                        </label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={setupCharge === 0 ? "" : setupCharge}
-                          onChange={(e) =>
-                            setSetupCharge(
-                              e.target.value === ""
-                                ? ""
-                                : Math.max(0, Number(e.target.value)),
-                            )
-                          }
-                          placeholder="e.g. 1500"
-                        />
-                      </div>
                     </div>
 
                     <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 space-y-2 mt-2">
@@ -4610,7 +4820,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         <span>Payment Plan &amp; Settlement Structure</span>
                       </span>
 
-                      {/* 1. Full, 2. Part (EMI), 3. Advance, 4. Subscription */}
+                      {/* 1. Full, 2. Advance, 3. Part (EMI) */}
                       <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700 flex-wrap">
                         <button
                           type="button"
@@ -4621,18 +4831,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                               : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
                           }`}
                         >
-                          1. 💳 Full
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPaymentPlan("part")}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "part"
-                              ? "bg-teal-600 text-white shadow-xs"
-                              : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
-                          }`}
-                        >
-                          2. 🔄 Part (EMI)
+                          1. Full
                         </button>
                         <button
                           type="button"
@@ -4643,18 +4842,18 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                               : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
                           }`}
                         >
-                          3. 🪙 Advance
+                          2. Advance
                         </button>
                         <button
                           type="button"
-                          onClick={() => setPaymentPlan("subscription")}
+                          onClick={() => setPaymentPlan("part")}
                           className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                            paymentPlan === "subscription"
+                            paymentPlan === "part"
                               ? "bg-teal-600 text-white shadow-xs"
                               : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900"
                           }`}
                         >
-                          4. 🗓️ Subscription
+                          3. Part (EMI)
                         </button>
                       </div>
                     </div>
@@ -4668,6 +4867,151 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         <span className="font-mono font-bold text-teal-600">
                           Total: ₹{grandTotal.toLocaleString("en-IN")}
                         </span>
+                      </div>
+                    )}
+
+                    {(paymentPlan === "full" || paymentPlan === "advance") && (
+                      <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-2.5 text-xs">
+                        <div className="flex items-center justify-between">
+                          <label className="inline-flex items-center gap-2 font-bold text-zinc-800 dark:text-zinc-200 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(isSplitPayment)}
+                              onChange={(e) =>
+                                setIsSplitPayment?.(e.target.checked)
+                              }
+                              className="rounded"
+                            />
+                            <span>
+                              Split Bill Payment (Online / UPI / Bank / Cash)
+                            </span>
+                          </label>
+                          {isSplitPayment && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSplitPayments?.([
+                                  ...(splitPayments || []),
+                                  {
+                                    id: `sp-${Date.now()}`,
+                                    method: "Cash Deposit",
+                                    amount: "",
+                                    reference: "",
+                                  },
+                                ])
+                              }
+                              className="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-bold text-[11px] hover:bg-teal-100 cursor-pointer"
+                            >
+                              + Add Split
+                            </button>
+                          )}
+                        </div>
+                        {isSplitPayment && (
+                          <div className="space-y-2 pt-1">
+                            {(splitPayments || []).map(
+                              (sp: any, sIdx: number) => (
+                                <div
+                                  key={sp.id}
+                                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
+                                >
+                                  <div className="sm:col-span-4">
+                                    <select
+                                      value={sp.method}
+                                      onChange={(e) => {
+                                        const next = [...splitPayments];
+                                        next[sIdx] = {
+                                          ...sp,
+                                          method: e.target.value,
+                                        };
+                                        setSplitPayments?.(next);
+                                      }}
+                                      className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold"
+                                    >
+                                      {(
+                                        masterBundle?.options?.[
+                                          "payment_method"
+                                        ] || []
+                                      ).map((opt: any) => (
+                                        <option key={opt.id} value={opt.value}>
+                                          {opt.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="sm:col-span-3">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      placeholder="Amount (₹)"
+                                      value={sp.amount}
+                                      onChange={(e) => {
+                                        const next = [...splitPayments];
+                                        next[sIdx] = {
+                                          ...sp,
+                                          amount:
+                                            e.target.value === ""
+                                              ? ""
+                                              : Math.max(
+                                                  0,
+                                                  Number(e.target.value),
+                                                ),
+                                        };
+                                        setSplitPayments?.(next);
+                                      }}
+                                      className="h-8 text-xs font-mono font-bold"
+                                    />
+                                  </div>
+                                  <div className="sm:col-span-4">
+                                    <Input
+                                      placeholder="Txn ID / Note (optional)"
+                                      value={sp.reference}
+                                      onChange={(e) => {
+                                        const next = [...splitPayments];
+                                        next[sIdx] = {
+                                          ...sp,
+                                          reference: e.target.value,
+                                        };
+                                        setSplitPayments?.(next);
+                                      }}
+                                      className="h-8 text-xs"
+                                    />
+                                  </div>
+                                  <div className="sm:col-span-1 text-right">
+                                    {splitPayments.length > 1 && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setSplitPayments?.(
+                                            splitPayments.filter(
+                                              (_: any, i: number) => i !== sIdx,
+                                            ),
+                                          )
+                                        }
+                                        className="p-1 text-rose-500 hover:bg-rose-50 rounded"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              ),
+                            )}
+                            <div className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 flex justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800">
+                              <span>Split Total:</span>
+                              <span className="font-bold text-teal-600">
+                                ₹
+                                {(splitPayments || [])
+                                  .reduce(
+                                    (acc: number, s: any) =>
+                                      acc + (Number(s.amount) || 0),
+                                    0,
+                                  )
+                                  .toLocaleString("en-IN")}{" "}
+                                / ₹{grandTotal.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -4742,6 +5086,126 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                           </div>
                         </div>
 
+                        {/* Custom EMI Dates & Payment Amounts */}
+                        <div className="space-y-2 bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-blue-900 dark:text-blue-200">
+                              Custom EMI Dates &amp; Installment Amounts
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextIdx =
+                                  (emiCustomSchedule?.length || 0) + 1;
+                                const d = new Date();
+                                d.setMonth(d.getMonth() + nextIdx);
+                                setEmiCustomSchedule?.([
+                                  ...(emiCustomSchedule || []),
+                                  {
+                                    id: `emi-${Date.now()}`,
+                                    dueDate: d.toISOString().split("T")[0],
+                                    amount: emiMonthlyAmount || 0,
+                                  },
+                                ]);
+                              }}
+                              className="px-2 py-0.5 rounded bg-blue-600 text-white text-[10px] font-bold hover:bg-blue-700 cursor-pointer"
+                            >
+                              + Add EMI Date
+                            </button>
+                          </div>
+                          {(emiCustomSchedule || []).length === 0 ? (
+                            <p className="text-[10.5px] text-zinc-500">
+                              Click &quot;+ Add EMI Date&quot; to choose exact
+                              installment dates and custom amounts (Total
+                              remaining: ₹
+                              {emiRemainingBalance.toLocaleString("en-IN")}).
+                            </p>
+                          ) : (
+                            <div className="space-y-1.5">
+                              {emiCustomSchedule.map(
+                                (row: any, eIdx: number) => (
+                                  <div
+                                    key={row.id}
+                                    className="grid grid-cols-12 gap-2 items-center"
+                                  >
+                                    <span className="col-span-2 text-[10.5px] font-bold text-zinc-500">
+                                      EMI #{eIdx + 1}
+                                    </span>
+                                    <div className="col-span-5">
+                                      <Input
+                                        type="date"
+                                        value={row.dueDate}
+                                        onChange={(e) => {
+                                          const next = [...emiCustomSchedule];
+                                          next[eIdx] = {
+                                            ...row,
+                                            dueDate: e.target.value,
+                                          };
+                                          setEmiCustomSchedule?.(next);
+                                        }}
+                                        className="h-7 text-xs font-mono"
+                                      />
+                                    </div>
+                                    <div className="col-span-4">
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        value={row.amount}
+                                        onChange={(e) => {
+                                          const next = [...emiCustomSchedule];
+                                          next[eIdx] = {
+                                            ...row,
+                                            amount:
+                                              e.target.value === ""
+                                                ? ""
+                                                : Math.max(
+                                                    0,
+                                                    Number(e.target.value),
+                                                  ),
+                                          };
+                                          setEmiCustomSchedule?.(next);
+                                        }}
+                                        placeholder="Amount (₹)"
+                                        className="h-7 text-xs font-mono font-bold"
+                                      />
+                                    </div>
+                                    <div className="col-span-1 text-right">
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setEmiCustomSchedule?.(
+                                            emiCustomSchedule.filter(
+                                              (_: any, i: number) => i !== eIdx,
+                                            ),
+                                          )
+                                        }
+                                        className="p-1 text-rose-500 hover:bg-rose-50 rounded"
+                                      >
+                                        <Trash2 size={12} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ),
+                              )}
+                              <div className="flex justify-between text-[10.5px] font-mono pt-1 border-t border-zinc-100 dark:border-zinc-800">
+                                <span>Scheduled EMI Total:</span>
+                                <span className="font-bold text-blue-600">
+                                  ₹
+                                  {emiCustomSchedule
+                                    .reduce(
+                                      (s: number, r: any) =>
+                                        s + (Number(r.amount) || 0),
+                                      0,
+                                    )
+                                    .toLocaleString("en-IN")}{" "}
+                                  / ₹
+                                  {emiRemainingBalance.toLocaleString("en-IN")}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
                         {/* Tenure Selection with Dropdown: 2 Mo, 3 Mo, 4 Mo, 6 Mo, 12 M and custom */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
@@ -4763,12 +5227,13 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                               }}
                               className="px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 font-bold text-xs shadow-xs focus:ring-2 focus:ring-blue-500 cursor-pointer"
                             >
-                              <option value="2">2 Mo</option>
-                              <option value="3">3 Mo</option>
-                              <option value="4">4 Mo</option>
-                              <option value="6">6 Mo</option>
-                              <option value="12">12 M</option>
-                              <option value="custom">Custom</option>
+                              {(
+                                masterBundle?.options?.["duration_offer"] || []
+                              ).map((opt: any) => (
+                                <option key={opt.id} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
                             </select>
                           </div>
 
@@ -5136,34 +5601,37 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                   </div>
 
                   {/* Settlement Due Date (Optional) */}
-                  <div className="p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <label className="block text-[11px] font-extrabold text-zinc-800 dark:text-zinc-200">
-                        Invoice Due Date (Optional)
-                      </label>
-                      <p className="text-[10px] text-zinc-500">
-                        Defaults to unset (0000-00-00). Select an explicit date
-                        if this payment requires a firm statutory deadline.
-                      </p>
+                  {paymentPlan !== "full" && (
+                    <div className="p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <label className="block text-[11px] font-extrabold text-zinc-800 dark:text-zinc-200">
+                          Invoice Due Date (Optional)
+                        </label>
+                        <p className="text-[10px] text-zinc-500">
+                          Defaults to unset (0000-00-00). Select an explicit
+                          date if this payment requires a firm statutory
+                          deadline.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="date"
+                          value={dueDate}
+                          onChange={(e) => setDueDate(e.target.value)}
+                          className="text-xs font-mono font-bold bg-zinc-50 dark:bg-zinc-800 w-auto"
+                        />
+                        {dueDate && (
+                          <button
+                            type="button"
+                            onClick={() => setDueDate("")}
+                            className="px-2 py-1 text-[10px] font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Clear (Unset)
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="date"
-                        value={dueDate}
-                        onChange={(e) => setDueDate(e.target.value)}
-                        className="text-xs font-mono font-bold bg-zinc-50 dark:bg-zinc-800 w-auto"
-                      />
-                      {dueDate && (
-                        <button
-                          type="button"
-                          onClick={() => setDueDate("")}
-                          className="px-2 py-1 text-[10px] font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-                        >
-                          Clear (Unset)
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
             </>

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Calculator, Plus, Search, Download, Trash2, CheckCircle2, 
@@ -20,6 +21,7 @@ import { formatDisplayDate } from "@/lib/utils"
 import { type ProjectExtraCharge, type ExpenseItem, type ExpenseTab } from "@/features/expenses/components/expenses-sections/ExpensesHelpers"
 
 export function ExpensesSection5({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isAddExtraChargeModalOpen, currentProject, setIsAddExtraChargeModalOpen, handleAddExtraCharge, extraChargeTitle, setExtraChargeTitle, extraChargeCategory, setExtraChargeCategory, extraChargeAmount, setExtraChargeAmount, extraChargeVendor, setExtraChargeVendor, extraChargeNotes, setExtraChargeNotes } = ctrl;
   return (
     <>
@@ -77,14 +79,9 @@ export function ExpensesSection5({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setExtraChargeCategory(e.target.value)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden"
                     >
-                      <option value="Subcontractor & Specialist Fees">Subcontractor &amp; Specialist Fees</option>
-                      <option value="Material & Direct Supply">Material &amp; Direct Supply</option>
-                      <option value="Dedicated Cloud VM & Hosting">Dedicated Cloud VM &amp; Hosting</option>
-                      <option value="Domain & SSL Certificates">Domain &amp; SSL Certificates</option>
-                      <option value="Third-Party API Licenses">Third-Party API Licenses</option>
-                      <option value="Hardware / Equipment Rental">Hardware / Equipment Rental</option>
-                      <option value="Logistics & Travel">Logistics &amp; Travel</option>
-                      <option value="Other Project Cost">Other Project Cost</option>
+                      {(masterBundle?.options?.["project_cost_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
 

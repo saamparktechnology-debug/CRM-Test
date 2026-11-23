@@ -7,14 +7,7 @@ import { taskService } from "@/features/tasks/services/taskService"
 import { getInvoices } from "@/features/invoice/services/invoiceService"
 
 // ── Default event labels seeded into DB on first load ───────────────────────
-const DEFAULT_EVENT_LABELS: EventLabel[] = [
-  { id: "lbl_1", name: "Call", color: "#ef4444" },
-  { id: "lbl_2", name: "Email", color: "#3b82f6" },
-  { id: "lbl_3", name: "Visit", color: "#22c55e" },
-  { id: "lbl_4", name: "Urgent Reminder", color: "#ef4444" },
-  { id: "lbl_5", name: "Recent Reminder", color: "#3b82f6" },
-  { id: "lbl_6", name: "Far Reminder", color: "#10b981" },
-]
+const DEFAULT_EVENT_LABELS: EventLabel[] = []
 
 /**
  * Compute urgency color and tag based on date proximity:

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Calculator, Plus, Search, Download, Trash2, CheckCircle2, 
@@ -20,6 +21,7 @@ import { formatDisplayDate } from "@/lib/utils"
 import { type ProjectExtraCharge, type ExpenseItem, type ExpenseTab } from "@/features/expenses/components/expenses-sections/ExpensesHelpers"
 
 export function ExpensesSection4({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isAddModalOpen, setIsAddModalOpen, handleAddExpense, availableSubBranchesForForm, formCompanyId, setFormCompanyId, setFormBranchId, setFormSubBranchId, companies, formBranchId, availableBranchesForForm, formSubBranchId, isProjectScoped, setIsProjectScoped, formProjectId, setFormProjectId, projects, member, setMember, user, title, setTitle, category, setCategory, amount, setAmount, receiptUrl, setReceiptUrl } = ctrl;
   return (
     <>
@@ -172,12 +174,9 @@ export function ExpensesSection4({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden"
                     >
-                      <option value="Cloud & Server Infrastructure">Cloud &amp; Server Infrastructure</option>
-                      <option value="SaaS & Software Subscriptions">SaaS &amp; Software Subscriptions</option>
-                      <option value="Subcontractor & Freelancer Fees">Subcontractor &amp; Freelancer Fees</option>
-                      <option value="Design Assets & Stock Media">Design Assets &amp; Stock Media</option>
-                      <option value="Office & Operational Utilities">Office &amp; Operational Utilities</option>
-                      <option value="Marketing & Lead Acquisition">Marketing &amp; Lead Acquisition</option>
+                      {(masterBundle?.options?.["expense_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
 

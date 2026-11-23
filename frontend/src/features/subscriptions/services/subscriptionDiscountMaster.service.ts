@@ -9,40 +9,7 @@ export interface SubscriptionDiscountRule {
   isActive: boolean;
 }
 
-export const DEFAULT_SUBSCRIPTION_DISCOUNT_RULES: SubscriptionDiscountRule[] = [
-  {
-    id: "sub_disc_1",
-    months: 1,
-    label: "1 Month (Standard)",
-    discountPct: 0,
-    offerText: "",
-    isActive: true,
-  },
-  {
-    id: "sub_disc_3",
-    months: 3,
-    label: "3 Months Plan",
-    discountPct: 5,
-    offerText: "5% OFF",
-    isActive: true,
-  },
-  {
-    id: "sub_disc_6",
-    months: 6,
-    label: "6 Months Plan",
-    discountPct: 10,
-    offerText: "10% OFF",
-    isActive: true,
-  },
-  {
-    id: "sub_disc_12",
-    months: 12,
-    label: "12 Months / 1 Year Plan",
-    discountPct: 20,
-    offerText: "20% OFF",
-    isActive: true,
-  },
-];
+export const DEFAULT_SUBSCRIPTION_DISCOUNT_RULES: SubscriptionDiscountRule[] = [];
 
 const MASTER_KEY = "subscription_discount_master";
 

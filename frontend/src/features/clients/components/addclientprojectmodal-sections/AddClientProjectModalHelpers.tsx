@@ -56,13 +56,4 @@ export interface AssignedMemberAllocation {
   payoutValue: number | ""
 }
 
-export const SERVICE_PRESETS = [
-  { name: "Website Development", sac: "998313", gst: 18, unit: "Project" },
-  { name: "Software Development", sac: "998314", gst: 18, unit: "Project" },
-  { name: "Android / iOS App", sac: "998314", gst: 18, unit: "Project" },
-  { name: "Cloud & Domain Hosting", sac: "998315", gst: 18, unit: "Month" },
-  { name: "UI/UX & Graphics", sac: "998312", gst: 18, unit: "Design" },
-  { name: "Digital Marketing & SEO", sac: "998311", gst: 18, unit: "Month" },
-  { name: "Print & Media Works", sac: "998912", gst: 12, unit: "Job" },
-  { name: "General Consulting (Non-GST)", sac: "998319", gst: 0, unit: "Nos" },
-]
+export const SERVICE_PRESETS: Array<{ name: string; sac: string; gst: number; unit: string; rate?: number }> = []

@@ -176,11 +176,7 @@ export function AddLeadModalSection4({ ctrl }: { ctrl: any }) {
                 value={country}
                 onChange={(val) => {
                   setCountry(val)
-                  if (val === "India") {
-                    setState("West Bengal")
-                    setDistrict("Paschim Medinipur")
-                    setCity("Midnapore")
-                  }
+                  // Location fields are populated via Pincode lookup or manual entry
                 }}
                 options={ALL_COUNTRIES}
                 placeholder="Select or search country..."
@@ -198,7 +194,7 @@ export function AddLeadModalSection4({ ctrl }: { ctrl: any }) {
                 onChange={(val) => {
                   setState(val)
                   const dists = getDistrictsForState(val)
-                  const defaultDist = val.toLowerCase().includes("bengal") ? "Paschim Medinipur" : (dists[0] || "")
+                  const defaultDist = dists[0] || ""
                   setDistrict(defaultDist)
                   const c = getCitiesForDistrict(val, defaultDist)
                   setCity(c && c.length > 0 ? c[0] : "")

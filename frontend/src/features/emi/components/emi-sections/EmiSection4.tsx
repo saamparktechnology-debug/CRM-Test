@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Receipt, Plus, Download, Clock, AlertCircle, CheckCircle2, 
@@ -26,6 +27,7 @@ import { ThreeDotLoader } from "@/components/ui/ThreeDotLoader"
 import { isRecordAssignedToClient } from "@/lib/clientScopeUtils"
 
 export function EmiSection4({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isAddModalOpen, setIsAddModalOpen, handleCreateEMIContract, setIsCustomClient, isCustomClient, newClientName, setNewClientName, availableClients, customClientEmail, setCustomClientEmail, customClientPhone, setCustomClientPhone, customClientCompany, setCustomClientCompany, newProjectTitle, setNewProjectTitle, newTotalValue, setNewTotalValue, newAdvancePaid, setNewAdvancePaid, newInstallmentsCount, setNewInstallmentsCount, newInterval, setNewInterval, newFirstDueDate, setNewFirstDueDate, customMilestones, setCustomMilestones } = ctrl;
   return (
     <>
@@ -204,9 +206,9 @@ export function EmiSection4({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setNewInterval(e.target.value as any)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden font-bold"
                     >
-                      <option value="Monthly">Monthly</option>
-                      <option value="Bi-weekly">Bi-weekly (14 Days)</option>
-                      <option value="Quarterly">Quarterly (3 Months)</option>
+                      {(masterBundle?.options?.["emi_frequency"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
 

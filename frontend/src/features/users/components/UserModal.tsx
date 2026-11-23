@@ -144,6 +144,7 @@ export function UserModal({
   const [employeeId, setEmployeeId] = React.useState("");
   const [department, setDepartment] = React.useState("");
   const [designation, setDesignation] = React.useState("");
+  const [referByCategory, setReferByCategory] = React.useState("");
   const [commissionRate, setCommissionRate] = React.useState("");
   const [joiningDate, setJoiningDate] = React.useState(
     new Date().toISOString().split("T")[0],
@@ -234,6 +235,15 @@ export function UserModal({
           color: "blue",
           activeBorder: "border-blue-500/80 shadow-blue-500/25",
           glow: "from-blue-500/20 to-transparent",
+        },
+        {
+          id: "Referer" as UserRole,
+          label: "Referer",
+          desc: "Referral Partner",
+          icon: "🤝",
+          color: "emerald",
+          activeBorder: "border-emerald-500/80 shadow-emerald-500/25",
+          glow: "from-emerald-500/20 to-transparent",
         },
         {
           id: "Clients" as UserRole,
@@ -499,6 +509,8 @@ export function UserModal({
     department,
     setDepartment,
     designation,
+    referByCategory,
+    setReferByCategory,
     setDesignation,
     commissionRate,
     setCommissionRate,

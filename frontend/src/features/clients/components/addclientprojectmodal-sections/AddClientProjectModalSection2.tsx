@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { 
   X, Check, DollarSign, Calculator, UserCheck, Users, Calendar, Briefcase, FileText, 
   Coins, RefreshCw, Layers, CreditCard, Building2, Mail, Phone, MapPin, 
@@ -22,6 +23,7 @@ import { lookupPincode } from "@/lib/pincodeService"
 import { type AddClientProjectModalProps, type ServiceFormItem, type FormDiscountItem, type AssignedMemberAllocation, SERVICE_PRESETS } from "@/features/clients/components/addclientprojectmodal-sections/AddClientProjectModalHelpers"
 
 export function AddClientProjectModalSection2({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { setIsClientSearchDropdownOpen, isClientSearchDropdownOpen, effectiveClient, clientSearchText, setClientSearchText, filteredSearchClients, handleSelectClient, clientDesignation, setClientDesignation, clientCustomDesignation, setClientCustomDesignation, clientContactPersonName, setClientContactPersonName, clientPhone, setClientPhone, clientEmail, setClientEmail, clientAddress, setClientAddress, isPincodeLoading, clientZip, handlePincodeChange, pincodeDistricts, clientDistrict, setClientDistrict, pincodePlaces, clientCity, setClientCity, clientState, setClientState, clientGst, setClientGst } = ctrl;
   return (
     <>
@@ -104,13 +106,9 @@ export function AddClientProjectModalSection2({ ctrl }: { ctrl: any }) {
                     onChange={(e) => setClientDesignation(e.target.value)}
                     className="flex-1 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-semibold text-xs focus:outline-none focus:ring-2 focus:ring-violet-500"
                   >
-                    <option value="Proprietor">Proprietor</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Founder">Founder</option>
-                    <option value="CEO">CEO</option>
-                    <option value="Director">Director</option>
-                    <option value="Partner">Partner</option>
-                    <option value="Other">Other</option>
+                    {(masterBundle?.options?.["client_designation"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                   {clientDesignation === "Other" && (
                     <input

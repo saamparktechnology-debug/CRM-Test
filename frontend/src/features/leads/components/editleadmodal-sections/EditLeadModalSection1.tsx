@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { X, Plus, Check, Calendar, Clock, Wrench, FileText, User as UserIcon, Trash2, MapPin, Building, Info } from "lucide-react"
 import { Lead, LeadStatus, LeadType } from "@/features/leads/types"
 import { updateLead, unlockLead, parseLeadDate, formatLeadReminderDate, isReminderDateOverdue, MONTH_NAMES_SHORT, canUserUnlockLead, isLeadClientPrivate } from "@/features/leads/services/leadService"
@@ -18,6 +19,7 @@ import {
 import { formatDateForInput, formatDateForDisplay, formatTimeForInput, formatTimeForDisplay, type EditLeadModalProps, STANDARD_SOURCES } from "@/features/leads/components/editleadmodal-sections/EditLeadModalHelpers"
 
 export function EditLeadModalSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { lead, type, setType, isSuperOrAdmin, availableSubBranchesForBranch, selectedCompanyId, handleCompanyChange, selectableCompanies, selectedBranchId, handleBranchChange, availableBranches, selectedSubBranchId, setSelectedSubBranchId, companyName, setCompanyName, relatedTo, setRelatedTo, status, setStatus, customService, setCustomService, selectedServices, setSelectedServices } = ctrl;
   return (
     <>
@@ -171,14 +173,9 @@ export function EditLeadModalSection1({ ctrl }: { ctrl: any }) {
               onChange={(e) => setStatus(e.target.value as LeadStatus)}
               className="col-span-3 px-3 py-2 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-900 dark:text-blue-100 font-bold"
             >
-              <option value="New">New</option>
-              <option value="Qualified">Qualified</option>
-              <option value="Discussion">Discussion</option>
-              <option value="Negotiation">Negotiation</option>
-              <option value="Store Visit">Store Visit</option>
-              <option value="Our Office Visit">Our Office Visit</option>
-              <option value="Won">Won</option>
-              <option value="Lost">Lost</option>
+              {(masterBundle?.options?.["lead_stage"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
 

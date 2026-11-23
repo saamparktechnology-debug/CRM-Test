@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import {
   ArrowLeft,
   Star,
@@ -64,6 +65,7 @@ import { DigitalMarketingPackage, createDefaultMarketingPackage } from "@/types/
 import { type ProjectDetailViewProps, DONUT_COLORS } from "@/features/projects/components/projectdetailview-sections/ProjectDetailViewHelpers"
 
 export function ProjectDetailViewSection5({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isTaskModalOpen, setIsTaskModalOpen, taskTitle, setTaskTitle, taskAssignedTo, setTaskAssignedTo, selectedProject, user, taskPriority, setTaskPriority, taskDeadline, setTaskDeadline, isSavingTask, handleSaveProjectTask, isExpenseModalOpen, setIsExpenseModalOpen, expTitle, setExpTitle, expAmount, setExpAmount, expCategory, setExpCategory, expPayee, setExpPayee, isSavingExpense, handleSaveProjectExpense } = ctrl;
   return (
     <>
@@ -120,10 +122,9 @@ export function ProjectDetailViewSection5({ ctrl }: { ctrl: any }) {
                     onChange={(e) => setTaskPriority(e.target.value as TaskPriority)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 font-bold"
                   >
-                    <option value="Low">Low</option>
-                    <option value="Normal">Normal</option>
-                    <option value="High">High</option>
-                    <option value="Urgent">Urgent 🔥</option>
+                    {(masterBundle?.options?.["enquiry_priority"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>
@@ -209,12 +210,9 @@ export function ProjectDetailViewSection5({ ctrl }: { ctrl: any }) {
                     onChange={(e) => setExpCategory(e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200"
                   >
-                    <option value="Direct Project Supply">Direct Project Supply</option>
-                    <option value="Cloud & Server Infrastructure">Cloud & Server Infrastructure</option>
-                    <option value="Software & Tools Licenses">Software & Tools Licenses</option>
-                    <option value="Subcontractor & Specialist Fees">Subcontractor & Specialist Fees</option>
-                    <option value="Raw Materials & Printing">Raw Materials & Printing</option>
-                    <option value="Miscellaneous">Miscellaneous</option>
+                    {(masterBundle?.options?.["project_cost_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>

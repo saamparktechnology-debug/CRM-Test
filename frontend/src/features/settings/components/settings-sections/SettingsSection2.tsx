@@ -1,6 +1,7 @@
 "use client"
 
 import { CompanyApiService } from "@/features/companies/services/companyService"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { api } from "@/lib/api"
 import * as React from "react"
 import { motion } from "framer-motion"
@@ -35,6 +36,7 @@ import { EntityModulePermissionsTab } from "@/features/settings/components/Entit
 import { type SettingsTab } from "@/features/settings/components/settings-sections/SettingsHelpers"
 
 export function SettingsSection2({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { activeTab, handleSubmitKyc, kycStatus, kycRejectionReason, kycFullName, setKycFullName, kycDocType, setKycDocType, kycDocNumber, setKycDocNumber, kycDocFrontUrl, frontDocInputRef, handleFrontDocUpload, isUploadingFront, kycDocBackUrl, backDocInputRef, handleBackDocUpload, isUploadingBack, kycBankName, setKycBankName, kycAccountHolderName, setKycAccountHolderName, kycAccountNumber, setKycAccountNumber, kycIfscCode, setKycIfscCode, kycUpiId, setKycUpiId, user, setNewReqBankName, setNewReqAccountHolderName, setNewReqAccountNumber, setNewReqConfirmAccountNumber, setNewReqIfscCode, setNewReqUpiId, setNewReqProofUrl, setNewReqReason, setShowBankChangeModal, loading } = ctrl;
   return (
     <>
@@ -101,11 +103,9 @@ export function SettingsSection2({ ctrl }: { ctrl: any }) {
                   onChange={(e) => setKycDocType(e.target.value as any)}
                   className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-1 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <option value="Aadhaar Card">Aadhaar Card</option>
-                  <option value="PAN Card">PAN Card</option>
-                  <option value="Passport">Passport</option>
-                  <option value="Voter ID">Voter ID</option>
-                  <option value="Driving License">Driving License</option>
+                  {(masterBundle?.options?.["kyc_id_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               </div>
 

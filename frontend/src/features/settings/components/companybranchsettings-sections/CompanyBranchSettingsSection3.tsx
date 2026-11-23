@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Building2, Plus, Pencil, Trash2, Shield, MapPin, Phone, Mail, 
@@ -14,6 +15,7 @@ import { executeWithFeedback, useActionFeedbackStore } from "@/store/useActionFe
 import { usePermissionStore, ALL_APP_MODULES, CLEAN_MODULE_CATEGORIES } from "@/store/usePermissionStore"
 
 export function CompanyBranchSettingsSection3({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isSubBranchModalOpen, editingSubBranch, setIsSubBranchModalOpen, setSubBranchModalTab, subBranchModalTab, handleSaveSubBranch, subBranchParentBranchId, setSubBranchParentBranchId, branches, setSubBranchCompanyId, subBranchName, setSubBranchName, subBranchCode, setSubBranchCode, subBranchRevenueSharePct, setSubBranchRevenueSharePct, subBranchPartnerName, setSubBranchPartnerName, subBranchPartnerPhone, setSubBranchPartnerPhone, subBranchPartnerType, setSubBranchPartnerType, subBranchLogoInputRef, handleSubBranchLogoUpload, subBranchLogoUrl, setSubBranchLogoUrl, subBranchGstin, setSubBranchGstin, subBranchPan, setSubBranchPan, subBranchCin, setSubBranchCin, subBranchMsmeReg, setSubBranchMsmeReg, subBranchAddress, setSubBranchAddress, subBranchCity, setSubBranchCity, subBranchState, setSubBranchState, subBranchZip, setSubBranchZip, subBranchEmail, setSubBranchEmail, subBranchPhone, setSubBranchPhone, setSubBranchBankProfileTab, subBranchBankProfileTab, handleCopySubBranchGstToNongst, subBranchGstBankName, setSubBranchGstBankName, setSubBranchBankName, subBranchGstAccountHolder, setSubBranchGstAccountHolder, setSubBranchAccountHolder, subBranchGstAccountNumber, setSubBranchGstAccountNumber, setSubBranchAccountNumber, subBranchGstIfscCode, setSubBranchGstIfscCode, setSubBranchIfscCode, subBranchGstBankBranch, setSubBranchGstBankBranch, setSubBranchBankBranch, subBranchGstUpiId, setSubBranchGstUpiId, setSubBranchUpiId, subBranchGstPaymentQrUrl, setSubBranchGstPaymentQrUrl, subBranchPaymentQrUrl, setSubBranchPaymentQrUrl, subBranchGstQrInputRef, handleSubBranchGstQrUpload, subBranchNongstBankName, setSubBranchNongstBankName, subBranchNongstAccountHolder, setSubBranchNongstAccountHolder, subBranchNongstAccountNumber, setSubBranchNongstAccountNumber, subBranchNongstIfscCode, setSubBranchNongstIfscCode, subBranchNongstBankBranch, setSubBranchNongstBankBranch, subBranchNongstUpiId, setSubBranchNongstUpiId, subBranchNongstPaymentQrUrl, setSubBranchNongstPaymentQrUrl, subBranchNongstQrInputRef, handleSubBranchNongstQrUpload, subBranchSignatoryName, setSubBranchSignatoryName, subBranchSignatoryDesignation, setSubBranchSignatoryDesignation, subBranchSignatureImageUrl, setSubBranchSignatureImageUrl, subBranchSignatureInputRef, handleSubBranchSignatureUpload, subBranchStampImageUrl, setSubBranchStampImageUrl, subBranchStampInputRef, handleSubBranchStampUpload, SUB_BRANCH_TABS_LIST } = ctrl;
   return (
     <>
@@ -255,10 +257,9 @@ export function CompanyBranchSettingsSection3({ ctrl }: { ctrl: any }) {
                           onChange={(e) => setSubBranchPartnerType(e.target.value as any)}
                           className="w-full px-3.5 py-2 rounded-xl bg-surface border border-border text-xs focus:outline-hidden"
                         >
-                          <option value="Franchise Partner">Franchise Partner</option>
-                          <option value="Agency Partner">Agency Partner</option>
-                          <option value="Satellite Office">Satellite Office</option>
-                          <option value="Regional Associate">Regional Associate</option>
+                          {(masterBundle?.options?.["partner_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                         </select>
                       </div>
                     </div>

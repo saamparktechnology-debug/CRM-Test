@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { X, Check, Paperclip, Mic, HelpCircle, Plus, Tag, Building, MapPin } from "lucide-react"
 import { Task, TaskStatus, TaskPriority } from "@/features/tasks/types"
 import { taskService } from "@/features/tasks/services/taskService"
@@ -11,6 +12,7 @@ import { executeWithFeedback } from "@/store/useActionFeedbackStore"
 import { type AddTaskModalProps } from "@/features/tasks/components/addtaskmodal-sections/AddTaskModalHelpers"
 
 export function AddTaskModalSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isSuperOrAdmin, availableSubBranchesForBranch, selectableCompanies, selectedCompanyId, handleCompanyChange, isBranchLocked, branches, user, selectedBranchId, handleBranchChange, availableBranches, selectedSubBranchId, setSelectedSubBranchId, title, setTitle, description, setDescription, selectedRelatedTo, setSelectedRelatedTo, availableRelatedOptions, customRelatedInput, setCustomRelatedInput, milestone, setMilestone, points, setPoints, assignedTo, setAssignedTo, teamMembers, status, setStatus, priority, setPriority, labels, setLabels, startDate, setStartDate, deadline, setDeadline, dueTime, setDueTime, sourceType, setSourceType, isRecurring, setIsRecurring } = ctrl;
   return (
     <>
@@ -208,20 +210,9 @@ export function AddTaskModalSection1({ ctrl }: { ctrl: any }) {
               className="col-span-3 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-zinc-800 dark:text-zinc-200 font-semibold"
             >
               <optgroup label="Lead Stages">
-                <option value="New">New</option>
-                <option value="Qualified">Qualified</option>
-                <option value="Discussion">Discussion</option>
-                <option value="Negotiation">Negotiation</option>
-                <option value="Store Visit">Store Visit</option>
-                <option value="Our Office Visit">Our Office Visit</option>
-                <option value="Won">Won</option>
-                <option value="Lost">Lost</option>
-              </optgroup>
-              <optgroup label="Development Stages">
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Review">Review</option>
-                <option value="Completed">Completed</option>
+                {(masterBundle?.options?.["enquiry_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </optgroup>
             </select>
           </div>
@@ -288,11 +279,9 @@ export function AddTaskModalSection1({ ctrl }: { ctrl: any }) {
               onChange={(e) => setPriority(e.target.value as any)}
               className="col-span-3 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-zinc-800 dark:text-zinc-200"
             >
-              <option value="Priority">Priority</option>
-              <option value="Low">Low</option>
-              <option value="Normal">Normal</option>
-              <option value="High">High</option>
-              <option value="Urgent">Urgent</option>
+              {(masterBundle?.options?.["enquiry_priority"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
 

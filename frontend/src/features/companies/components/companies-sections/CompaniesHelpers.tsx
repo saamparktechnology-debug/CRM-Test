@@ -19,23 +19,11 @@ import { ImageUploadField } from "@/components/ui/ImageUploadField"
 import { OfficialInvoiceDocument, CustomTextStamp } from "@/features/invoice/components/OfficialInvoiceDocument"
 import { InvoiceItem, InvoiceLineItem } from "@/features/invoice/services/invoiceService"
 
-export const INDUSTRIES = [
-  "Technology", "Healthcare", "Finance", "Education", "Manufacturing",
-  "Retail", "Real Estate", "Consulting", "Media", "Other"
-]
+export const INDUSTRIES: string[] = []
 
-export const CURRENCIES = [
-  { code: "INR", symbol: "₹", name: "Indian Rupee" },
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "GBP", symbol: "£", name: "British Pound" },
-  { code: "AED", symbol: "د.إ", name: "UAE Dirham" },
-]
+export const CURRENCIES: Array<{ code: string; symbol: string; name: string }> = []
 
-export const PARTNER_TYPES = [
-  "Individual", "Corporate Partner", "Franchise Partner", 
-  "Agency Partner", "Regional Associate", "Satellite Office"
-]
+export const PARTNER_TYPES: string[] = []
 
 export const CANONICAL_COMPANIES: Company[] = []
 

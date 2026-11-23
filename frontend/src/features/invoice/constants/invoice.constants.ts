@@ -23,17 +23,6 @@ export const INVOICE_STATUS_STYLES: Record<InvoiceStatus, string> = {
     "bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-400 border-teal-200 dark:border-teal-800/60",
 }
 
-export const INVOICE_PAYMENT_METHODS = [
-  "UPI / Net Banking",
-  "NEFT / RTGS / IMPS",
-  "Bank Cheque",
-  "Cash Deposit",
-  "Credit / Debit Card",
-] as const
+export const INVOICE_PAYMENT_METHODS: string[] = []
 
-export const CLIENT_PAYMENT_METHODS = [
-  "UPI / PhonePe / GPay",
-  "NEFT / RTGS / IMPS Bank Transfer",
-  "Net Banking",
-  "Cheque Deposit",
-] as const
+export const CLIENT_PAYMENT_METHODS: string[] = []

@@ -8,13 +8,14 @@ import {
 } from "lucide-react"
 import { 
   DigitalMarketingPackage, 
-  SAAMPARK_9_PACKAGES, 
-  DURATION_OFFERS,
+  dynamicPackages, 
+  dynamicDurations,
   calculatePackageTotal,
   createDefaultMarketingPackage,
   MarketingScheduleItem
 } from "@/types/digitalMarketing"
 import { OfficialFormNo9Document } from "./OfficialFormNo9Document"
+import { useMasterOptions } from "@/features/masters/hooks/useMasters"
 
 interface DigitalMarketingPackageBuilderProps {
   value?: DigitalMarketingPackage
@@ -33,6 +34,28 @@ export function DigitalMarketingPackageBuilder({
 }: DigitalMarketingPackageBuilderProps) {
   const pkg = value || createDefaultMarketingPackage("Package 02 - Grow")
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false)
+  const { options: masterPackages } = useMasterOptions("marketing_package")
+  const { options: masterDurations } = useMasterOptions("duration_offer")
+  const dynamicPackages = React.useMemo(() => masterPackages.map((o) => ({
+    id: o.code || String(o.id),
+    name: o.label,
+    price: Number(o.metadata?.price ?? 0),
+    postersCount: Number(o.metadata?.postersCount ?? 0),
+    videosCount: Number(o.metadata?.reelsCount ?? 0),
+    storyCount: Number(o.metadata?.storiesCount ?? 0),
+    hasRealModelShoot: Boolean(o.metadata?.hasRealModelShoot),
+    specialNote: o.metadata?.specialNote || "",
+    features: Array.isArray(o.metadata?.features) ? o.metadata.features : [],
+    expectedViews: o.metadata?.expectedViews || "",
+    expectedLeads: o.metadata?.expectedLeads || "",
+    bestFor: o.metadata?.bestFor || "",
+  })), [masterPackages])
+  const dynamicDurations = React.useMemo(() => masterDurations.map((o) => ({
+    label: o.label,
+    value: o.value,
+    months: Number(o.metadata?.months ?? 1),
+    discountPct: Number(o.metadata?.discountPct ?? 0),
+  })), [masterDurations])
 
   const handleSelectPackage = (pkgIdOrName: string) => {
     if (pkgIdOrName === "custom") {
@@ -56,7 +79,7 @@ export function DigitalMarketingPackageBuilder({
       return
     }
 
-    const found = SAAMPARK_9_PACKAGES.find(p => p.id === pkgIdOrName || p.name === pkgIdOrName)
+    const found = dynamicPackages.find(p => p.id === pkgIdOrName || p.name === pkgIdOrName)
     if (!found) return
 
     const duration = pkg.packageDuration || "1 month"
@@ -119,7 +142,7 @@ export function DigitalMarketingPackageBuilder({
     }
   }
 
-  const isCustom = !SAAMPARK_9_PACKAGES.some(p => p.name === pkg.planName)
+  const isCustom = !dynamicPackages.some(p => p.name === pkg.planName)
 
   return (
     <div className="border border-purple-200 dark:border-purple-800/60 rounded-2xl bg-purple-50/20 dark:bg-purple-950/20 p-4 sm:p-5 space-y-4">
@@ -163,12 +186,12 @@ export function DigitalMarketingPackageBuilder({
               Select Marketing Package *
             </label>
             <select
-              value={isCustom ? "custom" : (SAAMPARK_9_PACKAGES.find(p => p.name === pkg.planName)?.id || "pkg-02")}
+              value={isCustom ? "custom" : (dynamicPackages.find(p => p.name === pkg.planName)?.id || "pkg-02")}
               onChange={e => handleSelectPackage(e.target.value)}
               className="w-full px-3 py-2 bg-purple-50/50 dark:bg-zinc-800 border border-purple-300 dark:border-purple-700 rounded-xl font-bold text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <optgroup label="Official Saampark Flyer Packages">
-                {SAAMPARK_9_PACKAGES.map(p => (
+                {dynamicPackages.map(p => (
                   <option key={p.id} value={p.id}>
                     {p.name} — ₹{p.price.toLocaleString("en-IN")}/mo ({p.postersCount} Posts, {p.videosCount} Reels/Videos)
                   </option>
@@ -189,7 +212,7 @@ export function DigitalMarketingPackageBuilder({
               onChange={e => handleDurationChange(e.target.value)}
               className="w-full px-3 py-2 bg-purple-50/50 dark:bg-zinc-800 border border-purple-300 dark:border-purple-700 rounded-xl font-bold text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
-              {DURATION_OFFERS.map(d => (
+              {dynamicDurations.map(d => (
                 <option key={d.value} value={d.value}>
                   {d.label}
                 </option>

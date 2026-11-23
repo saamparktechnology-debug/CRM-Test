@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { X, Check, Paperclip, Mic, HelpCircle, Trash2, Plus, Tag } from "lucide-react"
 import { Task, TaskStatus, TaskPriority } from "@/features/tasks/types"
 import { taskService } from "@/features/tasks/services/taskService"
@@ -11,6 +12,7 @@ import { UserItem } from "@/features/users/types"
 import { type EditTaskModalProps } from "@/features/tasks/components/edittaskmodal-sections/EditTaskModalHelpers"
 
 export function EditTaskModalSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { status, onClose, title, setTitle, description, setDescription, setStatus, selectedRelatedTo, setSelectedRelatedTo, availableRelatedOptions, customRelatedInput, setCustomRelatedInput, milestone, setMilestone, points, setPoints, assignedTo, setAssignedTo, teamMembers, priority, setPriority, labels, setLabels, startDate, setStartDate, deadline, setDeadline, isRecurring, setIsRecurring } = ctrl;
   return (
     <>
@@ -66,10 +68,9 @@ export function EditTaskModalSection1({ ctrl }: { ctrl: any }) {
               onChange={(e) => setStatus(e.target.value as TaskStatus)}
               className="col-span-3 px-3 py-2 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-900 dark:text-blue-100 font-bold"
             >
-              <option value="To do">To do</option>
-              <option value="In progress">In progress</option>
-              <option value="Review">Review</option>
-              <option value="Done">Done</option>
+              {(masterBundle?.options?.["task_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
 
@@ -169,20 +170,9 @@ export function EditTaskModalSection1({ ctrl }: { ctrl: any }) {
               className="col-span-3 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-zinc-800 dark:text-zinc-200 font-semibold"
             >
               <optgroup label="Lead Stages">
-                <option value="New">New</option>
-                <option value="Qualified">Qualified</option>
-                <option value="Discussion">Discussion</option>
-                <option value="Negotiation">Negotiation</option>
-                <option value="Store Visit">Store Visit</option>
-                <option value="Our Office Visit">Our Office Visit</option>
-                <option value="Won">Won</option>
-                <option value="Lost">Lost</option>
-              </optgroup>
-              <optgroup label="Development Stages">
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Review">Review</option>
-                <option value="Completed">Completed</option>
+                {(masterBundle?.options?.["enquiry_status"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </optgroup>
             </select>
           </div>
@@ -239,11 +229,9 @@ export function EditTaskModalSection1({ ctrl }: { ctrl: any }) {
               onChange={(e) => setPriority(e.target.value as any)}
               className="col-span-3 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-zinc-800 dark:text-zinc-200"
             >
-              <option value="Priority">Priority</option>
-              <option value="Low">Low</option>
-              <option value="Normal">Normal</option>
-              <option value="High">High</option>
-              <option value="Urgent">Urgent</option>
+              {(masterBundle?.options?.["enquiry_priority"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
             </select>
           </div>
 

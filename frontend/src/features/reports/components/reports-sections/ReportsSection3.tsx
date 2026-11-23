@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion } from "framer-motion"
 import { 
   BarChart3, Download, Calendar, Filter, TrendingUp, Users, 
@@ -29,6 +30,7 @@ import { resolveExportScope, exportToExcel, printPDFReport } from "@/lib/exportU
 import { type ReportTab, type InvoiceFilterType, type SubscriptionFilterType } from "@/features/reports/components/reports-sections/ReportsHelpers"
 
 export function ReportsSection3({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { activeTab, marketingKPIs, marketingSearchQuery, setMarketingSearchQuery, marketingPlanFilter, setMarketingPlanFilter, targetComp, scopedMarketingCampaigns, setViewingForm9Pkg } = ctrl;
   return (
     <>
@@ -180,10 +182,9 @@ export function ReportsSection3({ ctrl }: { ctrl: any }) {
                   className="px-3 py-1.5 text-xs font-bold rounded-xl border border-border bg-surface text-foreground cursor-pointer focus:outline-none"
                 >
                   <option value="all">All Growth Plans</option>
-                  <option value="Grow - 1">Grow - 1</option>
-                  <option value="Grow - 2">Grow - 2</option>
-                  <option value="Grow - 3">Grow - 3 (Pro)</option>
-                  <option value="Custom">Custom Retainers</option>
+                {(masterBundle?.options?.["marketing_package"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               </div>
 

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   X, 
@@ -32,6 +33,7 @@ export function AddCustomAdjustmentModal({
   onClose,
   onSuccess,
 }: AddCustomAdjustmentModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   const [selectedMemberId, setSelectedMemberId] = React.useState("")
   const [category, setCategory] = React.useState<CustomAdjustmentCategory>("Performance Bonus")
   const [type, setType] = React.useState<"Credit" | "Debit">("Credit")
@@ -152,14 +154,9 @@ export function AddCustomAdjustmentModal({
                 onChange={(e) => setCategory(e.target.value as CustomAdjustmentCategory)}
                 className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium focus:outline-hidden text-xs"
               >
-                <option value="Performance Bonus">🌟 Performance Bonus / Milestone Reward</option>
-                <option value="Travel Reimbursement">🚗 Travel & Fuel Expense Reimbursement</option>
-                <option value="Tech & Hardware Allowance">💻 Tech, Internet & Hardware Allowance</option>
-                <option value="Salary Advance">💸 Salary Advance</option>
-                <option value="Overtime & Weekend Delivery">⏱️ Overtime & Weekend Delivery Payout</option>
-                <option value="Daily Calling Incentive">📞 Telecalling & Lead Conversion Bonus</option>
-                <option value="Custom Credit">➕ Custom Credit Adjustment</option>
-                <option value="Custom Deduction">➖ Custom Deduction / Penalty</option>
+                {(masterBundle?.options?.["payroll_adjustment_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 

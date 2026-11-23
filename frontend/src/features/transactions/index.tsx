@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { DollarSign, Plus, Search, TrendingDown, TrendingUp } from "lucide-react"
 import { useAuthStore } from "@/store/useAuthStore"
@@ -16,6 +17,7 @@ import { TransactionModal } from "./components/TransactionModal"
 import { TransactionTable } from "./components/TransactionTable"
 
 export default function TransactionsMain() {
+  const { data: masterBundle } = useMasterBundle()
   const { user } = useAuthStore()
   const { canPerformAction } = usePermissionStore()
 
@@ -154,8 +156,9 @@ export default function TransactionsMain() {
             className="px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden cursor-pointer"
           >
             <option value="all">All Types</option>
-            <option value="Income">Income</option>
-            <option value="Expense">Expense</option>
+            {(masterBundle?.options?.["transaction_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
           <select
             value={categoryFilter}
@@ -163,11 +166,9 @@ export default function TransactionsMain() {
             className="px-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden cursor-pointer"
           >
             <option value="all">All Categories</option>
-            <option value="Sales">Sales</option>
-            <option value="Services">Services</option>
-            <option value="Subscriptions">Subscriptions</option>
-            <option value="Operations">Operations</option>
-            <option value="Salary">Salary</option>
+            {(masterBundle?.options?.["transaction_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
         </div>
       </div>

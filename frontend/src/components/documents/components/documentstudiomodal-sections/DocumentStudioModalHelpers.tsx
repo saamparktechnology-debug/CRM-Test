@@ -33,6 +33,7 @@ import { DigitalMarketingPackageBuilder } from "@/components/documents/DigitalMa
 import { DigitalMarketingPackage, createDefaultMarketingPackage } from "@/types/digitalMarketing"
 
 export interface DocumentStudioModalProps {
+  editDocument?: any;
   isOpen: boolean
   mode?: "invoice" | "quotation" | "estimate"
   initialData?: any
@@ -42,13 +43,4 @@ export interface DocumentStudioModalProps {
   onSaveSuccess?: (savedData: any) => void
 }
 
-export const SERVICE_PRESETS = [
-  { name: "Website Development", sac: "998313", gst: 18, unit: "Project", rate: 25000 },
-  { name: "Custom Software Application", sac: "998314", gst: 18, unit: "Project", rate: 45000 },
-  { name: "Android / iOS Mobile App", sac: "998314", gst: 18, unit: "Project", rate: 55000 },
-  { name: "Cloud Infrastructure & Hosting", sac: "998315", gst: 18, unit: "Month", rate: 3500 },
-  { name: "UI/UX & Brand Identity", sac: "998312", gst: 18, unit: "Design", rate: 15000 },
-  { name: "Database & Backend API", sac: "998314", gst: 18, unit: "Project", rate: 20000 },
-  { name: "Printing & Media Collateral", sac: "998912", gst: 12, unit: "Job", rate: 8000 },
-  { name: "Enterprise Consultation", sac: "998319", gst: 18, unit: "Nos", rate: 10000 },
-]
+export const SERVICE_PRESETS: Array<{ name: string; sac: string; gst: number; unit: string; rate: number }> = []

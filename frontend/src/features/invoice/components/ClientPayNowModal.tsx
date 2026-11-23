@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { QrCode, X, Copy, Check, AlertCircle, CheckCircle2 } from "lucide-react"
 import { InvoiceItem, submitClientPaymentProof, parseCurrencyNumber, getInvoices } from "../services/invoice.service"
@@ -52,6 +53,7 @@ export function ClientPayNowModal({
   setInvoices,
   showToast,
 }: ClientPayNowModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   return (
       <AnimatePresence>
         {clientPayNowInvoice && (
@@ -281,14 +283,9 @@ export function ClientPayNowModal({
                         onChange={(e) => setClientPayMethod(e.target.value)}
                         className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 font-medium"
                       >
-                        <option value="Google Pay">Google Pay (GPay)</option>
-                        <option value="PhonePe">PhonePe</option>
-                        <option value="Paytm">Paytm UPI</option>
-                        <option value="BHIM UPI">BHIM UPI</option>
-                        <option value="Bank IMPS/NEFT">
-                          Bank IMPS / NEFT / RTGS
-                        </option>
-                        <option value="Other UPI">Other UPI App</option>
+                        {(masterBundle?.options?.["upi_app"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                       </select>
                     </div>
 

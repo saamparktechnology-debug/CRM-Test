@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { TransactionFormValues } from "../types"
@@ -20,6 +21,7 @@ export function TransactionModal({
   onChange,
   onSubmit,
 }: TransactionModalProps) {
+  const { data: masterBundle } = useMasterBundle()
   return (
     <AnimatePresence>
       {isOpen && (
@@ -45,8 +47,9 @@ export function TransactionModal({
                     onChange={(e) => onChange("type", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>Income</option>
-                    <option>Expense</option>
+                    {(masterBundle?.options?.["transaction_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
                 <div>
@@ -56,11 +59,9 @@ export function TransactionModal({
                     onChange={(e) => onChange("category", e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                   >
-                    <option>Sales</option>
-                    <option>Services</option>
-                    <option>Subscriptions</option>
-                    <option>Operations</option>
-                    <option>Salary</option>
+                    {(masterBundle?.options?.["transaction_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                   </select>
                 </div>
               </div>
@@ -93,11 +94,9 @@ export function TransactionModal({
                   onChange={(e) => onChange("method", e.target.value)}
                   className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-hidden"
                 >
-                  <option>Bank Transfer</option>
-                  <option>Cash</option>
-                  <option>UPI</option>
-                  <option>Cheque</option>
-                  <option>Credit Card</option>
+                  {(masterBundle?.options?.["payment_method"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               </div>
               <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">

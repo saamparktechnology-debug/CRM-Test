@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
 export function EventModal() {
+  const { data: masterBundle } = useMasterBundle()
   const { isAddModalOpen, selectedDate, closeAddModal, addEvent } = useEventStore()
   
   const [title, setTitle] = React.useState("")
@@ -91,11 +93,9 @@ export function EventModal() {
                   value={category}
                   onChange={(e) => setCategory(e.target.value as EventCategory)}
                 >
-                  <option value="Meeting">Meeting (Blue)</option>
-                  <option value="Holiday">Holiday (Green)</option>
-                  <option value="Deadline">Deadline (Red)</option>
-                  <option value="Training">Training (Purple)</option>
-                  <option value="Default">Default (Gray)</option>
+                  {(masterBundle?.options?.["event_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                 </select>
               </div>
             </div>

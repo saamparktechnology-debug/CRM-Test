@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   HeadphonesIcon, Plus, Search, CheckCircle2, AlertCircle, 
@@ -16,6 +17,7 @@ import { uploadToImgBB } from "@/lib/imgbbUpload"
 import { confirmTwoStepDelete } from "@/lib/confirmDialog"
 
 export function TicketsSection3({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { isRaiseModalOpen, setIsRaiseModalOpen, handleRaiseTicket, subject, setSubject, category, setCategory, priority, setPriority, description, setDescription, ticketFileInputRef, handleUploadTicketFiles, isUploadingFile, attachments, setAttachments } = ctrl;
   return (
     <>
@@ -64,11 +66,9 @@ export function TicketsSection3({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden"
                     >
-                      <option value="Project Deliverable & Scope">Project Deliverable & Scope</option>
-                      <option value="Billing & Invoicing Dispute">Billing & Invoicing Dispute</option>
-                      <option value="Technical Issue / Bug">Technical Issue / Bug</option>
-                      <option value="Account & Permissions">Account & Permissions</option>
-                      <option value="General Inquiry">General Inquiry</option>
+                      {(masterBundle?.options?.["ticket_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
 
@@ -79,10 +79,9 @@ export function TicketsSection3({ ctrl }: { ctrl: any }) {
                       onChange={(e) => setPriority(e.target.value as TicketPriority)}
                       className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-hidden font-bold"
                     >
-                      <option value="Low">Low</option>
-                      <option value="Normal">Normal</option>
-                      <option value="High">High</option>
-                      <option value="Critical">Critical 🔥</option>
+                      {(masterBundle?.options?.["ticket_priority"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                     </select>
                   </div>
                 </div>

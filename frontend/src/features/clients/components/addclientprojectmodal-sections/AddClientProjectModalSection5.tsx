@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { 
   X, Check, DollarSign, Calculator, UserCheck, Users, Calendar, Briefcase, FileText, 
   Coins, RefreshCw, Layers, CreditCard, Building2, Mail, Phone, MapPin, 
@@ -22,6 +23,7 @@ import { lookupPincode } from "@/lib/pincodeService"
 import { type AddClientProjectModalProps, type ServiceFormItem, type FormDiscountItem, type AssignedMemberAllocation, SERVICE_PRESETS } from "@/features/clients/components/addclientprojectmodal-sections/AddClientProjectModalHelpers"
 
 export function AddClientProjectModalSection5({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { serviceItems, handleAddService, itemCalculations, handleRemoveService, handleUpdateService, handleAddCharge, handleUpdateCharge, handleRemoveCharge } = ctrl;
   return (
     <>
@@ -141,13 +143,9 @@ export function AddClientProjectModalSection5({ ctrl }: { ctrl: any }) {
                             }}
                             className="w-full px-2 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100"
                           >
-                            <option value="Qty">Qty</option>
-                            <option value="Unit">Unit</option>
-                            <option value="Weekly">Weekly</option>
-                            <option value="Monthly">Monthly</option>
-                            <option value="Yearly">Yearly</option>
-                            <option value="Project">Project</option>
-                            <option value="custom">Other...</option>
+                            {(masterBundle?.options?.["billing_unit"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                           </select>
                         </div>
                       </div>
@@ -161,10 +159,9 @@ export function AddClientProjectModalSection5({ ctrl }: { ctrl: any }) {
                           onChange={(e) => handleUpdateService(item.id, "gstRate", Number(e.target.value))}
                           className="w-full px-2 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-semibold text-zinc-900 dark:text-zinc-100"
                         >
-                          <option value={18}>18% (GST)</option>
-                          <option value={12}>12% (Print)</option>
-                          <option value={5}>5%</option>
-                          <option value={0}>0% (Non-GST)</option>
+                          {(masterBundle?.options?.["tax_slab"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                         </select>
                       </div>
                     </div>

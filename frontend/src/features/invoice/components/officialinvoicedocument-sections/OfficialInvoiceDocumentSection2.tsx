@@ -233,6 +233,19 @@ export function OfficialInvoiceDocumentSection2({ ctrl }: { ctrl: any }) {
                 <span className="font-mono">₹{safeFormatCurrency(parsedReceived)}</span>
               </div>
 
+              {Array.isArray((invoice as any).splitPayments) && (invoice as any).splitPayments.length > 0 && (
+                <div className="pl-2 py-1 space-y-0.5 border-l-2 border-emerald-200 dark:border-emerald-800 text-[9px] text-zinc-600 dark:text-zinc-400">
+                  {(invoice as any).splitPayments.map((sp: any, idx: number) => (
+                    <div key={sp.id || idx} className="flex justify-between">
+                      <span>
+                        • {sp.method || "Payment"}{sp.reference ? ` (${sp.reference})` : ""}
+                      </span>
+                      <span className="font-mono font-semibold">₹{safeFormatCurrency(Number(sp.amount) || 0)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="flex justify-between py-0.5 border-t border-zinc-200 dark:border-zinc-700 font-black text-[9.5px] text-rose-600 dark:text-rose-400">
                 <EditableText value="Current Balance (Total Due)" interactive={interactive} />
                 <span className="font-mono">₹{safeFormatCurrency(parsedDue)}</span>

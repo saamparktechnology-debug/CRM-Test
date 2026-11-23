@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
   Building2, Plus, Search, Edit2, Trash2, ChevronRight, ChevronDown, 
@@ -21,6 +22,7 @@ import { InvoiceItem, InvoiceLineItem } from "@/features/invoice/services/invoic
 import { INDUSTRIES, CURRENCIES, PARTNER_TYPES, CANONICAL_COMPANIES, CANONICAL_BRANCHES, cleanStr, cleanUpper, isBranchDeleted , SafeModalBoundary } from "@/features/companies/components/companies-sections/CompaniesHelpers"
 
 export function CompaniesSection1({ ctrl }: { ctrl: any }) {
+  const { data: masterBundle } = useMasterBundle()
   const { showCompanyModal, companyModalViewMode, editingCompany, setCompanyModalViewMode, setShowCompanyModal, setCompanyTab, companyTab, companyForm, setCompanyForm, setCompanyBankProfileTab, companyBankProfileTab, saveCompany, saving, setPreviewInvoiceType, previewInvoiceType, setCompanyZoom, companyZoom, addCustomStampTo, setCompanyCustomStamps, setCompanySignaturePos, setCompanyStampPos, previewSaveSuccess, companySignaturePos, companyStampPos, companyLogoPos, setCompanyLogoPos, companyLogoScale, setCompanyLogoScale, companyStampScale, setCompanyStampScale, companySignatureScale, setCompanySignatureScale, companyCustomStamps } = ctrl;
   return (
     <>
@@ -207,9 +209,9 @@ export function CompaniesSection1({ ctrl }: { ctrl: any }) {
                                 onChange={e => setCompanyForm({ ...companyForm, trademark_symbol: e.target.value })}
                                 className="w-full px-3 py-2 rounded-md border border-border bg-surface text-foreground text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary"
                               >
-                                <option value="">None (No Symbol)</option>
-                                <option value="TM">TM (Trademark / Applied)</option>
-                                <option value="R">® (Registered Trademark)</option>
+                                {(masterBundle?.options?.["trademark_type"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
                               </select>
                               <span className="text-[10px] text-muted-foreground block mt-1">
                                 Displayed in a circular red badge at the top-right of your brand name.

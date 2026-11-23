@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useMasterBundle } from "@/features/masters/hooks/useMasters"
 import { motion } from "framer-motion"
 import { Plus, Download, Edit2, Trash2 } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
@@ -68,6 +69,7 @@ export const columns: ColumnDef<Item>[] = [
 ]
 
 export default function ItemsPage() {
+  const { data: masterBundle } = useMasterBundle()
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -92,9 +94,9 @@ export default function ItemsPage() {
         <div className="mb-4">
           <select className="h-9 rounded-md border border-border bg-background px-3 py-1 text-sm text-muted-foreground outline-none focus:ring-1 focus:ring-primary min-w-[150px]">
             <option>- Category -</option>
-            <option>Design</option>
-            <option>Services</option>
-            <option>Development</option>
+                {(masterBundle?.options?.["item_category"] || []).map((opt) => (
+                  <option key={opt.id} value={opt.value}>{opt.label}</option>
+                ))}
           </select>
         </div>
 

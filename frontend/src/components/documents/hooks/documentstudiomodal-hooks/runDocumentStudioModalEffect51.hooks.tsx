@@ -37,13 +37,26 @@ import { type DocumentStudioModalProps, SERVICE_PRESETS } from "@/components/doc
 import { createDocumentStudioModalAction20 } from "@/components/documents/hooks/documentstudiomodal-hooks/createDocumentStudioModalAction20.hooks"
 
 export function runDocumentStudioModalEffect51(getCtrl: () => any) {
-  const { isOpen, fetchCompanies, fetchBranches, fetchSubBranches, setAvailableTeamMembers, setAllClients, initialData, setSelectedClient, setClientMode, setClientName, setClientDesignation, setContactPersonName, setClientEmail, setClientPhone, setClientAddress, setClientCity, setClientState, setClientGst, prefilledClient, handleSelectClient, setDocScheme, setCompanyId, activeCompanyId, setBranchId, setSubBranchId, setDocNumber, setIssueDate, setDueDate, setProjectTitle, setProjectOverview, setProjectTimeline, setTurnaroundTime, setDeliverables, setScopeInclusions, setScopeExclusions, setPaymentMilestones, setItems, setDiscountValue, setSetupCharge, setNotes, setTerms, setMarketingPackage, setAssignedMembers, activeBranchId, generateDocNumber, docScheme, mode } = getCtrl();
+  const { isOpen, fetchCompanies, fetchBranches, fetchSubBranches, setAvailableTeamMembers, setAvailableReferers, setAllClients, initialData, setSelectedClient, setClientMode, setClientName, setClientDesignation, setContactPersonName, setClientEmail, setClientPhone, setClientAddress, setClientCity, setClientState, setClientGst, prefilledClient, handleSelectClient, setDocScheme, setCompanyId, activeCompanyId, setBranchId, setSubBranchId, setDocNumber, setIssueDate, setDueDate, setPaymentPlan, setIsSplitPayment, setSplitPayments, setEmiCustomSchedule, setClientDob, setClientPoliceStation, setReferByCategory, setReferredByName, setProjectTitle, setProjectOverview, setProjectTimeline, setTurnaroundTime, setDeliverables, setScopeInclusions, setScopeExclusions, setPaymentMilestones, setItems, setDiscountValue, setSetupCharge, setNotes, setTerms, setMarketingPackage, setAssignedMembers, activeBranchId, generateDocNumber, docScheme, mode } = getCtrl();
   const __fn: any = () => {
     if (!isOpen) return
 
     fetchCompanies?.()
     fetchBranches?.()
     fetchSubBranches?.()
+
+    import("@/features/users/services/userService").then(({ getStoredUserAccountsAsync }) =>
+      getStoredUserAccountsAsync().then((allU: any[]) => {
+        const list = Array.isArray(allU) ? allU : [];
+        const nonClientsAll = list.filter((u: any) => !String(u.role || u.role_name || "").toLowerCase().includes("client"));
+        setAvailableReferers?.(nonClientsAll.map((u: any) => ({
+          ...u,
+          name: u.name || u.full_name || u.fullName || u.username || u.email || "User",
+          role: u.role || u.role_name || u.roleName || "User",
+          referByCategory: u.referByCategory || u.refer_by_category || ""
+        })));
+      })
+    ).catch(() => {});
 
     UserService.getTeamMembers().then(users => {
       if (Array.isArray(users)) {
@@ -60,6 +73,15 @@ export function runDocumentStudioModalEffect51(getCtrl: () => any) {
       setAllClients(cl)
 
       if (initialData) {
+      if (initialData.paymentPlan) setPaymentPlan?.(initialData.paymentPlan)
+      const initSplits = Array.isArray(initialData.splitPayments) ? initialData.splitPayments : []
+      setIsSplitPayment?.(initSplits.length > 0)
+      setSplitPayments?.(initSplits.length > 0 ? initSplits : [{ id: "sp-1", method: "UPI / Net Banking", amount: "", reference: "" }])
+      setEmiCustomSchedule?.(Array.isArray(initialData.emiCustomSchedule) ? initialData.emiCustomSchedule : [])
+      setClientDob?.(initialData.clientDob || "")
+      setClientPoliceStation?.(initialData.clientPoliceStation || "")
+      setReferByCategory?.(initialData.referByCategory || "")
+      setReferredByName?.(initialData.referredByName || "")
         const initClient = String(initialData.client || initialData.customer || initialData.clientName || "").trim()
         const initEmail = initialData.clientEmail || initialData.customerEmail || ""
         const initPhone = initialData.clientPhone || initialData.customerPhone || ""

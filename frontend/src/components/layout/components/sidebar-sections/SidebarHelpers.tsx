@@ -18,6 +18,7 @@ import {
   Folder,
   Clock,
   Settings,
+  Database,
   LayoutDashboard,
   KanbanSquare,
   CheckSquare,
@@ -236,6 +237,7 @@ export const ALL_NAV_ITEMS: NavItem[] = [
     icon: Settings,
     subItems: [
       { name: "General Settings", href: "/feature/settings", icon: Settings },
+      { name: "Master Data", href: "/feature/masters", icon: Database },
       { name: "Companies", href: "/feature/companies", icon: Building2 },
       { name: "Branches", href: "/feature/branches", icon: GitBranch },
       { name: "Departments", href: "/feature/departments", icon: Briefcase },
