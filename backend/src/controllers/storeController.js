@@ -413,9 +413,9 @@ const createPublicOrder = async (req, res, next) => {
         const bcrypt = require("bcryptjs");
         const hash = await bcrypt.hash(defaultPassword, 10);
         const [ins] = await pool.execute(
-          `INSERT INTO users (name, email, password, phone, role_id, company_id, status, created_at, updated_at) 
-           VALUES (?, ?, ?, ?, 4, ?, 'active', NOW(), NOW())`,
-          [clientName, clientEmail, hash, phone || "", isConsult ? 2 : 1]
+          `INSERT INTO users (full_name, username, email, phone, password_hash, role_id, company_id, status, is_verified, created_at, updated_at) 
+           VALUES (?, ?, ?, ?, ?, 4, ?, 'active', 1, NOW(), NOW())`,
+          [clientName, clientEmail, clientEmail, phone || "", hash, isConsult ? 2 : 1]
         );
         clientUserId = ins.insertId;
       }
