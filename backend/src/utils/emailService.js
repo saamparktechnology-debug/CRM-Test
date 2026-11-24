@@ -1629,6 +1629,7 @@ async function sendKycRejectedEmail({
 }
 
 module.exports = {
+  getGroupEmailConfig,
   getEmailConfig,
   testSmtpConnection,
   sendPasswordResetOTP,
