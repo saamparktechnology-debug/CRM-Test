@@ -64,6 +64,12 @@ export interface EcommerceOrder {
   gstNumber?: string;
   panNumber?: string;
   items: EcommerceOrderItem[];
+  subtotal?: number;
+  gstAmount?: number;
+  gstType?: string;
+  discountAmount?: number;
+  couponCode?: string;
+  urgency?: string;
   totalAmount: number;
   status: EcommerceOrderStatus;
   invoiceId?: string; // Linked CRM invoice ID

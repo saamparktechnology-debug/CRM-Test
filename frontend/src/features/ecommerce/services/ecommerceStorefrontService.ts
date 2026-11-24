@@ -35,7 +35,7 @@ export const DEFAULT_TECH_STOREFRONT: StorefrontConfig = {
   ],
   promoRibbon: {
     enabled: true,
-    text: "🔥 FESTIVE DEAL: Get FLAT 20% OFF on all Website & Mobile App Developments this month!",
+    text: "FESTIVE DEAL: Get FLAT 20% OFF on all Website & Mobile App Developments this month!",
     highlightText: "Use Code: TECH20",
     link: "/services",
     badge: "Limited Offer"
@@ -87,7 +87,7 @@ export const DEFAULT_CONSULTANCY_STOREFRONT: StorefrontConfig = {
   ],
   promoRibbon: {
     enabled: true,
-    text: "⚖️ START YOUR BUSINESS TODAY: Complete Pvt Ltd Incorporation with Free Class 3 DSC & PAN/TAN!",
+    text: "START YOUR BUSINESS TODAY: Complete Pvt Ltd Incorporation with Free Class 3 DSC & PAN/TAN!",
     highlightText: "All-Inclusive ₹8,999",
     link: "/services",
     badge: "Govt Certified"

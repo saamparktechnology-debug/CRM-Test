@@ -120,6 +120,14 @@ export default function EcommerceOrdersPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <a
+            href="https://saampark.com/track"
+            target="_blank"
+            rel="noreferrer"
+            className="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-1.5"
+          >
+            Live Storefront <ExternalLink className="w-3.5 h-3.5" />
+          </a>
           <button
             onClick={() => loadOrders()}
             className="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -272,11 +280,18 @@ export default function EcommerceOrdersPage() {
                         )}
                         <div className="text-xs text-slate-400 mt-1 font-mono">{o.email}</div>
                         <div className="text-xs text-slate-400">{o.phone}</div>
-                        {o.gstNumber && (
-                          <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
-                            GST: {o.gstNumber}
-                          </div>
-                        )}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          {o.gstNumber && (
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-semibold">
+                              GSTIN: {o.gstNumber}
+                            </span>
+                          )}
+                          {o.address && o.pincode && (
+                            <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-semibold">
+                              Invoice Ready
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Ordered Services */}
@@ -344,15 +359,28 @@ export default function EcommerceOrdersPage() {
                               className="px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-md shadow-blue-500/25 transition-all flex items-center gap-1.5"
                               title="Generate Official CRM Invoice from this Order"
                             >
-                              <span>➔ Generate Invoice</span>
+                              <span>Generate Invoice</span> <ArrowRight className="w-3.5 h-3.5" />
                             </button>
                           ) : (
-                            <a
-                              href={o.invoiceUrl || `/feature/sales/invoices?search=${encodeURIComponent(o.invoiceNumber || "")}`}
-                              className="px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 rounded-xl transition-colors flex items-center gap-1"
-                            >
-                              <FileText className="w-3.5 h-3.5" /> View Invoice
-                            </a>
+                            <div className="flex items-center gap-1.5">
+                              {o.status === "Invoice Created" && (
+                                <button
+                                  onClick={() => handleStatusChange(o.id, "Order Processed")}
+                                  className="px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 rounded-xl transition-colors flex items-center gap-1"
+                                  title="Mark Order as Processed & Completed"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> Mark Processed
+                                </button>
+                              )}
+                              <a
+                                href={o.invoiceUrl || `/feature/sales/invoices?search=${encodeURIComponent(o.invoiceNumber || "")}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 rounded-xl transition-colors flex items-center gap-1"
+                              >
+                                <FileText className="w-3.5 h-3.5" /> View Invoice
+                              </a>
+                            </div>
                           )}
                         </div>
                       </td>

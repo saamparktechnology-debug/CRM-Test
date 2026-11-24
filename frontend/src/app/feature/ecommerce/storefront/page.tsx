@@ -170,6 +170,14 @@ export default function EcommerceStorefrontPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <a
+            href="https://saampark.com"
+            target="_blank"
+            rel="noreferrer"
+            className="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-1.5"
+          >
+            Preview Live Store <ExternalLink className="w-3.5 h-3.5" />
+          </a>
           <button
             onClick={() => loadConfig()}
             className="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -323,7 +331,7 @@ export default function EcommerceStorefrontPage() {
                   promoRibbon: { ...config.promoRibbon, text: e.target.value },
                 })
               }
-              placeholder="e.g. 🔥 FESTIVE DEAL: Get FLAT 20% OFF on all Website & Mobile App Developments!"
+              placeholder="e.g.  FESTIVE DEAL: Get FLAT 20% OFF on all Website & Mobile App Developments!"
               className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>

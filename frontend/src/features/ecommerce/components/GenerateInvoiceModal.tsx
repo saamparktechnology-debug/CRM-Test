@@ -4,6 +4,7 @@ import * as React from "react";
 import { X, ArrowRight, CheckCircle2, ShieldCheck, FileText, User, Mail, Phone, MapPin, Building2, Key, ExternalLink } from "lucide-react";
 import { EcommerceOrder } from "../types/ecommerce.types";
 import { ensureClientUserAccount } from "@/app/feature/users/service/userService";
+import { saveStoredClient } from "@/app/feature/clients/service/clientService";
 import { addInvoice, generateInvoiceNumber } from "@/app/feature/sales/invoices/service/invoiceService";
 import { updateOrderStatus } from "../services/ecommerceOrderService";
 
@@ -44,7 +45,7 @@ export function GenerateInvoiceModal({
   const handleGenerateInvoice = async () => {
     setIsProcessing(true);
     try {
-      // 1. Ensure client user account (Role 4: Clients) is created
+      // 1. Ensure client user account (Role 4: Clients) and CRM Client entry are created
       const generatedPassword = order.clientPassword || "Client@123";
       const clientUser = await ensureClientUserAccount({
         email: order.email,
@@ -53,6 +54,27 @@ export function GenerateInvoiceModal({
         companyId: order.companyId || "tech",
       });
 
+      const clientCompanyLabel = order.businessName || order.clientName;
+      await saveStoredClient(
+        {
+          id: `cli-ecom-${order.email.replace(/[^a-zA-Z0-9]/g, "").slice(0, 14)}`,
+          name: clientCompanyLabel,
+          contactPerson: order.clientName,
+          email: order.email,
+          phone: order.phone,
+          address: order.address || "",
+          city: order.city || "Kolkata",
+          state: order.state || "West Bengal",
+          pincode: order.pincode || "",
+          gstNumber: order.gstNumber || "",
+          panNumber: order.panNumber || "",
+          companyId: order.companyId,
+          status: "Active",
+          createdAt: new Date().toISOString().split("T")[0],
+        } as any,
+        order.companyId
+      ).catch(() => {});
+
       // 2. Generate a professional CRM Invoice number
       const newInvNumber = generateInvoiceNumber([], new Date(), false);
 
@@ -60,9 +82,9 @@ export function GenerateInvoiceModal({
       const lineItems = order.items.map((it, idx) => {
         const rate = it.price || 0;
         const qty = it.qty || 1;
-        const subtotal = rate * qty;
+        const itemSubtotal = rate * qty;
         const gstRate = 18;
-        const gstAmount = Math.round((subtotal * gstRate) / 100);
+        const gstAmount = Math.round((itemSubtotal * gstRate) / 100);
         return {
           id: `line-${idx + 1}-${Date.now().toString(36)}`,
           serviceName: it.name,
@@ -73,18 +95,23 @@ export function GenerateInvoiceModal({
           rate,
           gstRate,
           gstAmount,
-          totalAmount: subtotal + gstAmount,
+          totalAmount: itemSubtotal + gstAmount,
         };
       });
 
-      const totalInvoiceAmount = lineItems.reduce((sum, item) => sum + item.totalAmount, 0);
+      const baseSubtotal = order.subtotal || lineItems.reduce((sum, item) => sum + item.rate * item.qty, 0);
+      const discountAmt = order.discountAmount || 0;
+      const discountedBase = Math.max(0, baseSubtotal - discountAmt);
+      const computedGst = order.gstAmount ?? Math.round((discountedBase * 18) / 100);
+      const totalInvoiceAmount = discountedBase + computedGst;
 
       // 4. Create the official Invoice in the CRM Sales module
       const createdInvoice = await addInvoice(
         {
           invoiceNumber: newInvNumber,
-          client: order.businessName || order.clientName,
+          client: clientCompanyLabel,
           clientContactPerson: order.clientName,
+          contactPersonName: order.clientName,
           clientEmail: order.email,
           clientPhone: order.phone,
           clientAddress: `${order.address}${order.pincode ? ` - ${order.pincode}` : ""}`,
@@ -92,27 +119,35 @@ export function GenerateInvoiceModal({
           clientCity: order.city || "Kolkata",
           clientState: order.state || "West Bengal",
           clientGstin: order.gstNumber || "",
+          clientPan: order.panNumber || "",
           companyId: order.companyId,
           companyName: companyTitle,
           project: lineItems[0]?.serviceName || "E-Commerce Services",
+          items: lineItems,
+          baseAmount: baseSubtotal,
+          discount: discountAmt,
+          gstRate: 18,
+          gstAmount: computedGst,
+          invoiceType: "gst",
           billDate: new Date().toISOString().split("T")[0],
           dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0],
           totalInvoiced: String(totalInvoiceAmount),
           paymentReceived: "0",
           due: String(totalInvoiceAmount),
           status: "Payment Pending",
-          notes: `Auto-generated from E-Commerce Order #${order.orderNumber}. Client portal account created for ${order.email}.`,
+          notes: `Auto-generated from E-Commerce Order #${order.orderNumber}.${order.couponCode ? ` Promo: ${order.couponCode}.` : ""} Client portal account provisioned for ${order.email}.`,
         } as any,
         order.companyId
       );
 
       const invoiceId = createdInvoice?.id || `inv-${Date.now().toString(36)}`;
+      const publicInvoiceUrl = `/public/invoice?id=${encodeURIComponent(invoiceId)}&num=${encodeURIComponent(newInvNumber)}`;
 
       // 5. Update the E-Commerce Order status to 'Invoice Created'
       const updated = await updateOrderStatus(order.id, "Invoice Created", {
         invoiceId,
         invoiceNumber: newInvNumber,
-        invoiceUrl: `/feature/sales/invoices?search=${encodeURIComponent(newInvNumber)}`,
+        invoiceUrl: publicInvoiceUrl,
         clientUserId: clientUser?.id || undefined,
       });
 
@@ -324,9 +359,12 @@ export function GenerateInvoiceModal({
                     </div>
                   ))}
                   <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 font-bold text-sm">
-                    <span>Estimated Total (Incl. 18% GST)</span>
+                    <span>Grand Total (Incl. 18% GST{order.discountAmount ? ` & -₹${order.discountAmount} Promo` : ""})</span>
                     <span className="font-mono text-emerald-600 dark:text-emerald-400 text-base">
-                      ₹{Math.round(order.totalAmount * 1.18).toLocaleString()}
+                      ₹{(order.totalAmount > order.items.reduce((s, it) => s + (it.price || 0) * (it.qty || 1), 0)
+                        ? order.totalAmount
+                        : Math.round(order.totalAmount * 1.18)
+                      ).toLocaleString()}
                     </span>
                   </div>
                 </div>

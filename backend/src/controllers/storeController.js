@@ -1,5 +1,94 @@
 const pool = require("../config/db");
 const { successResponse, errorResponse } = require("../utils/apiResponse");
+const bcrypt = require("bcryptjs");
+
+// In-memory OTP store for client email verification (10 minute TTL)
+const clientOtpStore = new Map();
+
+function generateSixDigitOtp() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function fetchParsedModule(moduleKey, fallback = []) {
+  try {
+    const [rows] = await pool.execute(
+      "SELECT data_json FROM app_data WHERE module_key = ?",
+      [moduleKey]
+    );
+    if (rows.length > 0 && rows[0].data_json) {
+      return JSON.parse(rows[0].data_json);
+    }
+  } catch {}
+  return fallback;
+}
+
+async function collectClientOrdersAndProfile(clientEmail) {
+  const normEmail = String(clientEmail || "").toLowerCase().trim();
+  const orderKeys = ["ecommerce_orders_tech", "ecommerce_orders_consultancy", "ecommerce_orders"];
+  const orderMap = new Map();
+
+  for (const k of orderKeys) {
+    const list = await fetchParsedModule(k, []);
+    if (Array.isArray(list)) {
+      list.forEach((o) => {
+        if (o && o.email && String(o.email).toLowerCase().trim() === normEmail) {
+          const idKey = o.orderNumber || o.id;
+          if (idKey && !orderMap.has(idKey)) {
+            orderMap.set(idKey, o);
+          }
+        }
+      });
+    }
+  }
+
+  const orders = Array.from(orderMap.values()).sort(
+    (a, b) => new Date(b.createdAt || b.orderDate || 0).getTime() - new Date(a.createdAt || a.orderDate || 0).getTime()
+  );
+
+  // Extract latest billing profile from orders + users table
+  let profile = {
+    name: "",
+    businessName: "",
+    email: normEmail,
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+    gstNumber: "",
+    panNumber: "",
+  };
+
+  if (orders.length > 0) {
+    const latest = orders[0];
+    profile = {
+      name: latest.clientName || "",
+      businessName: latest.businessName || "",
+      email: normEmail,
+      phone: latest.phone || "",
+      address: latest.address || "",
+      city: latest.city || "",
+      state: latest.state || "",
+      pincode: latest.pincode || "",
+      gstNumber: latest.gstNumber || "",
+      panNumber: latest.panNumber || "",
+    };
+  }
+
+  try {
+    const [uRows] = await pool.execute(
+      "SELECT id, full_name, email, phone, company_id FROM users WHERE LOWER(TRIM(email)) = ? AND deleted_at IS NULL LIMIT 1",
+      [normEmail]
+    );
+    if (uRows.length > 0) {
+      if (!profile.name) profile.name = uRows[0].full_name || "";
+      if (!profile.phone) profile.phone = uRows[0].phone || "";
+      profile.crmUserId = String(uRows[0].id);
+    }
+  } catch {}
+
+  return { orders, profile };
+}
 
 // Helper: Fetch deleted set for a module key
 async function getDeletedItemIds(targetPool, moduleKey) {
@@ -372,6 +461,33 @@ const getPublicStorefront = async (req, res, next) => {
   }
 };
 
+const getPublicCatalogAndStorefront = async (req, res, next) => {
+  try {
+    const [techProducts, consultProducts, techStore, consultStore] = await Promise.all([
+      fetchParsedModule("ecommerce_products_tech", []),
+      fetchParsedModule("ecommerce_products_consultancy", []),
+      fetchParsedModule("ecommerce_storefront_tech", null),
+      fetchParsedModule("ecommerce_storefront_consultancy", null),
+    ]);
+
+    const filterActive = (list) =>
+      (Array.isArray(list) ? list : []).filter((p) => !p.status || p.status === "Active");
+
+    return successResponse(res, 200, "Public storefront catalog retrieved", {
+      products: {
+        tech: filterActive(techProducts),
+        consultancy: filterActive(consultProducts),
+      },
+      storefront: {
+        tech: techStore,
+        consultancy: consultStore,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const createPublicOrder = async (req, res, next) => {
   try {
     const {
@@ -386,6 +502,12 @@ const createPublicOrder = async (req, res, next) => {
       gstNumber,
       panNumber,
       items,
+      subtotal,
+      gstAmount,
+      gstType,
+      discountAmount,
+      couponCode,
+      urgency,
       totalAmount,
       companyId,
       notes,
@@ -410,7 +532,6 @@ const createPublicOrder = async (req, res, next) => {
       if (uRows.length > 0) {
         clientUserId = uRows[0].id;
       } else {
-        const bcrypt = require("bcryptjs");
         const hash = await bcrypt.hash(defaultPassword, 10);
         const [ins] = await pool.execute(
           `INSERT INTO users (full_name, username, email, phone, password_hash, role_id, company_id, status, is_verified, created_at, updated_at) 
@@ -435,9 +556,15 @@ const createPublicOrder = async (req, res, next) => {
       city: city || "Kolkata",
       state: state || "West Bengal",
       pincode: pincode || "700001",
-      gstNumber: gstNumber || "",
-      panNumber: panNumber || "",
+      gstNumber: gstNumber ? String(gstNumber).toUpperCase().trim() : "",
+      panNumber: panNumber ? String(panNumber).toUpperCase().trim() : "",
       items: Array.isArray(items) ? items : [],
+      subtotal: Number(subtotal) || 0,
+      gstAmount: Number(gstAmount) || 0,
+      gstType: gstType || (String(state || "").toLowerCase().includes("west bengal") ? "CGST+SGST" : "IGST"),
+      discountAmount: Number(discountAmount) || 0,
+      couponCode: couponCode ? String(couponCode).toUpperCase().trim() : "",
+      urgency: urgency || "Standard",
       totalAmount: Number(totalAmount) || 0,
       status: "Order Pending",
       clientUserId: clientUserId ? String(clientUserId) : undefined,
@@ -449,29 +576,53 @@ const createPublicOrder = async (req, res, next) => {
     };
 
     const key = `ecommerce_orders_${scope}`;
-    let existingOrders = [];
-    const [ordRows] = await pool.execute("SELECT data_json FROM app_data WHERE module_key = ?", [key]);
-    if (ordRows.length > 0 && ordRows[0].data_json) {
-      try {
-        existingOrders = JSON.parse(ordRows[0].data_json);
-      } catch {}
-    }
-    const updatedOrders = [orderObj, ...(Array.isArray(existingOrders) ? existingOrders : [])];
-    const dataJson = JSON.stringify(updatedOrders);
+    const existingOrders = await fetchParsedModule(key, []);
+    const updatedScoped = [orderObj, ...(Array.isArray(existingOrders) ? existingOrders : [])];
 
     await pool.execute(
       `INSERT INTO app_data (module_key, data_json, updated_at) 
        VALUES (?, ?, NOW()) 
        ON DUPLICATE KEY UPDATE data_json = VALUES(data_json), updated_at = NOW()`,
-      [key, dataJson]
+      [key, JSON.stringify(updatedScoped)]
     );
 
+    const existingAllOrders = await fetchParsedModule("ecommerce_orders", []);
+    const updatedAll = [orderObj, ...(Array.isArray(existingAllOrders) ? existingAllOrders.filter((o) => o && o.id !== orderObj.id) : [])];
     await pool.execute(
       `INSERT INTO app_data (module_key, data_json, updated_at) 
        VALUES ('ecommerce_orders', ?, NOW()) 
        ON DUPLICATE KEY UPDATE data_json = VALUES(data_json), updated_at = NOW()`,
-      [dataJson]
+      [JSON.stringify(updatedAll)]
     ).catch(() => {});
+
+    // Non-blocking order confirmation email with Client Portal credentials
+    try {
+      const { getGroupEmailConfig } = require("../utils/emailService");
+      const { transporter, from } = getGroupEmailConfig();
+      const itemSummary = (orderObj.items || []).map((it) => `- ${it.name} (Qty ${it.qty})`).join("<br/>");
+      transporter.sendMail({
+        from,
+        to: clientEmail,
+        subject: `Order Confirmed: ${orderNumber} | Saampark Group`,
+        html: `
+          <div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:16px;">
+            <h2 style="color:#1e293b;margin:0 0 8px;">Order Confirmation - ${orderNumber}</h2>
+            <p style="color:#475569;font-size:14px;">Dear ${clientName}, thank you for choosing Saampark Group. Your order has been registered in our CRM system for prompt invoice generation.</p>
+            <div style="background:#f8fafc;padding:16px;border-radius:12px;margin:16px 0;font-size:13px;">
+              <strong>Ordered Services:</strong><br/>${itemSummary}<br/><br/>
+              <strong>Total Amount (Incl. GST):</strong> ₹${orderObj.totalAmount.toLocaleString("en-IN")}
+            </div>
+            <div style="background:#eff6ff;padding:16px;border-radius:12px;margin:16px 0;font-size:13px;border:1px solid #bfdbfe;">
+              <strong>CRM Client Portal Access:</strong><br/>
+              Portal URL: <a href="https://crm2.saampark.com/login">https://crm2.saampark.com/login</a><br/>
+              Track Online: <a href="https://saampark.com/track?order=${orderNumber}">https://saampark.com/track?order=${orderNumber}</a><br/>
+              Email: <strong>${clientEmail}</strong><br/>
+              Default Password: <strong>${defaultPassword}</strong>
+            </div>
+          </div>
+        `,
+      }).catch((mailErr) => console.warn("Order email send skipped:", mailErr.message));
+    } catch {}
 
     return successResponse(res, 201, "Order created successfully", {
       order: orderObj,
@@ -481,6 +632,137 @@ const createPublicOrder = async (req, res, next) => {
         defaultPassword,
         role: "Clients",
       },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const requestClientEmailOtp = async (req, res, next) => {
+  try {
+    const email = String(req.body.email || "").toLowerCase().trim();
+    if (!email || !email.includes("@")) {
+      return errorResponse(res, 400, "Valid email address is required.");
+    }
+
+    const code = generateSixDigitOtp();
+    clientOtpStore.set(email, {
+      code,
+      expiresAt: Date.now() + 10 * 60 * 1000,
+    });
+
+    try {
+      const { getGroupEmailConfig } = require("../utils/emailService");
+      const { transporter, from } = getGroupEmailConfig();
+      await transporter.sendMail({
+        from,
+        to: email,
+        subject: `Your Saampark Client Verification Code: ${code}`,
+        html: `
+          <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:16px;">
+            <h2 style="margin:0 0 8px;color:#0f172a;">Client Sign-In Verification</h2>
+            <p style="color:#475569;font-size:14px;">Use this 6-digit verification code to sign in to your Saampark Client Account & Order Hub:</p>
+            <div style="font-size:28px;font-weight:800;letter-spacing:6px;color:#2563eb;background:#eff6ff;padding:16px;text-align:center;border-radius:12px;margin:16px 0;">
+              ${code}
+            </div>
+            <p style="color:#94a3b8;font-size:12px;">This code is valid for 10 minutes.</p>
+          </div>
+        `,
+      });
+    } catch (mailErr) {
+      return errorResponse(res, 500, `Could not send verification email: ${mailErr.message}`);
+    }
+
+    return successResponse(res, 200, "Verification code sent to your email address.", {
+      email,
+      expiresInSeconds: 600,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const clientEmailLogin = async (req, res, next) => {
+  try {
+    const email = String(req.body.email || "").toLowerCase().trim();
+    const password = req.body.password ? String(req.body.password) : "";
+    const otp = req.body.otp ? String(req.body.otp).trim() : "";
+
+    if (!email || !email.includes("@")) {
+      return errorResponse(res, 400, "Valid email address is required.");
+    }
+
+    if (otp) {
+      const record = clientOtpStore.get(email);
+      if (!record || record.expiresAt < Date.now() || record.code !== otp) {
+        return errorResponse(res, 401, "Invalid or expired verification code.");
+      }
+      clientOtpStore.delete(email);
+
+      // Ensure user record exists as Role 4 Client
+      const [uRows] = await pool.execute(
+        "SELECT id, full_name, email, phone FROM users WHERE LOWER(TRIM(email)) = ? AND deleted_at IS NULL LIMIT 1",
+        [email]
+      );
+      if (uRows.length === 0) {
+        try {
+          const hash = await bcrypt.hash("Client@123", 10);
+          const fallbackName = email.split("@")[0].replace(/[^a-zA-Z0-9 ]/g, " ").trim() || "Saampark Client";
+          await pool.execute(
+            `INSERT INTO users (full_name, username, email, phone, password_hash, role_id, company_id, status, is_verified, created_at, updated_at)
+             VALUES (?, ?, ?, '', ?, 4, 1, 'active', 1, NOW(), NOW())`,
+            [fallbackName, email, email, hash]
+          );
+        } catch {}
+      }
+    } else if (password) {
+      const [uRows] = await pool.execute(
+        "SELECT id, full_name, email, phone, password_hash FROM users WHERE LOWER(TRIM(email)) = ? AND deleted_at IS NULL LIMIT 1",
+        [email]
+      );
+      if (uRows.length === 0) {
+        return errorResponse(res, 401, "No account found for this email. Please use Email Code (OTP) login or place an order first.");
+      }
+      const valid = await bcrypt.compare(password, uRows[0].password_hash || "");
+      if (!valid) {
+        return errorResponse(res, 401, "Incorrect password. You can use Email OTP sign-in or default portal password Client@123 if auto-provisioned.");
+      }
+    } else {
+      return errorResponse(res, 400, "Please provide either a password or an email verification code.");
+    }
+
+    const { orders, profile } = await collectClientOrdersAndProfile(email);
+    return successResponse(res, 200, "Client signed in successfully", {
+      user: {
+        name: profile.name || email.split("@")[0],
+        email,
+        phone: profile.phone || "",
+        businessName: profile.businessName || "",
+        address: profile.address || "",
+        city: profile.city || "",
+        state: profile.state || "",
+        pincode: profile.pincode || "",
+        gstNumber: profile.gstNumber || "",
+        panNumber: profile.panNumber || "",
+        crmUserId: profile.crmUserId || undefined,
+      },
+      orders,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getClientOrdersByEmail = async (req, res, next) => {
+  try {
+    const email = String(req.query.email || "").toLowerCase().trim();
+    if (!email || !email.includes("@")) {
+      return errorResponse(res, 400, "Valid email query parameter is required.");
+    }
+    const { orders, profile } = await collectClientOrdersAndProfile(email);
+    return successResponse(res, 200, "Client orders retrieved", {
+      profile,
+      orders,
     });
   } catch (err) {
     next(err);
@@ -551,6 +833,10 @@ module.exports = {
   saveStoreData,
   getPublicProducts,
   getPublicStorefront,
+  getPublicCatalogAndStorefront,
   createPublicOrder,
   getPublicOrder,
+  requestClientEmailOtp,
+  clientEmailLogin,
+  getClientOrdersByEmail,
 };
