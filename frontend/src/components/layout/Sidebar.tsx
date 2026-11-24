@@ -692,6 +692,11 @@ export function Sidebar() {
     "Posts & Deliverables": "Digital Marketing",
     "Marketing Leads & Ads": "Digital Marketing",
     Sales: "Invoices",
+    "Manage Ecommerce": "Ecommerce",
+    Ecommerce: "Ecommerce",
+    "Manage Products": "Ecommerce",
+    "Manage Orders": "Ecommerce",
+    "Manage Storefront": "Ecommerce",
     Quotations: "Quotations",
     Estimates: "Estimates",
     Invoices: "Invoices",
@@ -786,6 +791,7 @@ export function Sidebar() {
     CRM: false,
     "Digital Marketing": true,
     Sales: true,
+    "Manage Ecommerce": false,
     Subscriptions: false,
     "HR & Employees": false,
     Support: false,
@@ -819,6 +825,9 @@ export function Sidebar() {
       pathname.startsWith("/feature/debit-notes")
     ) {
       setOpenSubmenus((prev) => ({ ...prev, Sales: true }));
+    }
+    if (pathname.startsWith("/feature/ecommerce")) {
+      setOpenSubmenus((prev) => ({ ...prev, "Manage Ecommerce": true }));
     }
     if (
       pathname.startsWith("/feature/subscriptions") ||

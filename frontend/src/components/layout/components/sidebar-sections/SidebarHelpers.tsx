@@ -179,6 +179,16 @@ export const ALL_NAV_ITEMS: NavItem[] = [
       { name: "Payments", href: "/feature/sales/payments", icon: CreditCard },
     ],
   },
+  {
+    name: "Manage Ecommerce",
+    href: "/feature/ecommerce/products",
+    icon: ShoppingBag,
+    subItems: [
+      { name: "Manage Products", href: "/feature/ecommerce/products", icon: Package },
+      { name: "Manage Orders", href: "/feature/ecommerce/orders", icon: Boxes },
+      { name: "Manage Storefront", href: "/feature/ecommerce/storefront", icon: Warehouse },
+    ],
+  },
   { name: "Approvals", href: "/feature/approvals", icon: ShieldCheck },
   {
     name: "Subscriptions",

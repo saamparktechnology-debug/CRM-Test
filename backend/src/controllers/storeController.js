@@ -327,4 +327,230 @@ const saveStoreData = async (req, res, next) => {
   }
 };
 
-module.exports = { getStoreData, saveStoreData };
+// Normalize company or group name
+function resolveCompanyScope(param) {
+  if (!param) return "tech";
+  const p = String(param).toLowerCase().trim();
+  if (p === "2" || p === "consultancy" || p.includes("consult") || p === "scs") {
+    return "consultancy";
+  }
+  return "tech";
+}
+
+const getPublicProducts = async (req, res, next) => {
+  try {
+    const scope = resolveCompanyScope(req.query.company || req.query.group || req.query.company_id);
+    const key = `ecommerce_products_${scope}`;
+    const [rows] = await pool.execute("SELECT data_json FROM app_data WHERE module_key = ?", [key]);
+    let products = [];
+    if (rows.length > 0 && rows[0].data_json) {
+      try {
+        products = JSON.parse(rows[0].data_json);
+      } catch {}
+    }
+    const activeProducts = (Array.isArray(products) ? products : []).filter((p) => !p.status || p.status === "Active");
+    return successResponse(res, 200, "Public products fetched", activeProducts);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getPublicStorefront = async (req, res, next) => {
+  try {
+    const scope = resolveCompanyScope(req.query.company || req.query.group || req.query.company_id);
+    const key = `ecommerce_storefront_${scope}`;
+    const [rows] = await pool.execute("SELECT data_json FROM app_data WHERE module_key = ?", [key]);
+    let config = null;
+    if (rows.length > 0 && rows[0].data_json) {
+      try {
+        config = JSON.parse(rows[0].data_json);
+      } catch {}
+    }
+    return successResponse(res, 200, "Public storefront config fetched", config);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const createPublicOrder = async (req, res, next) => {
+  try {
+    const {
+      clientName,
+      businessName,
+      email,
+      phone,
+      address,
+      city,
+      state,
+      pincode,
+      gstNumber,
+      panNumber,
+      items,
+      totalAmount,
+      companyId,
+      notes,
+    } = req.body;
+
+    if (!email || !clientName) {
+      return errorResponse(res, 400, "Customer name and email are required.");
+    }
+
+    const scope = resolveCompanyScope(companyId || req.body.group);
+    const isConsult = scope === "consultancy";
+    const compCode = isConsult ? "SCS" : "STR";
+    const seq = Math.floor(1000 + Math.random() * 9000);
+    const orderNumber = `ORD-${compCode}-${new Date().getFullYear()}-${seq}`;
+
+    const clientEmail = String(email).toLowerCase().trim();
+    let clientUserId = null;
+    const defaultPassword = "Client@123";
+
+    try {
+      const [uRows] = await pool.execute("SELECT id FROM users WHERE LOWER(TRIM(email)) = ?", [clientEmail]);
+      if (uRows.length > 0) {
+        clientUserId = uRows[0].id;
+      } else {
+        const bcrypt = require("bcryptjs");
+        const hash = await bcrypt.hash(defaultPassword, 10);
+        const [ins] = await pool.execute(
+          `INSERT INTO users (name, email, password, phone, role_id, company_id, status, created_at, updated_at) 
+           VALUES (?, ?, ?, ?, 4, ?, 'active', NOW(), NOW())`,
+          [clientName, clientEmail, hash, phone || "", isConsult ? 2 : 1]
+        );
+        clientUserId = ins.insertId;
+      }
+    } catch (e) {
+      console.warn("User provision note:", e.message);
+    }
+
+    const orderObj = {
+      id: `ord-${scope}-${Date.now().toString(36)}`,
+      orderNumber,
+      companyId: scope,
+      clientName,
+      businessName: businessName || "",
+      email: clientEmail,
+      phone: phone || "",
+      address: address || "",
+      city: city || "Kolkata",
+      state: state || "West Bengal",
+      pincode: pincode || "700001",
+      gstNumber: gstNumber || "",
+      panNumber: panNumber || "",
+      items: Array.isArray(items) ? items : [],
+      totalAmount: Number(totalAmount) || 0,
+      status: "Order Pending",
+      clientUserId: clientUserId ? String(clientUserId) : undefined,
+      clientPassword: defaultPassword,
+      notes: notes || "",
+      orderDate: new Date().toISOString().split("T")[0],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const key = `ecommerce_orders_${scope}`;
+    let existingOrders = [];
+    const [ordRows] = await pool.execute("SELECT data_json FROM app_data WHERE module_key = ?", [key]);
+    if (ordRows.length > 0 && ordRows[0].data_json) {
+      try {
+        existingOrders = JSON.parse(ordRows[0].data_json);
+      } catch {}
+    }
+    const updatedOrders = [orderObj, ...(Array.isArray(existingOrders) ? existingOrders : [])];
+    const dataJson = JSON.stringify(updatedOrders);
+
+    await pool.execute(
+      `INSERT INTO app_data (module_key, data_json, updated_at) 
+       VALUES (?, ?, NOW()) 
+       ON DUPLICATE KEY UPDATE data_json = VALUES(data_json), updated_at = NOW()`,
+      [key, dataJson]
+    );
+
+    await pool.execute(
+      `INSERT INTO app_data (module_key, data_json, updated_at) 
+       VALUES ('ecommerce_orders', ?, NOW()) 
+       ON DUPLICATE KEY UPDATE data_json = VALUES(data_json), updated_at = NOW()`,
+      [dataJson]
+    ).catch(() => {});
+
+    return successResponse(res, 201, "Order created successfully", {
+      order: orderObj,
+      clientPortal: {
+        loginUrl: "https://crm2.saampark.com/login",
+        email: clientEmail,
+        defaultPassword,
+        role: "Clients",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getPublicOrder = async (req, res, next) => {
+  try {
+    const { orderNumber } = req.params;
+    if (!orderNumber) {
+      return errorResponse(res, 400, "Order number is required.");
+    }
+
+    const normOrder = String(orderNumber).toUpperCase().trim();
+    const candidateKeys = ["ecommerce_orders_tech", "ecommerce_orders_consultancy", "ecommerce_orders"];
+
+    let foundOrder = null;
+    for (const k of candidateKeys) {
+      const [rows] = await pool.execute("SELECT data_json FROM app_data WHERE module_key = ?", [k]);
+      if (rows.length > 0 && rows[0].data_json) {
+        try {
+          const list = JSON.parse(rows[0].data_json);
+          if (Array.isArray(list)) {
+            const match = list.find((o) => o.orderNumber && o.orderNumber.toUpperCase().trim() === normOrder);
+            if (match) {
+              foundOrder = match;
+              break;
+            }
+          }
+        } catch {}
+      }
+    }
+
+    if (!foundOrder) {
+      return errorResponse(res, 404, "Order not found.");
+    }
+
+    return successResponse(res, 200, "Order retrieved", {
+      order: foundOrder,
+      pipeline: [
+        { step: 1, name: "Order Pending", status: "completed" },
+        {
+          step: 2,
+          name: "Invoice Created",
+          status: foundOrder.status === "Invoice Created" || foundOrder.status === "Order Processed" ? "completed" : "pending",
+          invoiceNumber: foundOrder.invoiceNumber || null,
+          invoiceUrl: foundOrder.invoiceUrl || null,
+        },
+        {
+          step: 3,
+          name: "Order Processed",
+          status: foundOrder.status === "Order Processed" ? "completed" : "pending",
+        },
+      ],
+      clientPortal: {
+        loginUrl: "https://crm2.saampark.com/login",
+        email: foundOrder.email,
+        defaultPassword: foundOrder.clientPassword || "Client@123",
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getStoreData,
+  saveStoreData,
+  getPublicProducts,
+  getPublicStorefront,
+  createPublicOrder,
+  getPublicOrder,
+};
