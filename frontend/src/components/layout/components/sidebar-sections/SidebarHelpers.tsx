@@ -167,6 +167,12 @@ export const ALL_NAV_ITEMS: NavItem[] = [
     name: "Digital Marketing",
     href: "/feature/marketing",
     icon: BarChart3,
+    subItems: [
+      { name: "Client Marketing Report", href: "/feature/marketing", icon: BarChart3 },
+      { name: "Marketing Plans & Retainers", href: "/feature/marketing/plans", icon: Sparkles },
+      { name: "Posts & Deliverables", href: "/feature/marketing/posts", icon: FileText },
+      { name: "Marketing Leads & Ads", href: "/feature/marketing/leads", icon: Target },
+    ],
   },
   {
     name: "Sales",
