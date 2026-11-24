@@ -641,6 +641,9 @@ const createPublicOrder = async (req, res, next) => {
 const requestClientEmailOtp = async (req, res, next) => {
   try {
     const email = String(req.body.email || "").toLowerCase().trim();
+    const purpose = String(req.body.purpose || "login").toLowerCase();
+    const clientName = String(req.body.name || "").trim();
+
     if (!email || !email.includes("@")) {
       return errorResponse(res, 400, "Valid email address is required.");
     }
@@ -654,26 +657,40 @@ const requestClientEmailOtp = async (req, res, next) => {
     try {
       const { getGroupEmailConfig } = require("../utils/emailService");
       const { transporter, from } = getGroupEmailConfig();
+      const subjectLabel =
+        purpose === "register"
+          ? `Verify Your Email & Complete Saampark Registration: ${code}`
+          : `Your Saampark Group Verification Code: ${code}`;
+
       await transporter.sendMail({
         from,
         to: email,
-        subject: `Your Saampark Client Verification Code: ${code}`,
+        subject: subjectLabel,
         html: `
-          <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:16px;">
-            <h2 style="margin:0 0 8px;color:#0f172a;">Client Sign-In Verification</h2>
-            <p style="color:#475569;font-size:14px;">Use this 6-digit verification code to sign in to your Saampark Client Account & Order Hub:</p>
-            <div style="font-size:28px;font-weight:800;letter-spacing:6px;color:#2563eb;background:#eff6ff;padding:16px;text-align:center;border-radius:12px;margin:16px 0;">
+          <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:20px;background:#ffffff;">
+            <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;color:#2563eb;text-transform:uppercase;margin-bottom:6px;">
+              SAAMPARK GROUP OFFICIAL VERIFICATION
+            </div>
+            <h2 style="margin:0 0 10px;color:#0f172a;font-size:20px;">
+              ${purpose === "register" ? "Complete Your Client Registration" : "Sign In Verification Code"}
+            </h2>
+            <p style="color:#475569;font-size:14px;line-height:1.5;">
+              ${clientName ? `Hello ${clientName}, ` : ""}Use the 6-digit security code below to verify your email address for Saampark Storefront &amp; CRM Client Portal:
+            </p>
+            <div style="font-size:32px;font-weight:800;letter-spacing:8px;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;padding:18px;text-align:center;border-radius:14px;margin:20px 0;">
               ${code}
             </div>
-            <p style="color:#94a3b8;font-size:12px;">This code is valid for 10 minutes.</p>
+            <p style="color:#64748b;font-size:12px;margin:0;">
+              This verification code expires in 10 minutes. Sent via Saampark Group Official Mail Server.
+            </p>
           </div>
         `,
       });
     } catch (mailErr) {
-      return errorResponse(res, 500, `Could not send verification email: ${mailErr.message}`);
+      return errorResponse(res, 500, `Could not send verification email via Saampark Group SMTP: ${mailErr.message}`);
     }
 
-    return successResponse(res, 200, "Verification code sent to your email address.", {
+    return successResponse(res, 200, "Verification code sent to your email via Saampark Group SMTP.", {
       email,
       expiresInSeconds: 600,
     });
@@ -687,6 +704,9 @@ const clientEmailLogin = async (req, res, next) => {
     const email = String(req.body.email || "").toLowerCase().trim();
     const password = req.body.password ? String(req.body.password) : "";
     const otp = req.body.otp ? String(req.body.otp).trim() : "";
+    const regName = req.body.name ? String(req.body.name).trim() : "";
+    const regPhone = req.body.phone ? String(req.body.phone).trim() : "";
+    const regBusiness = req.body.businessName ? String(req.body.businessName).trim() : "";
 
     if (!email || !email.includes("@")) {
       return errorResponse(res, 400, "Valid email address is required.");
@@ -699,20 +719,43 @@ const clientEmailLogin = async (req, res, next) => {
       }
       clientOtpStore.delete(email);
 
-      // Ensure user record exists as Role 4 Client
       const [uRows] = await pool.execute(
         "SELECT id, full_name, email, phone FROM users WHERE LOWER(TRIM(email)) = ? AND deleted_at IS NULL LIMIT 1",
         [email]
       );
       if (uRows.length === 0) {
         try {
-          const hash = await bcrypt.hash("Client@123", 10);
-          const fallbackName = email.split("@")[0].replace(/[^a-zA-Z0-9 ]/g, " ").trim() || "Saampark Client";
+          const hash = await bcrypt.hash(password || "Client@123", 10);
+          const displayName =
+            regName ||
+            email.split("@")[0].replace(/[^a-zA-Z0-9 ]/g, " ").trim() ||
+            "Saampark Client";
           await pool.execute(
             `INSERT INTO users (full_name, username, email, phone, password_hash, role_id, company_id, status, is_verified, created_at, updated_at)
-             VALUES (?, ?, ?, '', ?, 4, 1, 'active', 1, NOW(), NOW())`,
-            [fallbackName, email, email, hash]
+             VALUES (?, ?, ?, ?, ?, 4, 1, 'active', 1, NOW(), NOW())`,
+            [displayName, email, email, regPhone || "", hash]
           );
+        } catch {}
+      } else if (regName || regPhone || password) {
+        try {
+          const updates = [];
+          const params = [];
+          if (regName) {
+            updates.push("full_name = ?");
+            params.push(regName);
+          }
+          if (regPhone) {
+            updates.push("phone = ?");
+            params.push(regPhone);
+          }
+          if (password) {
+            updates.push("password_hash = ?");
+            params.push(await bcrypt.hash(password, 10));
+          }
+          if (updates.length > 0) {
+            params.push(uRows[0].id);
+            await pool.execute(`UPDATE users SET ${updates.join(", ")}, updated_at = NOW() WHERE id = ?`, params);
+          }
         } catch {}
       }
     } else if (password) {
@@ -721,23 +764,23 @@ const clientEmailLogin = async (req, res, next) => {
         [email]
       );
       if (uRows.length === 0) {
-        return errorResponse(res, 401, "No account found for this email. Please use Email Code (OTP) login or place an order first.");
+        return errorResponse(res, 401, "No account found for this email. Please register first or sign in with Email OTP.");
       }
       const valid = await bcrypt.compare(password, uRows[0].password_hash || "");
       if (!valid) {
-        return errorResponse(res, 401, "Incorrect password. You can use Email OTP sign-in or default portal password Client@123 if auto-provisioned.");
+        return errorResponse(res, 401, "Incorrect password. You can use Email OTP sign-in or your registered password.");
       }
     } else {
       return errorResponse(res, 400, "Please provide either a password or an email verification code.");
     }
 
     const { orders, profile } = await collectClientOrdersAndProfile(email);
-    return successResponse(res, 200, "Client signed in successfully", {
+    return successResponse(res, 200, "Client authenticated successfully", {
       user: {
-        name: profile.name || email.split("@")[0],
+        name: regName || profile.name || email.split("@")[0],
         email,
-        phone: profile.phone || "",
-        businessName: profile.businessName || "",
+        phone: regPhone || profile.phone || "",
+        businessName: regBusiness || profile.businessName || "",
         address: profile.address || "",
         city: profile.city || "",
         state: profile.state || "",

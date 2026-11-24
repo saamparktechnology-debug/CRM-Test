@@ -50,6 +50,7 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
     color: "#2563EB",
     icon: "Globe",
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+    galleryImages: [],
     description: "",
     features: [
       "Custom responsive design for desktop and mobile",
@@ -74,7 +75,10 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
 
   React.useEffect(() => {
     if (product) {
-      setFormData(product);
+      setFormData({
+        ...product,
+        galleryImages: Array.isArray(product.galleryImages) ? product.galleryImages : []
+      });
     } else {
       setFormData({
         name: "",
@@ -97,6 +101,7 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
         image: isConsultancy
           ? "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=800&q=80"
           : "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [],
         description: "",
         features: [
           "Custom responsive design for desktop and mobile",
@@ -603,29 +608,120 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
             </div>
           )}
 
-          {/* TAB 3: MEDIA & DIRECT IMAGE UPLOAD */}
+          {/* TAB 3: MEDIA & DIRECT IMAGE UPLOAD (1 Primary + Up to 5 Gallery Images) */}
           {activeTab === "media" && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
                 <div className="flex items-center gap-2">
                   <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                    Product Hero Image / Thumbnail
+                    Primary Product Hero Image
                   </h3>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Upload an image directly from your computer (drag & drop or click file) or toggle to paste an image URL.
+                  Shown on storefront cards and as the main showcase image on the product page.
                 </p>
 
                 <ImageUploadField
-                  label="Product Thumbnail / Showcase Banner"
+                  label="Product Cover / Main Thumbnail"
                   value={formData.image || ""}
                   onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
-                  placeholder="https://... or choose file above"
+                  placeholder="https://... or upload directly from computer"
                   uploadNamePrefix={`product_${formData.companyId || "saampark"}`}
                   aspectRatio="wide"
                   required
                 />
+              </div>
+
+              {/* Multi-Image Gallery Section (Up to 5 additional images) */}
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700 pb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                      Product Showcase Gallery Images ({(formData.galleryImages || []).length}/5)
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Upload up to 5 showcase screenshots, UI mockups, or deliverable previews shown when customers click this product.
+                    </p>
+                  </div>
+                  {(formData.galleryImages || []).length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          galleryImages: [...(prev.galleryImages || []), ""],
+                        }))
+                      }
+                      className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-1.5 shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Gallery Image
+                    </button>
+                  )}
+                </div>
+
+                {(formData.galleryImages || []).length === 0 ? (
+                  <div className="text-center py-6 px-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-white/50 dark:bg-slate-900/40">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                      No custom gallery images added yet. Add up to 5 images for the product detail slider.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          galleryImages: ["", "", "", ""],
+                        }))
+                      }
+                      className="px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 rounded-lg transition-colors inline-flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Create 4 Gallery Upload Slots
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(formData.galleryImages || []).map((imgUrl, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                            Gallery Image #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                galleryImages: (prev.galleryImages || []).filter((_, i) => i !== idx),
+                              }))
+                            }
+                            className="text-slate-400 hover:text-red-500 p-1 rounded transition-colors"
+                            title="Remove Image Slot"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <ImageUploadField
+                          label=""
+                          value={imgUrl || ""}
+                          onChange={(url) =>
+                            setFormData((prev) => {
+                              const next = [...(prev.galleryImages || [])];
+                              next[idx] = url;
+                              return { ...prev, galleryImages: next };
+                            })
+                          }
+                          placeholder={`Gallery image #${idx + 1} URL or upload`}
+                          uploadNamePrefix={`gallery_${formData.slug || "product"}_${idx + 1}`}
+                          aspectRatio="wide"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
