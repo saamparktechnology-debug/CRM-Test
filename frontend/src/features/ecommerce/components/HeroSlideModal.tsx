@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { X, Sparkles, Image, Link as LinkIcon, Check } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 import { HeroSlide } from "../types/ecommerce.types";
+import { ImageUploadField } from "@/components/ui/ImageUploadField";
 
 interface HeroSlideModalProps {
   isOpen: boolean;
@@ -124,11 +125,11 @@ export function HeroSlideModal({ isOpen, onClose, onSave, slide }: HeroSlideModa
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Subtitle / Overview Paragraph
+              Subtitle / Supporting Text
             </label>
             <textarea
               rows={2}
-              placeholder="High-performance websites, custom cloud ERPs, and native mobile apps..."
+              placeholder="e.g. High-performance web applications, enterprise software and branding..."
               value={formData.subtitle || ""}
               onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
               className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -138,11 +139,11 @@ export function HeroSlideModal({ isOpen, onClose, onSave, slide }: HeroSlideModa
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                Primary CTA Button Text
+                Primary Button Text
               </label>
               <input
                 type="text"
-                placeholder="e.g. Explore Digital Solutions"
+                placeholder="e.g. Explore Services"
                 value={formData.ctaText || ""}
                 onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
                 className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium"
@@ -190,44 +191,39 @@ export function HeroSlideModal({ isOpen, onClose, onSave, slide }: HeroSlideModa
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-              Background Hero Image URL
-            </label>
-            <div className="flex gap-3 items-center">
-              <input
-                type="url"
-                value={formData.image || ""}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://images.unsplash.com/..."
-                className="flex-1 px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-xs"
-              />
-              {formData.image && (
-                <div className="w-12 h-10 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 flex-shrink-0">
-                  <img src={formData.image} alt="preview" className="w-full h-full object-cover" />
-                </div>
-              )}
-            </div>
+            <ImageUploadField
+              label="Background Hero Image"
+              value={formData.image || ""}
+              onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
+              placeholder="https://... or choose file above"
+              uploadNamePrefix="hero_slide"
+              aspectRatio="wide"
+            />
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300">
-              <input
-                type="checkbox"
-                checked={!!formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-              />
-              Slide is Active & Live
-            </label>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500">Display Order:</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Display Order Priority
+              </label>
               <input
                 type="number"
                 min="1"
                 value={formData.order || 1}
                 onChange={(e) => setFormData({ ...formData, order: Number(e.target.value) })}
-                className="w-16 px-2 py-1 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-center font-bold"
+                className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 font-bold"
               />
+            </div>
+            <div className="flex items-center pt-6">
+              <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={!!formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                />
+                Active (Show in Storefront Carousel)
+              </label>
             </div>
           </div>
 
@@ -235,15 +231,15 @@ export function HeroSlideModal({ isOpen, onClose, onSave, slide }: HeroSlideModa
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/25 transition-all"
+              className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/25 transition-all"
             >
-              Save Slide
+              {slide ? "Save Changes" : "Add Slide"}
             </button>
           </div>
         </form>

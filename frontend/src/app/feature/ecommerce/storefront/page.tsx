@@ -10,7 +10,8 @@ import { HeroSlideModal } from "@/features/ecommerce/components/HeroSlideModal";
 import { DiscountBannerModal } from "@/features/ecommerce/components/DiscountBannerModal";
 
 export default function EcommerceStorefrontPage() {
-  const { user, activeCompanyId, activeCompanyName, isAllCompanies } = useAuthStore();
+  const { user, activeCompanyId } = useAuthStore();
+  const isAllCompanies = !activeCompanyId || activeCompanyId === "all" || activeCompanyId === "group" || activeCompanyId === "saampark-group";
   const { canPerformAction } = usePermissionStore();
 
   const isConsultancy = activeCompanyId === "2" || activeCompanyId === "consultancy" || activeCompanyId?.includes("consult");

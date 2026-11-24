@@ -10,7 +10,8 @@ import { ProductModal } from "@/features/ecommerce/components/ProductModal";
 import { confirmTwoStepDelete } from "@/lib/confirmDialog";
 
 export default function EcommerceProductsPage() {
-  const { user, activeCompanyId, activeCompanyName, isAllCompanies } = useAuthStore();
+  const { user, activeCompanyId } = useAuthStore();
+  const isAllCompanies = !activeCompanyId || activeCompanyId === "all" || activeCompanyId === "group" || activeCompanyId === "saampark-group";
   const { canPerformAction, isModuleAllowed } = usePermissionStore();
 
   const [products, setProducts] = React.useState<EcommerceProduct[]>([]);

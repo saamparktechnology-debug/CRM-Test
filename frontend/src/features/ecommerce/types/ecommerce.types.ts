@@ -8,8 +8,11 @@ export interface EcommerceProduct {
   companyId: EcommerceCompany;
   primaryCategory: string; // e.g. 'web-services', 'application-services', 'software-services', 'ai-services', 'graphic-design', 'legal', etc.
   category?: string;
+  sector?: string;
+  group?: string;
+  entity?: string;
   startingPrice: number;
-  discountPrice?: number;
+  discountPrice?: number | null;
   priceType: 'one-time' | 'monthly' | 'weekly' | 'on-request';
   deliveryDays?: number | string; // e.g. 5 or "3-5 Days"
   badge?: string; // e.g. "Most Popular", "Best Value", "Hot"
@@ -20,8 +23,12 @@ export interface EcommerceProduct {
   galleryImages?: string[];
   description: string;
   features: string[]; // Deliverables / features checklist
+  notIncluded?: string[]; // Things not included
   technologiesUsed?: string[]; // e.g. ["Next.js", "React", "Node.js", "MySQL", "AWS"]
   faqs?: { question: string; answer: string }[];
+  color?: string;
+  icon?: string;
+  href?: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -10,7 +10,8 @@ import { GenerateInvoiceModal } from "@/features/ecommerce/components/GenerateIn
 import { OrderDetailsModal } from "@/features/ecommerce/components/OrderDetailsModal";
 
 export default function EcommerceOrdersPage() {
-  const { user, activeCompanyId, activeCompanyName, isAllCompanies } = useAuthStore();
+  const { user, activeCompanyId } = useAuthStore();
+  const isAllCompanies = !activeCompanyId || activeCompanyId === "all" || activeCompanyId === "group" || activeCompanyId === "saampark-group";
   const { canPerformAction } = usePermissionStore();
 
   const [orders, setOrders] = React.useState<EcommerceOrder[]>([]);

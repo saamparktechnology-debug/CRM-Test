@@ -54,7 +54,7 @@ export function GenerateInvoiceModal({
       });
 
       // 2. Generate a professional CRM Invoice number
-      const newInvNumber = await generateInvoiceNumber(order.companyId || "tech");
+      const newInvNumber = generateInvoiceNumber([], new Date(), false);
 
       // 3. Map order items to invoice line items (with standard 18% GST)
       const lineItems = order.items.map((it, idx) => {
@@ -87,22 +87,22 @@ export function GenerateInvoiceModal({
           clientContactPerson: order.clientName,
           clientEmail: order.email,
           clientPhone: order.phone,
-          clientAddress: order.address,
+          clientAddress: `${order.address}${order.pincode ? ` - ${order.pincode}` : ""}`,
           clientDistrict: order.city || "Kolkata",
+          clientCity: order.city || "Kolkata",
           clientState: order.state || "West Bengal",
-          clientPincode: order.pincode,
-          clientGst: order.gstNumber || "",
-          clientPan: order.panNumber || "",
+          clientGstin: order.gstNumber || "",
           companyId: order.companyId,
-          company: companyTitle,
-          date: new Date().toISOString().split("T")[0],
+          companyName: companyTitle,
+          project: lineItems[0]?.serviceName || "E-Commerce Services",
+          billDate: new Date().toISOString().split("T")[0],
           dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0],
+          totalInvoiced: String(totalInvoiceAmount),
+          paymentReceived: "0",
+          due: String(totalInvoiceAmount),
           status: "Payment Pending",
-          items: lineItems,
-          totalAmount: totalInvoiceAmount,
-          currency: "INR",
           notes: `Auto-generated from E-Commerce Order #${order.orderNumber}. Client portal account created for ${order.email}.`,
-        },
+        } as any,
         order.companyId
       );
 
