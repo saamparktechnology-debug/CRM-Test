@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Search, Filter, Sparkles, Package, ExternalLink, Edit2, Trash2, Tag, Check, Eye, Clock, ShieldCheck, RefreshCw } from "lucide-react";
+import { Plus, Search, Filter, Sparkles, Package, ExternalLink, Edit2, Trash2, Tag, Check, Eye, Clock, ShieldCheck, RefreshCw, Layers } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { usePermissionStore } from "@/store/usePermissionStore";
-import { EcommerceProduct, EcommerceCompany } from "@/features/ecommerce/types/ecommerce.types";
+import { EcommerceProduct, EcommerceCompany, EcommerceCategoryItem } from "@/features/ecommerce/types/ecommerce.types";
 import { getEcommerceProducts, saveEcommerceProduct, deleteEcommerceProduct } from "@/features/ecommerce/services/ecommerceProductService";
+import { getEcommerceCategories, DEFAULT_ECOMMERCE_CATEGORIES } from "@/features/ecommerce/services/ecommerceCategoryService";
 import { ProductModal } from "@/features/ecommerce/components/ProductModal";
+import { CategoryManagerModal } from "@/features/ecommerce/components/CategoryManagerModal";
 import { confirmTwoStepDelete } from "@/lib/confirmDialog";
 
 export default function EcommerceProductsPage() {
@@ -20,6 +22,8 @@ export default function EcommerceProductsPage() {
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<EcommerceProduct | null>(null);
+  const [categories, setCategories] = React.useState<EcommerceCategoryItem[]>(DEFAULT_ECOMMERCE_CATEGORIES);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = React.useState(false);
 
   // Compute normalized operating company
   const isConsultancy = activeCompanyId === "2" || activeCompanyId === "consultancy" || activeCompanyId?.includes("consult");
@@ -42,13 +46,18 @@ export default function EcommerceProductsPage() {
 
     const handleDataSync = () => loadProducts();
     const handleCompSwitch = () => loadProducts();
+    const loadCats = () => getEcommerceCategories().then(setCategories).catch(() => {});
+
+    loadCats();
 
     window.addEventListener("saampark_ecommerce_updated", handleDataSync);
+    window.addEventListener("saampark_ecommerce_categories_updated", loadCats);
     window.addEventListener("saampark_company_switched", handleCompSwitch);
     window.addEventListener("storage", handleDataSync);
 
     return () => {
       window.removeEventListener("saampark_ecommerce_updated", handleDataSync);
+      window.removeEventListener("saampark_ecommerce_categories_updated", loadCats);
       window.removeEventListener("saampark_company_switched", handleCompSwitch);
       window.removeEventListener("storage", handleDataSync);
     };
@@ -151,15 +160,24 @@ export default function EcommerceProductsPage() {
             <RefreshCw className="w-4 h-4" />
           </button>
           {canAdd && (
-            <button
-              onClick={() => {
-                setEditingProduct(null);
-                setIsModalOpen(true);
-              }}
-              className="px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" /> Add New Product
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-1.5"
+              >
+                <Layers className="w-4 h-4 text-blue-600" /> Categories ({categories.length})
+              </button>
+              <button
+                onClick={() => {
+                  setEditingProduct(null);
+                  setIsModalOpen(true);
+                }}
+                className="px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Add New Product
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -232,16 +250,11 @@ export default function EcommerceProductsPage() {
             className="w-full sm:w-auto px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium"
           >
             <option value="all">All Categories</option>
-            <option value="web-services">Web Development</option>
-            <option value="application-services">Mobile Apps</option>
-            <option value="software-services">Cloud Software & ERP</option>
-            <option value="ai-services">AI Automation</option>
-            <option value="digital-marketing">Digital Marketing & Ads</option>
-            <option value="ai-video">Video & AI Production</option>
-            <option value="graphic-design">Graphic Design & Branding</option>
-            <option value="legal">Legal, GST & MCA</option>
-            <option value="maintenance">Maintenance & AMC</option>
-            <option value="hosting">Hosting & Cloud</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -422,6 +435,14 @@ export default function EcommerceProductsPage() {
         onSave={handleSaveProduct}
         product={editingProduct}
         activeCompanyId={companyScope}
+      />
+
+      {/* Category Manager Modal */}
+      <CategoryManagerModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        defaultCompanyId={companyScope === "consultancy" ? "consultancy" : "tech"}
+        onCategoriesUpdated={(updated) => setCategories(updated)}
       />
     </div>
   );

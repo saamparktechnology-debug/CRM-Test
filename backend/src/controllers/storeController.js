@@ -463,11 +463,12 @@ const getPublicStorefront = async (req, res, next) => {
 
 const getPublicCatalogAndStorefront = async (req, res, next) => {
   try {
-    const [techProducts, consultProducts, techStore, consultStore] = await Promise.all([
+    const [techProducts, consultProducts, techStore, consultStore, customCategories] = await Promise.all([
       fetchParsedModule("ecommerce_products_tech", []),
       fetchParsedModule("ecommerce_products_consultancy", []),
       fetchParsedModule("ecommerce_storefront_tech", null),
       fetchParsedModule("ecommerce_storefront_consultancy", null),
+      fetchParsedModule("ecommerce_categories", []),
     ]);
 
     const filterActive = (list) =>
@@ -482,6 +483,7 @@ const getPublicCatalogAndStorefront = async (req, res, next) => {
         tech: techStore,
         consultancy: consultStore,
       },
+      categories: Array.isArray(customCategories) ? customCategories : [],
     });
   } catch (err) {
     next(err);

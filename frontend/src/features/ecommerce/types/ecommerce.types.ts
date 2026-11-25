@@ -137,3 +137,13 @@ export interface StorefrontConfig {
   featuredProductIds: string[];
   updatedAt?: string;
 }
+
+export interface EcommerceCategoryItem {
+  id: string;
+  name: string;
+  companyId: EcommerceCompany;
+  icon?: string;
+  description?: string;
+  isDefault?: boolean;
+  createdAt?: string;
+}

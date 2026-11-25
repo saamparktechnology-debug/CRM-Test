@@ -14,8 +14,10 @@ import {
   DollarSign,
   Eye
 } from "lucide-react";
-import { EcommerceProduct, EcommerceCompany } from "../types/ecommerce.types";
+import { EcommerceProduct, EcommerceCompany, EcommerceCategoryItem } from "../types/ecommerce.types";
 import { ImageUploadField } from "@/components/ui/ImageUploadField";
+import { getEcommerceCategories, DEFAULT_ECOMMERCE_CATEGORIES } from "../services/ecommerceCategoryService";
+import { CategoryManagerModal } from "./CategoryManagerModal";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -72,6 +74,13 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
   const [newFaqQ, setNewFaqQ] = React.useState("");
   const [newFaqA, setNewFaqA] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [categories, setCategories] = React.useState<EcommerceCategoryItem[]>(DEFAULT_ECOMMERCE_CATEGORIES);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    getEcommerceCategories().then(setCategories).catch(() => {});
+  }, [isOpen]);
 
   React.useEffect(() => {
     if (product) {
@@ -427,33 +436,30 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Primary Category *
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Primary Category *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsCategoryModalOpen(true)}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      <Plus className="w-3 h-3" /> New Category
+                    </button>
+                  </div>
                   <select
                     value={formData.primaryCategory}
                     onChange={(e) => setFormData({ ...formData, primaryCategory: e.target.value })}
                     className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
-                    {formData.companyId === "tech" ? (
-                      <>
-                        <option value="web-services">Web Development & Portals</option>
-                        <option value="application-services">Mobile Apps (Android & iOS)</option>
-                        <option value="software-services">Custom Software & ERP/CRM</option>
-                        <option value="ai-services">AI Integration & Automation</option>
-                        <option value="maintenance-services">Maintenance & AMC Support</option>
-                        <option value="hosting-services">Cloud Hosting & Managed DNS</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="graphic-design">Graphic Design & Brand Identity</option>
-                        <option value="ai-video">AI Video & Motion Graphics</option>
-                        <option value="digital-marketing">Digital Marketing & Ads</option>
-                        <option value="legal">Company Legal & Compliance</option>
-                        <option value="loan">Business Loan & Finance Advisory</option>
-                        <option value="insurance">Insurance Consultancy</option>
-                      </>
-                    )}
+                    {categories
+                      .filter((c) => c.companyId === (formData.companyId || defaultComp))
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
@@ -957,6 +963,18 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
           </div>
         </form>
       </div>
+
+      <CategoryManagerModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        defaultCompanyId={formData.companyId || defaultComp}
+        onCategoriesUpdated={(updated, created) => {
+          setCategories(updated);
+          if (created && created.companyId === (formData.companyId || defaultComp)) {
+            setFormData((prev) => ({ ...prev, primaryCategory: created.id }));
+          }
+        }}
+      />
     </div>
   );
 }
