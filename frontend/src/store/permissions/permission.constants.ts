@@ -8,6 +8,7 @@ export const ALL_APP_MODULES = [
   'Estimates',
   'Invoices',
   'Payments',
+  'Ecommerce',
 
   // Digital Marketing
   'Digital Marketing',
@@ -95,6 +96,7 @@ export const CLEAN_MODULE_CATEGORIES: Record<string, { label: string; icon: stri
       { key: "Estimates", name: "Estimates", description: "Dynamic cost estimations with tax calculations" },
       { key: "Invoices", name: "Invoices", description: "Tax invoices, billing releases & payment tracking" },
       { key: "Payments", name: "Payments", description: "Payment collections, bank receipts & ledger" },
+      { key: "Ecommerce", name: "Manage Ecommerce", description: "Online store products, orders & storefront CMS" },
     ]
   },
   marketing: {
@@ -206,7 +208,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, ModuleName[]> = {
   'Admin': [...ALL_APP_MODULES],
   'Teams': [
     'Dashboard', 'Leads', 'Clients', 'Quotations', 'Estimates',
-    'Invoices', 'Payments', 'Digital Marketing', 'Projects',
+    'Invoices', 'Payments', 'Ecommerce', 'Digital Marketing', 'Projects',
     'Tasks', 'Teams', 'Attendance', 'Leave', 'Tickets', 'Knowledge base',
     'Messages', 'Events', 'Notes', 'Files', 'Expenses', 'Reports', 'Settings'
   ],

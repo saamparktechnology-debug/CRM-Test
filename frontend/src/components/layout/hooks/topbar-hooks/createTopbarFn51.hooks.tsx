@@ -75,13 +75,7 @@ export function createTopbarFn51(getCtrl: () => any) {
     switchCompany(cId);
     switchBranch(null);
     switchSubBranch(null);
-
-    const cSlug = String(c.slug || cId)
-      .toLowerCase()
-      .includes("consult")
-      ? "saampark-consultancy"
-      : "saampark-technology";
-    router.push(`/${cSlug}${featurePath}`);
+    router.push(featurePath);
   };
     return __fn(...__args);
   };

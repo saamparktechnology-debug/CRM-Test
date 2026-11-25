@@ -167,6 +167,12 @@ export const ALL_NAV_ITEMS: NavItem[] = [
     name: "Digital Marketing",
     href: "/feature/marketing",
     icon: BarChart3,
+    subItems: [
+      { name: "Client Marketing Report", href: "/feature/marketing", icon: BarChart3 },
+      { name: "Marketing Plans & Retainers", href: "/feature/marketing/plans", icon: Sparkles },
+      { name: "Posts & Deliverables", href: "/feature/marketing/posts", icon: FileText },
+      { name: "Marketing Leads & Ads", href: "/feature/marketing/leads", icon: Target },
+    ],
   },
   {
     name: "Sales",
@@ -177,6 +183,16 @@ export const ALL_NAV_ITEMS: NavItem[] = [
       { name: "Estimates", href: "/feature/estimates", icon: Calculator },
       { name: "Invoices", href: "/feature/sales/invoices", icon: FileText },
       { name: "Payments", href: "/feature/sales/payments", icon: CreditCard },
+    ],
+  },
+  {
+    name: "Manage Ecommerce",
+    href: "/feature/ecommerce/products",
+    icon: ShoppingBag,
+    subItems: [
+      { name: "Manage Products", href: "/feature/ecommerce/products", icon: Package },
+      { name: "Manage Orders", href: "/feature/ecommerce/orders", icon: Boxes },
+      { name: "Manage Storefront", href: "/feature/ecommerce/storefront", icon: Warehouse },
     ],
   },
   { name: "Approvals", href: "/feature/approvals", icon: ShieldCheck },

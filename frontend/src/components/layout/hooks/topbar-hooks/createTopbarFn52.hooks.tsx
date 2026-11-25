@@ -71,15 +71,13 @@ export function createTopbarFn52(getCtrl: () => any) {
     if (!b) {
       switchBranch(null);
       switchSubBranch(null);
-      router.push(`/${cSlug}${featurePath}`);
+      router.push(featurePath);
       return;
     }
 
     switchBranch(b.id);
     switchSubBranch(null);
-    const bSlug =
-      b.code?.toLowerCase() || b.name.toLowerCase().replace(/\s+/g, "-");
-    router.push(`/${cSlug}/${bSlug}${featurePath}`);
+    router.push(featurePath);
   };
     return __fn(...__args);
   };

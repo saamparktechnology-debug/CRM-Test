@@ -692,6 +692,11 @@ export function Sidebar() {
     "Posts & Deliverables": "Digital Marketing",
     "Marketing Leads & Ads": "Digital Marketing",
     Sales: "Invoices",
+    "Manage Ecommerce": "Ecommerce",
+    Ecommerce: "Ecommerce",
+    "Manage Products": "Ecommerce",
+    "Manage Orders": "Ecommerce",
+    "Manage Storefront": "Ecommerce",
     Quotations: "Quotations",
     Estimates: "Estimates",
     Invoices: "Invoices",
@@ -786,6 +791,7 @@ export function Sidebar() {
     CRM: false,
     "Digital Marketing": true,
     Sales: true,
+    "Manage Ecommerce": false,
     Subscriptions: false,
     "HR & Employees": false,
     Support: false,
@@ -820,6 +826,9 @@ export function Sidebar() {
     ) {
       setOpenSubmenus((prev) => ({ ...prev, Sales: true }));
     }
+    if (pathname.startsWith("/feature/ecommerce")) {
+      setOpenSubmenus((prev) => ({ ...prev, "Manage Ecommerce": true }));
+    }
     if (
       pathname.startsWith("/feature/subscriptions") ||
       pathname.startsWith("/feature/emi")
@@ -850,27 +859,13 @@ export function Sidebar() {
   };
 
   // Scoped URL generator for company + branch hierarchical routing
+  // In Next.js app directory all feature routes are mounted at /feature/*
+  // Company & branch scoping is managed dynamically in application state & storageSync
   const getScopedHref = React.useCallback(
     (baseHref: string) => {
-      if (!baseHref || !baseHref.startsWith("/feature/")) return baseHref;
-      if (
-        !activeCompanyId ||
-        activeCompanyId === "all" ||
-        activeCompanyId === "group"
-      ) {
-        return baseHref;
-      }
-      const cSlug = String(activeCompanyId).toLowerCase().includes("consult")
-        ? "saampark-consultancy"
-        : "saampark-technology";
-      const currentBranchObj = branches?.find((b) => b.id === activeBranchId);
-      const bSlug = currentBranchObj
-        ? currentBranchObj.code?.toLowerCase() ||
-          currentBranchObj.name?.toLowerCase().replace(/\s+/g, "-")
-        : "main";
-      return `/${cSlug}/${bSlug}${baseHref}`;
+      return baseHref || "";
     },
-    [activeCompanyId, activeBranchId, branches],
+    [],
   );
 
   // Sidebar visibility on mobile
