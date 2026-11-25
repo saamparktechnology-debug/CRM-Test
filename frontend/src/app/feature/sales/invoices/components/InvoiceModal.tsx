@@ -209,9 +209,9 @@ export function InvoiceModal({
       }, {
         actionType: "sync",
         loadingTitle: "Dispatching Invoice Email...",
-        loadingMsg: `Sending official invoice #${invoice.id} with download link to ${invoice.clientEmail || clientDetails?.email || "recipient"}...`,
+        loadingMsg: `Sending invoice #${invoice.id} with download link to ${invoice.clientEmail || clientDetails?.email || "recipient"}...`,
         successTitle: "Invoice Delivered Successfully!",
-        successMsg: `Official invoice #${invoice.id} has been dispatched to client's email inbox.`,
+        successMsg: `Invoice #${invoice.id} has been dispatched to client's email inbox.`,
         minLoadingMs: 650,
       })
     } catch (e) {
@@ -222,7 +222,7 @@ export function InvoiceModal({
   }
 
   const handlePrint = () => {
-    printDocument("printable-invoice", `Tax_Invoice_${invoice.id}`)
+    printDocument("printable-invoice", `${((invoice as any)?.isNonGst || (invoice as any)?.taxType === "nongst" || String(invoice.id || "").toUpperCase().startsWith("NG")) ? "Normal_Invoice" : "Tax_Invoice"}_${invoice.id}`)
   }
 
   return (

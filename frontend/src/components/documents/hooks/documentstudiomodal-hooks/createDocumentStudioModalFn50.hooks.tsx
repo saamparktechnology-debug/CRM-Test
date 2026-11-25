@@ -56,9 +56,16 @@ export function createDocumentStudioModalFn50(getCtrl: () => any) {
         if (res.district) setClientDistrict(res.district)
         const primaryPlace = (res.places && res.places.length > 0) ? res.places[0] : ""
         if (primaryPlace) setClientCity(primaryPlace)
+        const addrParts = [
+          primaryPlace,
+          res.block ? `PS: ${res.block}` : "",
+          res.district || "",
+          res.state || "",
+        ].filter(Boolean)
+        const formattedLoc = `${addrParts.join(", ")}${cleanPin ? ` - ${cleanPin}` : ""}`
         setClientAddress(prev => {
           if (!prev || prev.trim() === "" || prev.includes(" - ")) {
-            return `${primaryPlace ? primaryPlace + ", " : ""}${res.district || ""}, ${res.state || ""} - ${cleanPin}`
+            return formattedLoc
           }
           return prev
         })

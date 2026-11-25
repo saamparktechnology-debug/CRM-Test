@@ -1,72 +1,99 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { motion } from "framer-motion"
-import { 
-  MapPin, Phone, Mail, Globe, Building2, Landmark, ShieldCheck, 
-  Award, Sparkles, UserCheck, Briefcase, FileText, QrCode, CreditCard, 
-  CheckCircle2, Layers, Check, Megaphone
-} from "lucide-react"
-import { InvoiceItem, InvoiceLineItem, parseCurrencyNumber } from "../service/invoiceService"
-import { CompanyPaymentSettings } from "@/app/feature/settings/service/companyPaymentService"
-import { ClientItem } from "@/app/feature/clients/types"
-import { useAuthStore, Company, Branch, SubBranch, DEFAULT_COMPANIES, getCompanyLogoUrl, isMatchingCompany } from "@/store/useAuthStore"
-import { getQrCodeDataUri } from "@/lib/qrCode"
+import * as React from "react";
+import { motion } from "framer-motion";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Building2,
+  Landmark,
+  ShieldCheck,
+  Award,
+  Sparkles,
+  UserCheck,
+  Briefcase,
+  FileText,
+  QrCode,
+  CreditCard,
+  CheckCircle2,
+  Layers,
+  Check,
+  Megaphone,
+} from "lucide-react";
+import {
+  InvoiceItem,
+  InvoiceLineItem,
+  parseCurrencyNumber,
+} from "../service/invoiceService";
+import { CompanyPaymentSettings } from "@/app/feature/settings/service/companyPaymentService";
+import { ClientItem } from "@/app/feature/clients/types";
+import {
+  useAuthStore,
+  Company,
+  Branch,
+  SubBranch,
+  DEFAULT_COMPANIES,
+  getCompanyLogoUrl,
+  isMatchingCompany,
+} from "@/store/useAuthStore";
+import { getQrCodeDataUri } from "@/lib/qrCode";
 
 export interface CustomTextStamp {
-  id: string
-  text: string
-  color?: string
-  bgStyle?: "stamp" | "badge" | "clean" | "watermark"
-  fontSize?: number
-  isBold?: boolean
-  isItalic?: boolean
-  rotation?: number
-  x: number
-  y: number
+  id: string;
+  text: string;
+  color?: string;
+  bgStyle?: "stamp" | "badge" | "clean" | "watermark";
+  fontSize?: number;
+  isBold?: boolean;
+  isItalic?: boolean;
+  rotation?: number;
+  x: number;
+  y: number;
 }
 
-export const TextEditContext = React.createContext<boolean>(false)
+export const TextEditContext = React.createContext<boolean>(false);
 
 interface OfficialInvoiceDocumentProps {
-  invoice: InvoiceItem
-  clientDetails?: ClientItem | null
-  companyDetails?: Company | null
-  paySettings?: CompanyPaymentSettings
-  interactive?: boolean
-  allowTextEdit?: boolean
-  logoPosition?: { x: number; y: number }
-  onLogoPositionChange?: (pos: { x: number; y: number }) => void
-  logoScale?: number
-  onLogoScaleChange?: (scale: number) => void
-  stampPosition?: { x: number; y: number }
-  onStampPositionChange?: (pos: { x: number; y: number }) => void
-  stampScale?: number
-  onStampScaleChange?: (scale: number) => void
-  signaturePosition?: { x: number; y: number }
-  onSignaturePositionChange?: (pos: { x: number; y: number }) => void
-  signatureScale?: number
-  onSignatureScaleChange?: (scale: number) => void
-  customStamps?: CustomTextStamp[]
-  onCustomStampMove?: (id: string, pos: { x: number; y: number }) => void
-  onCustomStampUpdate?: (id: string, updates: Partial<CustomTextStamp>) => void
-  onRemoveCustomStamp?: (id: string) => void
-  onAddCustomStamp?: (stamp?: Partial<CustomTextStamp>) => void
-  onFieldChange?: (field: string, value: string) => void
-  overrideLogoUrl?: string
-  overrideSignatureUrl?: string
-  overrideStampUrl?: string
+  invoice: InvoiceItem;
+  clientDetails?: ClientItem | null;
+  companyDetails?: Company | null;
+  paySettings?: CompanyPaymentSettings;
+  interactive?: boolean;
+  allowTextEdit?: boolean;
+  logoPosition?: { x: number; y: number };
+  onLogoPositionChange?: (pos: { x: number; y: number }) => void;
+  logoScale?: number;
+  onLogoScaleChange?: (scale: number) => void;
+  stampPosition?: { x: number; y: number };
+  onStampPositionChange?: (pos: { x: number; y: number }) => void;
+  stampScale?: number;
+  onStampScaleChange?: (scale: number) => void;
+  signaturePosition?: { x: number; y: number };
+  onSignaturePositionChange?: (pos: { x: number; y: number }) => void;
+  signatureScale?: number;
+  onSignatureScaleChange?: (scale: number) => void;
+  customStamps?: CustomTextStamp[];
+  onCustomStampMove?: (id: string, pos: { x: number; y: number }) => void;
+  onCustomStampUpdate?: (id: string, updates: Partial<CustomTextStamp>) => void;
+  onRemoveCustomStamp?: (id: string) => void;
+  onAddCustomStamp?: (stamp?: Partial<CustomTextStamp>) => void;
+  onFieldChange?: (field: string, value: string) => void;
+  overrideLogoUrl?: string;
+  overrideSignatureUrl?: string;
+  overrideStampUrl?: string;
   overrideBankDetails?: {
-    bankName?: string
-    accountHolder?: string
-    accountNumber?: string
-    ifscCode?: string
-    bankBranch?: string
-    upiId?: string
-    paymentQrUrl?: string
-  }
-  activeBranch?: Branch | any | null
-  activeSubBranch?: SubBranch | any | null
+    bankName?: string;
+    accountHolder?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    bankBranch?: string;
+    upiId?: string;
+    paymentQrUrl?: string;
+  };
+  activeBranch?: Branch | any | null;
+  activeSubBranch?: SubBranch | any | null;
 }
 
 export function EditableText({
@@ -78,117 +105,158 @@ export function EditableText({
   interactive: propInteractive,
   fieldKey,
 }: {
-  value?: string | null
-  onChange?: (val: string) => void
-  className?: string
-  placeholder?: string
-  as?: any
-  interactive?: boolean
-  fieldKey?: string
+  value?: string | null;
+  onChange?: (val: string) => void;
+  className?: string;
+  placeholder?: string;
+  as?: any;
+  interactive?: boolean;
+  fieldKey?: string;
 }) {
-  const contextAllowTextEdit = React.useContext(TextEditContext)
-  const isActuallyInteractive = (propInteractive ?? false) && contextAllowTextEdit
+  const contextAllowTextEdit = React.useContext(TextEditContext);
+  const isActuallyInteractive =
+    (propInteractive ?? false) && contextAllowTextEdit;
 
-  const [internalVal, setInternalVal] = React.useState(value ?? "")
+  const [internalVal, setInternalVal] = React.useState(value ?? "");
   React.useEffect(() => {
-    setInternalVal(value ?? "")
-  }, [value])
+    setInternalVal(value ?? "");
+  }, [value]);
 
   if (!isActuallyInteractive) {
-    const Tag = as
-    return <Tag className={className}>{value || ""}</Tag>
+    const Tag = as;
+    return <Tag className={className}>{value || ""}</Tag>;
   }
 
-  const Tag = as
+  const Tag = as;
   return (
     <Tag
       contentEditable
       suppressContentEditableWarning
       className={`${className} outline-none transition-all rounded px-0.5 -mx-0.5 hover:bg-blue-100/70 hover:ring-1 hover:ring-blue-400 focus:bg-white focus:text-zinc-950 focus:ring-2 focus:ring-blue-600 focus:shadow-xs cursor-text inline-block min-w-[12px]`}
       onBlur={(e: React.FocusEvent<HTMLElement>) => {
-        const text = (e.currentTarget.textContent || "").replace(/\r?\n|\r/g, "")
-        setInternalVal(text)
-        if (onChange) onChange(text)
+        const text = (e.currentTarget.textContent || "").replace(
+          /\r?\n|\r/g,
+          "",
+        );
+        setInternalVal(text);
+        if (onChange) onChange(text);
       }}
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
         if (e.key === "Enter" && as !== "div" && as !== "p") {
-          e.preventDefault()
-          ;(e.target as HTMLElement).blur()
+          e.preventDefault();
+          (e.target as HTMLElement).blur();
         }
       }}
       title="Click or touch to edit this text directly"
     >
       {internalVal || placeholder}
     </Tag>
-  )
+  );
 }
 
-export function formatInvoiceDate(rawDate?: string | number | Date | null): string {
-  if (!rawDate) return "-"
-  const str = String(rawDate).trim()
-  if (str === "-" || str === "") return "-"
+export function formatInvoiceDate(
+  rawDate?: string | number | Date | null,
+): string {
+  if (!rawDate) return "-";
+  const str = String(rawDate).trim();
+  if (str === "-" || str === "") return "-";
 
   // Check if already in DD-MM-YYYY or DD/MM/YYYY
-  const dmyMatch = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/)
+  const dmyMatch = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
   if (dmyMatch) {
-    return `${dmyMatch[1].padStart(2, "0")}-${dmyMatch[2].padStart(2, "0")}-${dmyMatch[3]}`
+    return `${dmyMatch[1].padStart(2, "0")}-${dmyMatch[2].padStart(2, "0")}-${dmyMatch[3]}`;
   }
 
   // Check if in YYYY-MM-DD or YYYY/MM/DD
-  const ymdMatch = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/)
+  const ymdMatch = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
   if (ymdMatch) {
-    return `${ymdMatch[3].padStart(2, "0")}-${ymdMatch[2].padStart(2, "0")}-${ymdMatch[1]}`
+    return `${ymdMatch[3].padStart(2, "0")}-${ymdMatch[2].padStart(2, "0")}-${ymdMatch[1]}`;
   }
 
-  const d = new Date(str)
-  if (isNaN(d.getTime())) return str
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return str;
 
-  const day = String(d.getDate()).padStart(2, "0")
-  const month = String(d.getMonth() + 1).padStart(2, "0")
-  const year = d.getFullYear()
-  return `${day}-${month}-${year}`
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
 }
 
 export function numberToIndianWords(num: number): string {
-  if (num === 0) return "Zero Rupees Only"
-  
+  if (num === 0) return "Zero Rupees Only";
+
   const a = [
-    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
-    "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"
-  ]
-  const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+  ];
+  const b = [
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
+  ];
 
   function inWords(n: number): string {
-    if (n < 20) return a[n]
-    const digit = n % 10
-    return b[Math.floor(n / 10)] + (digit ? " " + a[digit] : "")
+    if (n < 20) return a[n];
+    const digit = n % 10;
+    return b[Math.floor(n / 10)] + (digit ? " " + a[digit] : "");
   }
 
-  const str = ("000000000" + num).substr(-9)
-  const crore = parseInt(str.substr(0, 2), 10)
-  const lakh = parseInt(str.substr(2, 2), 10)
-  const thousand = parseInt(str.substr(4, 2), 10)
-  const hundred = parseInt(str.substr(6, 1), 10)
-  const rest = parseInt(str.substr(7, 2), 10)
+  const str = ("000000000" + num).substr(-9);
+  const crore = parseInt(str.substr(0, 2), 10);
+  const lakh = parseInt(str.substr(2, 2), 10);
+  const thousand = parseInt(str.substr(4, 2), 10);
+  const hundred = parseInt(str.substr(6, 1), 10);
+  const rest = parseInt(str.substr(7, 2), 10);
 
-  let res = ""
-  if (crore > 0) res += inWords(crore) + " Crore "
-  if (lakh > 0) res += inWords(lakh) + " Lakh "
-  if (thousand > 0) res += inWords(thousand) + " Thousand "
-  if (hundred > 0) res += inWords(hundred) + " Hundred "
+  let res = "";
+  if (crore > 0) res += inWords(crore) + " Crore ";
+  if (lakh > 0) res += inWords(lakh) + " Lakh ";
+  if (thousand > 0) res += inWords(thousand) + " Thousand ";
+  if (hundred > 0) res += inWords(hundred) + " Hundred ";
   if (rest > 0) {
-    if (res !== "") res += "and "
-    res += inWords(rest) + " "
+    if (res !== "") res += "and ";
+    res += inWords(rest) + " ";
   }
 
-  return res.trim() + " Rupees Only"
+  return res.trim() + " Rupees Only";
 }
 
 export function safeFormatCurrency(val: any, decimals: number = 2): string {
-  if (val === undefined || val === null || val === "") return "0.00"
-  const num = typeof val === "number" ? val : parseFloat(String(val).replace(/[^0-9.-]/g, ""))
-  if (isNaN(num)) return "0.00"
-  return num.toLocaleString("en-IN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+  if (val === undefined || val === null || val === "") return "0.00";
+  const num =
+    typeof val === "number"
+      ? val
+      : parseFloat(String(val).replace(/[^0-9.-]/g, ""));
+  if (isNaN(num)) return "0.00";
+  return num.toLocaleString("en-IN", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 }
 
 export function OfficialInvoiceDocument({
@@ -223,77 +291,138 @@ export function OfficialInvoiceDocument({
   activeBranch: propActiveBranch,
   activeSubBranch: propActiveSubBranch,
 }: OfficialInvoiceDocumentProps) {
-  const isTextEditable = Boolean(interactive && allowTextEdit)
+  const isTextEditable = Boolean(interactive && allowTextEdit);
 
-  const { 
-    companies, 
-    branches, 
-    subBranches, 
-    activeCompanyId, 
+  const {
+    companies,
+    branches,
+    subBranches,
+    activeCompanyId,
     activeBranchId,
-    fetchCompanies, 
-    fetchBranches, 
-    fetchSubBranches 
-  } = useAuthStore()
+    fetchCompanies,
+    fetchBranches,
+    fetchSubBranches,
+  } = useAuthStore();
 
   // Ensure entities are fetched if not yet loaded
   React.useEffect(() => {
-    if (!companies || companies.length === 0) fetchCompanies().catch(() => {})
-    if (!branches || branches.length === 0) fetchBranches().catch(() => {})
-    if (!subBranches || subBranches.length === 0) fetchSubBranches().catch(() => {})
-  }, [companies, branches, subBranches, fetchCompanies, fetchBranches, fetchSubBranches])
+    if (!companies || companies.length === 0) fetchCompanies().catch(() => {});
+    if (!branches || branches.length === 0) fetchBranches().catch(() => {});
+    if (!subBranches || subBranches.length === 0)
+      fetchSubBranches().catch(() => {});
+  }, [
+    companies,
+    branches,
+    subBranches,
+    fetchCompanies,
+    fetchBranches,
+    fetchSubBranches,
+  ]);
 
   // 1. Resolve Company Details dynamically based on specific invoice company
   const activeCompany = React.useMemo(() => {
-    if (companyDetails) return companyDetails
+    if (companyDetails) return companyDetails;
 
-    const targetCompId = String(invoice.companyId || (invoice as any).company || activeCompanyId || "tech").toLowerCase().trim()
-    const targetCompName = String((invoice as any).companyName || "").toLowerCase().trim()
+    const targetCompId = String(
+      invoice.companyId ||
+        (invoice as any).company ||
+        activeCompanyId ||
+        "tech",
+    )
+      .toLowerCase()
+      .trim();
+    const targetCompName = String((invoice as any).companyName || "")
+      .toLowerCase()
+      .trim();
 
-    const matched = companies.find(c => {
-      if (targetCompId && isMatchingCompany(c, targetCompId)) return true
-      const cId = String(c.id || "").toLowerCase().trim()
-      const cSlug = String(c.slug || "").toLowerCase().trim()
-      const cNum = String((c as any).numeric_id || "").toLowerCase().trim()
-      const cName = String(c.name || "").toLowerCase().trim()
-      const cBrand = String(c.brand_name || "").toLowerCase().trim()
-      const cDivision = String(c.division_name || "").toLowerCase().trim()
+    const matched = companies.find((c) => {
+      if (targetCompId && isMatchingCompany(c, targetCompId)) return true;
+      const cId = String(c.id || "")
+        .toLowerCase()
+        .trim();
+      const cSlug = String(c.slug || "")
+        .toLowerCase()
+        .trim();
+      const cNum = String((c as any).numeric_id || "")
+        .toLowerCase()
+        .trim();
+      const cName = String(c.name || "")
+        .toLowerCase()
+        .trim();
+      const cBrand = String(c.brand_name || "")
+        .toLowerCase()
+        .trim();
+      const cDivision = String(c.division_name || "")
+        .toLowerCase()
+        .trim();
       return (
-        cId === targetCompId || 
-        cSlug === targetCompId || 
+        cId === targetCompId ||
+        cSlug === targetCompId ||
         cNum === targetCompId ||
         cName === targetCompId ||
-        (targetCompName && (cName === targetCompName || cBrand === targetCompName || `${cBrand} ${cDivision}`.trim() === targetCompName))
-      )
-    })
-    if (matched) return matched
+        (targetCompName &&
+          (cName === targetCompName ||
+            cBrand === targetCompName ||
+            `${cBrand} ${cDivision}`.trim() === targetCompName))
+      );
+    });
+    if (matched) return matched;
 
     if (activeCompanyId) {
-      const activeMatch = companies.find(c => isMatchingCompany(c, activeCompanyId))
-      if (activeMatch) return activeMatch
+      const activeMatch = companies.find((c) =>
+        isMatchingCompany(c, activeCompanyId),
+      );
+      if (activeMatch) return activeMatch;
     }
 
-    const defMatch = DEFAULT_COMPANIES.find(c => isMatchingCompany(c, targetCompId))
-    return defMatch || companies[0] || DEFAULT_COMPANIES[0]
-  }, [companyDetails, invoice.companyId, (invoice as any).company, (invoice as any).companyName, activeCompanyId, companies])
+    const defMatch = DEFAULT_COMPANIES.find((c) =>
+      isMatchingCompany(c, targetCompId),
+    );
+    return defMatch || companies[0] || DEFAULT_COMPANIES[0];
+  }, [
+    companyDetails,
+    invoice.companyId,
+    (invoice as any).company,
+    (invoice as any).companyName,
+    activeCompanyId,
+    companies,
+  ]);
 
   // Resolve Issuing Branch / Sub-Branch Details
   const activeBranch: Branch | null = React.useMemo(() => {
-    if (propActiveBranch) return propActiveBranch
-    const targetBranchId = String(invoice.branchId || (invoice as any).branch_id || "").toLowerCase().trim()
-    const targetBranchName = String(invoice.branchName || (invoice as any).branch_name || "").toLowerCase().trim()
+    if (propActiveBranch) return propActiveBranch;
+    const targetBranchId = String(
+      invoice.branchId || (invoice as any).branch_id || "",
+    )
+      .toLowerCase()
+      .trim();
+    const targetBranchName = String(
+      invoice.branchName || (invoice as any).branch_name || "",
+    )
+      .toLowerCase()
+      .trim();
 
-    if (!targetBranchId && !targetBranchName) return null
+    if (!targetBranchId && !targetBranchName) return null;
 
-    const matched = (branches || []).find(b => {
-      const bId = String(b.id || "").toLowerCase().trim()
-      const bName = String(b.name || "").toLowerCase().trim()
-      const bCode = String(b.code || "").toLowerCase().trim()
-      return (targetBranchId && (bId === targetBranchId || bCode === targetBranchId)) ||
-             (targetBranchName && (bName === targetBranchName || bCode === targetBranchName))
-    })
+    const matched = (branches || []).find((b) => {
+      const bId = String(b.id || "")
+        .toLowerCase()
+        .trim();
+      const bName = String(b.name || "")
+        .toLowerCase()
+        .trim();
+      const bCode = String(b.code || "")
+        .toLowerCase()
+        .trim();
+      return (
+        (targetBranchId &&
+          (bId === targetBranchId || bCode === targetBranchId)) ||
+        (targetBranchName &&
+          (bName === targetBranchName || bCode === targetBranchName))
+      );
+    });
 
-    if (matched) return matched
+    if (matched) return matched;
 
     if (targetBranchName) {
       return {
@@ -306,332 +435,576 @@ export function OfficialInvoiceDocument({
         address: "",
         phone: "",
         email: "",
-      } as Branch
+      } as Branch;
     }
-    return null
-  }, [propActiveBranch, invoice.branchId, invoice.branchName, (invoice as any).branch_id, (invoice as any).branch_name, (invoice as any).branchCode, branches])
+    return null;
+  }, [
+    propActiveBranch,
+    invoice.branchId,
+    invoice.branchName,
+    (invoice as any).branch_id,
+    (invoice as any).branch_name,
+    (invoice as any).branchCode,
+    branches,
+  ]);
 
   const activeSubBranch = React.useMemo(() => {
-    if (propActiveSubBranch) return propActiveSubBranch
-    const targetSbId = String(invoice.subBranchId || (invoice as any).sub_branch_id || "").toLowerCase().trim()
-    const targetSbName = String(invoice.subBranchName || (invoice as any).sub_branch_name || "").toLowerCase().trim()
+    if (propActiveSubBranch) return propActiveSubBranch;
+    const targetSbId = String(
+      invoice.subBranchId || (invoice as any).sub_branch_id || "",
+    )
+      .toLowerCase()
+      .trim();
+    const targetSbName = String(
+      invoice.subBranchName || (invoice as any).sub_branch_name || "",
+    )
+      .toLowerCase()
+      .trim();
 
-    if (!targetSbId && !targetSbName) return null
+    if (!targetSbId && !targetSbName) return null;
 
-    return (subBranches || []).find(sb => {
-      const sbId = String(sb.id || "").toLowerCase().trim()
-      const sbName = String(sb.name || "").toLowerCase().trim()
-      const sbCode = String(sb.code || "").toLowerCase().trim()
-      return (targetSbId && (sbId === targetSbId || sbCode === targetSbId)) ||
-             (targetSbName && (sbName === targetSbName || sbCode === targetSbName))
-    }) || null
-  }, [propActiveSubBranch, invoice.subBranchId, invoice.subBranchName, (invoice as any).sub_branch_id, (invoice as any).sub_branch_name, subBranches])
+    return (
+      (subBranches || []).find((sb) => {
+        const sbId = String(sb.id || "")
+          .toLowerCase()
+          .trim();
+        const sbName = String(sb.name || "")
+          .toLowerCase()
+          .trim();
+        const sbCode = String(sb.code || "")
+          .toLowerCase()
+          .trim();
+        return (
+          (targetSbId && (sbId === targetSbId || sbCode === targetSbId)) ||
+          (targetSbName && (sbName === targetSbName || sbCode === targetSbName))
+        );
+      }) || null
+    );
+  }, [
+    propActiveSubBranch,
+    invoice.subBranchId,
+    invoice.subBranchName,
+    (invoice as any).sub_branch_id,
+    (invoice as any).sub_branch_name,
+    subBranches,
+  ]);
 
   // Resolve Parent Branch for Sub-Branch
   const resolvedParentBranch: Branch | null = React.useMemo(() => {
-    if (propActiveBranch) return propActiveBranch
-    if (activeBranch && !propActiveSubBranch) return activeBranch
-    if (!activeSubBranch) return null
-    const parentId = String(activeSubBranch.parentBranchId || (activeSubBranch as any).branch_id || (activeSubBranch as any).branchId || invoice.branchId || (invoice as any).branch_id || "").toLowerCase().trim()
-    if (!parentId) return activeBranch || null
-    return (branches || []).find(b => {
-      const bId = String(b.id || "").toLowerCase().trim()
-      const bCode = String(b.code || "").toLowerCase().trim()
-      return bId === parentId || bCode === parentId
-    }) || activeBranch || null
-  }, [propActiveBranch, activeBranch, propActiveSubBranch, activeSubBranch, invoice.branchId, (invoice as any).branch_id, branches])
+    if (propActiveBranch) return propActiveBranch;
+    if (activeBranch && !propActiveSubBranch) return activeBranch;
+    if (!activeSubBranch) return null;
+    const parentId = String(
+      activeSubBranch.parentBranchId ||
+        (activeSubBranch as any).branch_id ||
+        (activeSubBranch as any).branchId ||
+        invoice.branchId ||
+        (invoice as any).branch_id ||
+        "",
+    )
+      .toLowerCase()
+      .trim();
+    if (!parentId) return activeBranch || null;
+    return (
+      (branches || []).find((b) => {
+        const bId = String(b.id || "")
+          .toLowerCase()
+          .trim();
+        const bCode = String(b.code || "")
+          .toLowerCase()
+          .trim();
+        return bId === parentId || bCode === parentId;
+      }) ||
+      activeBranch ||
+      null
+    );
+  }, [
+    propActiveBranch,
+    activeBranch,
+    propActiveSubBranch,
+    activeSubBranch,
+    invoice.branchId,
+    (invoice as any).branch_id,
+    branches,
+  ]);
 
-  const isSubBranchIssued = Boolean(activeSubBranch)
-  const isBranchIssued = Boolean(activeBranch) && !isSubBranchIssued
-  const activeEntity = isSubBranchIssued ? activeSubBranch : isBranchIssued ? activeBranch : activeCompany
+  const isSubBranchIssued = Boolean(activeSubBranch);
+  const isBranchIssued = Boolean(activeBranch) && !isSubBranchIssued;
+  const activeEntity = isSubBranchIssued
+    ? activeSubBranch
+    : isBranchIssued
+      ? activeBranch
+      : activeCompany;
 
-  const entitySigPos = (activeEntity as any)?.signature_position
-  const entityStampPos = (activeEntity as any)?.stamp_position
-  const entityLogoPos = (activeEntity as any)?.logo_position
-  const entityLogoScale = (activeEntity as any)?.logo_scale
-  const entityStampScale = (activeEntity as any)?.stamp_scale
-  const entitySigScale = (activeEntity as any)?.signature_scale
-  const entityCustomStamps = (activeEntity as any)?.custom_stamps
+  const entitySigPos = (activeEntity as any)?.signature_position;
+  const entityStampPos = (activeEntity as any)?.stamp_position;
+  const entityLogoPos = (activeEntity as any)?.logo_position;
+  const entityLogoScale = (activeEntity as any)?.logo_scale;
+  const entityStampScale = (activeEntity as any)?.stamp_scale;
+  const entitySigScale = (activeEntity as any)?.signature_scale;
+  const entityCustomStamps = (activeEntity as any)?.custom_stamps;
 
-  const logoPosition = propLogoPosition ?? entityLogoPos ?? { x: 0, y: 0 }
-  const logoScale = propLogoScale ?? entityLogoScale ?? 1
-  const stampPosition = propStampPosition ?? entityStampPos ?? { x: 0, y: 0 }
-  const stampScale = propStampScale ?? entityStampScale ?? 1
-  const signaturePosition = propSignaturePosition ?? entitySigPos ?? { x: 0, y: 0 }
-  const signatureScale = propSignatureScale ?? entitySigScale ?? 1
-  const customStamps: CustomTextStamp[] = (propCustomStamps && propCustomStamps.length > 0) ? propCustomStamps : (entityCustomStamps || [])
+  const logoPosition = propLogoPosition ?? entityLogoPos ?? { x: 0, y: 0 };
+  const logoScale = propLogoScale ?? entityLogoScale ?? 1;
+  const stampPosition = propStampPosition ?? entityStampPos ?? { x: 0, y: 0 };
+  const stampScale = propStampScale ?? entityStampScale ?? 1;
+  const signaturePosition = propSignaturePosition ??
+    entitySigPos ?? { x: 0, y: 0 };
+  const signatureScale = propSignatureScale ?? entitySigScale ?? 1;
+  const customStamps: CustomTextStamp[] =
+    propCustomStamps && propCustomStamps.length > 0
+      ? propCustomStamps
+      : entityCustomStamps || [];
 
   // Corporate Entity Details (Corporate identity remains intact forever; branches/sub-branches appear in their designated hierarchy strip)
-  const resolvedBrandName = companyDetails?.brand_name !== undefined ? companyDetails.brand_name : (activeCompany?.brand_name !== undefined ? activeCompany.brand_name : (activeCompany?.name || "SAAMPARK"))
-  const resolvedDivisionName = companyDetails?.division_name !== undefined ? companyDetails.division_name : (activeCompany?.division_name || "")
-  const resolvedSubtitle = companyDetails?.subtitle !== undefined ? companyDetails.subtitle : (activeCompany?.subtitle || "")
-  const rawTm = companyDetails?.trademark_symbol !== undefined 
-    ? companyDetails.trademark_symbol 
-    : activeCompany?.trademark_symbol !== undefined 
-    ? activeCompany.trademark_symbol 
-    : (activeCompany as any)?.invoice_customization?.trademark_symbol
-  const resolvedTrademarkSymbol = (!rawTm || rawTm.trim().toLowerCase() === "none" || rawTm.trim() === "")
-    ? ""
-    : rawTm.trim()
-  const resolvedLogoUrl = overrideLogoUrl || getCompanyLogoUrl(activeCompany) || activeCompany?.logo_url || companyDetails?.logo_url || ""
+  const resolvedBrandName =
+    companyDetails?.brand_name !== undefined
+      ? companyDetails.brand_name
+      : activeCompany?.brand_name !== undefined
+        ? activeCompany.brand_name
+        : activeCompany?.name || "SAAMPARK";
+  const resolvedDivisionName =
+    companyDetails?.division_name !== undefined
+      ? companyDetails.division_name
+      : activeCompany?.division_name || "";
+  const resolvedSubtitle =
+    companyDetails?.subtitle !== undefined
+      ? companyDetails.subtitle
+      : activeCompany?.subtitle || "";
+  const rawTm =
+    companyDetails?.trademark_symbol !== undefined
+      ? companyDetails.trademark_symbol
+      : activeCompany?.trademark_symbol !== undefined
+        ? activeCompany.trademark_symbol
+        : (activeCompany as any)?.invoice_customization?.trademark_symbol;
+  const resolvedTrademarkSymbol =
+    !rawTm || rawTm.trim().toLowerCase() === "none" || rawTm.trim() === ""
+      ? ""
+      : rawTm.trim();
+  const resolvedLogoUrl =
+    overrideLogoUrl ||
+    getCompanyLogoUrl(activeCompany) ||
+    activeCompany?.logo_url ||
+    companyDetails?.logo_url ||
+    "";
 
   // Specific Entity Legal IDs (Strictly user-typed values; totally blank if not filled, NO fake examples)
-  const resolvedCin = (companyDetails ? companyDetails.cin : activeCompany?.cin)?.trim() || ""
-  const resolvedGstin = (companyDetails ? companyDetails.gstin : activeCompany?.gstin)?.trim() || ""
-  const resolvedPan = (companyDetails ? companyDetails.pan : activeCompany?.pan)?.trim() || ""
-  const resolvedMsme = (companyDetails?.msme_reg || (companyDetails as any)?.msme || activeCompany?.msme_reg || (activeCompany as any)?.msme || (activeCompany as any)?.udyam)?.trim() || ""
+  const resolvedCin =
+    (companyDetails ? companyDetails.cin : activeCompany?.cin)?.trim() || "";
+  const resolvedGstin =
+    (companyDetails ? companyDetails.gstin : activeCompany?.gstin)?.trim() ||
+    "";
+  const resolvedPan =
+    (companyDetails ? companyDetails.pan : activeCompany?.pan)?.trim() || "";
+  const resolvedMsme =
+    (
+      companyDetails?.msme_reg ||
+      (companyDetails as any)?.msme ||
+      activeCompany?.msme_reg ||
+      (activeCompany as any)?.msme ||
+      (activeCompany as any)?.udyam
+    )?.trim() || "";
 
   // Address & Contact Information (Corporate entity defaults)
-  const resolvedAddress = (companyDetails ? companyDetails.address : activeCompany?.address) || ""
-  const resolvedCity = (companyDetails ? (companyDetails as any).city : activeCompany?.city) || ""
-  const resolvedState = (companyDetails ? (companyDetails as any).state : activeCompany?.state) || ""
-  const resolvedZip = (companyDetails ? ((companyDetails as any).zip || (companyDetails as any).pincode) : (activeCompany?.zip || (activeCompany as any)?.pincode)) || ""
-  const resolvedCountry = (companyDetails ? (companyDetails as any).country : activeCompany?.country) || ""
-  const resolvedPhone = (companyDetails ? companyDetails.phone : activeCompany?.phone)?.trim() || ""
-  const resolvedEmail = (companyDetails ? companyDetails.email : activeCompany?.email)?.trim() || ""
-  const resolvedWebsite = (companyDetails ? companyDetails.website : activeCompany?.website)?.trim() || ""
+  const resolvedAddress =
+    (companyDetails ? companyDetails.address : activeCompany?.address) || "";
+  const resolvedCity =
+    (companyDetails ? (companyDetails as any).city : activeCompany?.city) || "";
+  const resolvedState =
+    (companyDetails ? (companyDetails as any).state : activeCompany?.state) ||
+    "";
+  const resolvedZip =
+    (companyDetails
+      ? (companyDetails as any).zip || (companyDetails as any).pincode
+      : activeCompany?.zip || (activeCompany as any)?.pincode) || "";
+  const resolvedCountry =
+    (companyDetails
+      ? (companyDetails as any).country
+      : activeCompany?.country) || "";
+  const resolvedPhone =
+    (companyDetails ? companyDetails.phone : activeCompany?.phone)?.trim() ||
+    "";
+  const resolvedEmail =
+    (companyDetails ? companyDetails.email : activeCompany?.email)?.trim() ||
+    "";
+  const resolvedWebsite =
+    (companyDetails
+      ? companyDetails.website
+      : activeCompany?.website
+    )?.trim() || "";
 
   // Formatted Full Office Address
   const fullAddressSegments = [
     resolvedAddress.trim(),
     resolvedCity.trim(),
-    resolvedState.trim() ? (resolvedZip.trim() ? `${resolvedState.trim()} - ${resolvedZip.trim()}` : resolvedState.trim()) : (resolvedZip.trim() ? `PIN: ${resolvedZip.trim()}` : ""),
-    resolvedCountry.trim()
-  ].filter(Boolean)
-  const resolvedFullOfficeAddress = fullAddressSegments.length > 0 
-    ? fullAddressSegments.join(", ")
-    : (resolvedAddress.trim() || "Kolkata, West Bengal, India")
+    resolvedState.trim()
+      ? resolvedZip.trim()
+        ? `${resolvedState.trim()} - ${resolvedZip.trim()}`
+        : resolvedState.trim()
+      : resolvedZip.trim()
+        ? `PIN: ${resolvedZip.trim()}`
+        : "",
+    resolvedCountry.trim(),
+  ].filter(Boolean);
+  const resolvedFullOfficeAddress =
+    fullAddressSegments.length > 0
+      ? fullAddressSegments.join(", ")
+      : resolvedAddress.trim() || "Kolkata, West Bengal, India";
 
   // 2. Determine if GST (>0%) or Non-GST / 0% GST Bill (Done early for Bank profile binding)
-  const invIdStr = String(invoice?.id || (invoice as any)?.invoiceNumber || "").toUpperCase().trim()
-  const isExplicitNonGst = 
-    invIdStr.startsWith("NGINV") || 
-    (invoice as any).invoiceType === "nongst" || 
-    (invoice as any).type === "nongst" || 
-    (invoice.gstRate === 0 && (!invoice.items || invoice.items.every(it => !it.gstRate || it.gstRate === 0))) ||
-    (invoice.gstAmount === 0 && (!invoice.items || invoice.items.every(it => !it.gstAmount || it.gstAmount === 0)))
-  
-  const hasItemGst = Array.isArray(invoice.items) && invoice.items.length > 0
-    ? invoice.items.some(it => (Number(it.gstRate) || 0) > 0 || (Number(it.gstAmount) || 0) > 0)
-    : false
+  const invIdStr = String(invoice?.id || (invoice as any)?.invoiceNumber || "")
+    .toUpperCase()
+    .trim();
+  const isExplicitNonGst =
+    invIdStr.startsWith("NGINV") ||
+    (invoice as any).invoiceType === "nongst" ||
+    (invoice as any).type === "nongst" ||
+    (invoice.gstRate === 0 &&
+      (!invoice.items ||
+        invoice.items.every((it) => !it.gstRate || it.gstRate === 0))) ||
+    (invoice.gstAmount === 0 &&
+      (!invoice.items ||
+        invoice.items.every((it) => !it.gstAmount || it.gstAmount === 0)));
 
-  const isGstInvoice = !isExplicitNonGst && Boolean(
-    hasItemGst ||
-    (typeof invoice.gstRate === "number" && invoice.gstRate > 0) ||
-    (typeof invoice.gstAmount === "number" && invoice.gstAmount > 0)
-  )
+  const hasItemGst =
+    Array.isArray(invoice.items) && invoice.items.length > 0
+      ? invoice.items.some(
+          (it) =>
+            (Number(it.gstRate) || 0) > 0 || (Number(it.gstAmount) || 0) > 0,
+        )
+      : false;
+
+  const isGstInvoice =
+    !isExplicitNonGst &&
+    Boolean(
+      hasItemGst ||
+      (typeof invoice.gstRate === "number" && invoice.gstRate > 0) ||
+      (typeof invoice.gstAmount === "number" && invoice.gstAmount > 0),
+    );
 
   // Full official company name resolution
   const fullRegisteredCompanyName = (
-    companyDetails?.name || 
+    companyDetails?.name ||
     (invoice as any).companyName ||
-    activeCompany?.name || 
-    `${resolvedBrandName} ${resolvedDivisionName}`.trim() || 
+    activeCompany?.name ||
+    `${resolvedBrandName} ${resolvedDivisionName}`.trim() ||
     resolvedBrandName ||
     "SAAMPARK"
-  ).trim()
+  ).trim();
 
   // Split Corporate Brand & Division for Top Header Typography
   // Top line: SAAMPARK (with optional TM/R badge)
   // Second line: Header Line 2 (division_name) - strictly what user typed, no forced suffixes
   // Space is preserved as a letter/character exactly as typed by the user
-  let headerBrandName = (resolvedBrandName !== undefined && resolvedBrandName !== null && resolvedBrandName !== ""
-    ? String(resolvedBrandName)
-    : "SAAMPARK").toUpperCase()
-  let headerSecondaryLine = (resolvedDivisionName !== undefined && resolvedDivisionName !== null
-    ? String(resolvedDivisionName)
-    : (activeCompany?.division_name || "")).toUpperCase()
+  let headerBrandName = (
+    resolvedBrandName !== undefined &&
+    resolvedBrandName !== null &&
+    resolvedBrandName !== ""
+      ? String(resolvedBrandName)
+      : "SAAMPARK"
+  ).toUpperCase();
+  let headerSecondaryLine = (
+    resolvedDivisionName !== undefined && resolvedDivisionName !== null
+      ? String(resolvedDivisionName)
+      : activeCompany?.division_name || ""
+  )
+    .replace(/[ \t]+/g, " ")
+    .trim()
+    .toUpperCase();
 
   const cleanHeaderBrandName = React.useMemo(() => {
     return (headerBrandName || "SAAMPARK")
       .split("\n")
       .map((l: string) => l.replace(/[^\S\r\n]+/g, " ").trim())
       .filter(Boolean)
-      .join("\n")
-  }, [headerBrandName])
+      .join("\n");
+  }, [headerBrandName]);
 
   const cleanHeaderSecondaryLine = React.useMemo(() => {
     return (headerSecondaryLine || "")
       .split("\n")
       .map((l: string) => l.replace(/[^\S\r\n]+/g, " ").trim())
       .filter(Boolean)
-      .join("\n")
-  }, [headerSecondaryLine])
+      .join("\n");
+  }, [headerSecondaryLine]);
 
   // Helper to validate non-empty string fields (strictly ignores empty, null, and placeholder text)
   const isValidField = (val?: string | null): boolean => {
-    if (!val) return false
-    const s = String(val).trim().toLowerCase()
-    return s !== "" && s !== "none" && s !== "-" && s !== "null" && s !== "undefined" && s !== "n/a" && s !== "na"
-  }
+    if (!val) return false;
+    const s = String(val).trim().toLowerCase();
+    return (
+      s !== "" &&
+      s !== "none" &&
+      s !== "-" &&
+      s !== "null" &&
+      s !== "undefined" &&
+      s !== "n/a" &&
+      s !== "na"
+    );
+  };
 
-  const isCustomCompany = Boolean(companyDetails)
+  const isCustomCompany = Boolean(companyDetails);
 
   // Parent Company baseline values (Strictly read from companyDetails or activeCompany; NO hardcoded fallback values)
-  const companyGstUpi = (
-    isCustomCompany 
-      ? (companyDetails?.gst_upi_id ?? (companyDetails as any)?.upi_id ?? "") 
-      : (activeCompany?.gst_upi_id || activeCompany?.upi_id || "")
-  )?.trim() || ""
+  const companyGstUpi =
+    (isCustomCompany
+      ? (companyDetails?.gst_upi_id ?? (companyDetails as any)?.upi_id ?? "")
+      : activeCompany?.gst_upi_id || activeCompany?.upi_id || ""
+    )?.trim() || "";
 
-  const companyNonGstUpi = (
-    isCustomCompany 
-      ? (companyDetails?.nongst_upi_id ?? "") 
-      : (activeCompany?.nongst_upi_id || "")
-  )?.trim() || ""
+  const companyNonGstUpi =
+    (isCustomCompany
+      ? (companyDetails?.nongst_upi_id ?? "")
+      : activeCompany?.nongst_upi_id || ""
+    )?.trim() || "";
 
-  const companyUpi = isGstInvoice ? companyGstUpi : companyNonGstUpi
+  const companyUpi = isGstInvoice ? companyGstUpi : companyNonGstUpi;
 
-  const companyGstHolder = (
-    isCustomCompany 
-      ? (companyDetails?.gst_account_holder ?? (companyDetails as any)?.account_holder ?? "") 
-      : (activeCompany?.gst_account_holder || activeCompany?.account_holder || "")
-  )?.trim() || ""
+  const companyGstHolder =
+    (isCustomCompany
+      ? (companyDetails?.gst_account_holder ??
+        (companyDetails as any)?.account_holder ??
+        "")
+      : activeCompany?.gst_account_holder || activeCompany?.account_holder || ""
+    )?.trim() || "";
 
-  const companyNonGstHolder = (
-    isCustomCompany 
-      ? (companyDetails?.nongst_account_holder ?? "") 
-      : (activeCompany?.nongst_account_holder || "")
-  )?.trim() || ""
+  const companyNonGstHolder =
+    (isCustomCompany
+      ? (companyDetails?.nongst_account_holder ?? "")
+      : activeCompany?.nongst_account_holder || ""
+    )?.trim() || "";
 
-  const companyHolder = isGstInvoice ? companyGstHolder : companyNonGstHolder
+  const companyHolder = isGstInvoice ? companyGstHolder : companyNonGstHolder;
 
-  const companyGstBank = (
-    isCustomCompany 
-      ? (companyDetails?.gst_bank_name ?? (companyDetails as any)?.bank_name ?? "") 
-      : (activeCompany?.gst_bank_name || activeCompany?.bank_name || "")
-  )?.trim() || ""
+  const companyGstBank =
+    (isCustomCompany
+      ? (companyDetails?.gst_bank_name ??
+        (companyDetails as any)?.bank_name ??
+        "")
+      : activeCompany?.gst_bank_name || activeCompany?.bank_name || ""
+    )?.trim() || "";
 
-  const companyNonGstBank = (
-    isCustomCompany 
-      ? (companyDetails?.nongst_bank_name ?? "") 
-      : (activeCompany?.nongst_bank_name || "")
-  )?.trim() || ""
+  const companyNonGstBank =
+    (isCustomCompany
+      ? (companyDetails?.nongst_bank_name ?? "")
+      : activeCompany?.nongst_bank_name || ""
+    )?.trim() || "";
 
-  const companyBank = isGstInvoice ? companyGstBank : companyNonGstBank
+  const companyBank = isGstInvoice ? companyGstBank : companyNonGstBank;
 
-  const companyGstAccNum = (
-    isCustomCompany 
-      ? (companyDetails?.gst_account_number ?? (companyDetails as any)?.account_number ?? "") 
-      : (activeCompany?.gst_account_number || activeCompany?.account_number || "")
-  )?.trim() || ""
+  const companyGstAccNum =
+    (isCustomCompany
+      ? (companyDetails?.gst_account_number ??
+        (companyDetails as any)?.account_number ??
+        "")
+      : activeCompany?.gst_account_number || activeCompany?.account_number || ""
+    )?.trim() || "";
 
-  const companyNonGstAccNum = (
-    isCustomCompany 
-      ? (companyDetails?.nongst_account_number ?? "") 
-      : (activeCompany?.nongst_account_number || "")
-  )?.trim() || ""
+  const companyNonGstAccNum =
+    (isCustomCompany
+      ? (companyDetails?.nongst_account_number ?? "")
+      : activeCompany?.nongst_account_number || ""
+    )?.trim() || "";
 
-  const companyAccNum = isGstInvoice ? companyGstAccNum : companyNonGstAccNum
+  const companyAccNum = isGstInvoice ? companyGstAccNum : companyNonGstAccNum;
 
-  const companyGstIfsc = (
-    isCustomCompany 
-      ? (companyDetails?.gst_ifsc_code ?? (companyDetails as any)?.ifsc_code ?? "") 
-      : (activeCompany?.gst_ifsc_code || activeCompany?.ifsc_code || "")
-  )?.trim() || ""
+  const companyGstIfsc =
+    (isCustomCompany
+      ? (companyDetails?.gst_ifsc_code ??
+        (companyDetails as any)?.ifsc_code ??
+        "")
+      : activeCompany?.gst_ifsc_code || activeCompany?.ifsc_code || ""
+    )?.trim() || "";
 
-  const companyNonGstIfsc = (
-    isCustomCompany 
-      ? (companyDetails?.nongst_ifsc_code ?? "") 
-      : (activeCompany?.nongst_ifsc_code || "")
-  )?.trim() || ""
+  const companyNonGstIfsc =
+    (isCustomCompany
+      ? (companyDetails?.nongst_ifsc_code ?? "")
+      : activeCompany?.nongst_ifsc_code || ""
+    )?.trim() || "";
 
-  const companyIfsc = isGstInvoice ? companyGstIfsc : companyNonGstIfsc
+  const companyIfsc = isGstInvoice ? companyGstIfsc : companyNonGstIfsc;
 
-  const companyGstBranch = (
-    isCustomCompany 
-      ? (companyDetails?.gst_bank_branch ?? (companyDetails as any)?.bank_branch ?? "") 
-      : (activeCompany?.gst_bank_branch || activeCompany?.bank_branch || "")
-  )?.trim() || ""
+  const companyGstBranch =
+    (isCustomCompany
+      ? (companyDetails?.gst_bank_branch ??
+        (companyDetails as any)?.bank_branch ??
+        "")
+      : activeCompany?.gst_bank_branch || activeCompany?.bank_branch || ""
+    )?.trim() || "";
 
-  const companyNonGstBranch = (
-    isCustomCompany 
-      ? (companyDetails?.nongst_bank_branch ?? "") 
-      : (activeCompany?.nongst_bank_branch || "")
-  )?.trim() || ""
+  const companyNonGstBranch =
+    (isCustomCompany
+      ? (companyDetails?.nongst_bank_branch ?? "")
+      : activeCompany?.nongst_bank_branch || ""
+    )?.trim() || "";
 
-  const companyBranch = isGstInvoice ? companyGstBranch : companyNonGstBranch
+  const companyBranch = isGstInvoice ? companyGstBranch : companyNonGstBranch;
 
   // Bank & UPI details resolved specifically for issuing entity. If left gap / blank, resolves cleanly to "" without fake fallbacks
-  let resolvedUpiId = (
-    overrideBankDetails?.upiId !== undefined
+  let resolvedUpiId =
+    (overrideBankDetails?.upiId !== undefined
       ? overrideBankDetails.upiId
-      : (isSubBranchIssued 
-          ? (isGstInvoice ? (activeSubBranch?.gst_upi_id || activeSubBranch?.upi_id || activeBranch?.gst_upi_id || activeBranch?.upi_id || companyGstUpi) : (activeSubBranch?.nongst_upi_id || activeBranch?.nongst_upi_id || companyNonGstUpi))
-          : isBranchIssued 
-          ? (isGstInvoice ? (activeBranch?.gst_upi_id || activeBranch?.upi_id || companyGstUpi) : (activeBranch?.nongst_upi_id || companyNonGstUpi))
-          : (isGstInvoice ? companyGstUpi : companyNonGstUpi)
-        )
-  )?.trim() || ""
+      : isSubBranchIssued
+        ? isGstInvoice
+          ? activeSubBranch?.gst_upi_id ||
+            activeSubBranch?.upi_id ||
+            activeBranch?.gst_upi_id ||
+            activeBranch?.upi_id ||
+            companyGstUpi
+          : activeSubBranch?.nongst_upi_id ||
+            activeBranch?.nongst_upi_id ||
+            companyNonGstUpi
+        : isBranchIssued
+          ? isGstInvoice
+            ? activeBranch?.gst_upi_id || activeBranch?.upi_id || companyGstUpi
+            : activeBranch?.nongst_upi_id || companyNonGstUpi
+          : isGstInvoice
+            ? companyGstUpi
+            : companyNonGstUpi
+    )?.trim() || "";
 
-  let resolvedAccountHolder = (
-    overrideBankDetails?.accountHolder !== undefined
+  let resolvedAccountHolder =
+    (overrideBankDetails?.accountHolder !== undefined
       ? overrideBankDetails.accountHolder
-      : (isSubBranchIssued 
-          ? (isGstInvoice ? (activeSubBranch?.gst_account_holder || activeSubBranch?.account_holder || activeBranch?.gst_account_holder || activeBranch?.account_holder || companyGstHolder) : (activeSubBranch?.nongst_account_holder || activeBranch?.nongst_account_holder || companyNonGstHolder))
-          : isBranchIssued 
-          ? (isGstInvoice ? (activeBranch?.gst_account_holder || activeBranch?.account_holder || companyGstHolder) : (activeBranch?.nongst_account_holder || companyNonGstHolder))
-          : (isGstInvoice ? companyGstHolder : companyNonGstHolder)
-        )
-  )?.trim() || ""
+      : isSubBranchIssued
+        ? isGstInvoice
+          ? activeSubBranch?.gst_account_holder ||
+            activeSubBranch?.account_holder ||
+            activeBranch?.gst_account_holder ||
+            activeBranch?.account_holder ||
+            companyGstHolder
+          : activeSubBranch?.nongst_account_holder ||
+            activeBranch?.nongst_account_holder ||
+            companyNonGstHolder
+        : isBranchIssued
+          ? isGstInvoice
+            ? activeBranch?.gst_account_holder ||
+              activeBranch?.account_holder ||
+              companyGstHolder
+            : activeBranch?.nongst_account_holder || companyNonGstHolder
+          : isGstInvoice
+            ? companyGstHolder
+            : companyNonGstHolder
+    )?.trim() || "";
 
-  let resolvedBankName = (
-    overrideBankDetails?.bankName !== undefined
+  let resolvedBankName =
+    (overrideBankDetails?.bankName !== undefined
       ? overrideBankDetails.bankName
-      : (isSubBranchIssued 
-          ? (isGstInvoice ? (activeSubBranch?.gst_bank_name || activeSubBranch?.bank_name || activeBranch?.gst_bank_name || activeBranch?.bank_name || companyGstBank) : (activeSubBranch?.nongst_bank_name || activeBranch?.nongst_bank_name || companyNonGstBank))
-          : isBranchIssued 
-          ? (isGstInvoice ? (activeBranch?.gst_bank_name || activeBranch?.bank_name || companyGstBank) : (activeBranch?.nongst_bank_name || companyNonGstBank))
-          : (isGstInvoice ? companyGstBank : companyNonGstBank)
-        )
-  )?.trim() || ""
+      : isSubBranchIssued
+        ? isGstInvoice
+          ? activeSubBranch?.gst_bank_name ||
+            activeSubBranch?.bank_name ||
+            activeBranch?.gst_bank_name ||
+            activeBranch?.bank_name ||
+            companyGstBank
+          : activeSubBranch?.nongst_bank_name ||
+            activeBranch?.nongst_bank_name ||
+            companyNonGstBank
+        : isBranchIssued
+          ? isGstInvoice
+            ? activeBranch?.gst_bank_name ||
+              activeBranch?.bank_name ||
+              companyGstBank
+            : activeBranch?.nongst_bank_name || companyNonGstBank
+          : isGstInvoice
+            ? companyGstBank
+            : companyNonGstBank
+    )?.trim() || "";
 
-  let resolvedAccountNumber = (
-    overrideBankDetails?.accountNumber !== undefined
+  let resolvedAccountNumber =
+    (overrideBankDetails?.accountNumber !== undefined
       ? overrideBankDetails.accountNumber
-      : (isSubBranchIssued 
-          ? (isGstInvoice ? (activeSubBranch?.gst_account_number || activeSubBranch?.account_number || activeBranch?.gst_account_number || activeBranch?.account_number || companyGstAccNum) : (activeSubBranch?.nongst_account_number || activeBranch?.nongst_account_number || companyNonGstAccNum))
-          : isBranchIssued 
-          ? (isGstInvoice ? (activeBranch?.gst_account_number || activeBranch?.account_number || companyGstAccNum) : (activeBranch?.nongst_account_number || companyNonGstAccNum))
-          : (isGstInvoice ? companyGstAccNum : companyNonGstAccNum)
-        )
-  )?.trim() || ""
+      : isSubBranchIssued
+        ? isGstInvoice
+          ? activeSubBranch?.gst_account_number ||
+            activeSubBranch?.account_number ||
+            activeBranch?.gst_account_number ||
+            activeBranch?.account_number ||
+            companyGstAccNum
+          : activeSubBranch?.nongst_account_number ||
+            activeBranch?.nongst_account_number ||
+            companyNonGstAccNum
+        : isBranchIssued
+          ? isGstInvoice
+            ? activeBranch?.gst_account_number ||
+              activeBranch?.account_number ||
+              companyGstAccNum
+            : activeBranch?.nongst_account_number || companyNonGstAccNum
+          : isGstInvoice
+            ? companyGstAccNum
+            : companyNonGstAccNum
+    )?.trim() || "";
 
-  let resolvedIfscCode = (
-    overrideBankDetails?.ifscCode !== undefined
+  let resolvedIfscCode =
+    (overrideBankDetails?.ifscCode !== undefined
       ? overrideBankDetails.ifscCode
-      : (isSubBranchIssued 
-          ? (isGstInvoice ? (activeSubBranch?.gst_ifsc_code || activeSubBranch?.ifsc_code || activeBranch?.gst_ifsc_code || activeBranch?.ifsc_code || companyGstIfsc) : (activeSubBranch?.nongst_ifsc_code || activeBranch?.nongst_ifsc_code || companyNonGstIfsc))
-          : isBranchIssued 
-          ? (isGstInvoice ? (activeBranch?.gst_ifsc_code || activeBranch?.ifsc_code || companyGstIfsc) : (activeBranch?.nongst_ifsc_code || companyNonGstIfsc))
-          : (isGstInvoice ? companyGstIfsc : companyNonGstIfsc)
-        )
-  )?.trim() || ""
+      : isSubBranchIssued
+        ? isGstInvoice
+          ? activeSubBranch?.gst_ifsc_code ||
+            activeSubBranch?.ifsc_code ||
+            activeBranch?.gst_ifsc_code ||
+            activeBranch?.ifsc_code ||
+            companyGstIfsc
+          : activeSubBranch?.nongst_ifsc_code ||
+            activeBranch?.nongst_ifsc_code ||
+            companyNonGstIfsc
+        : isBranchIssued
+          ? isGstInvoice
+            ? activeBranch?.gst_ifsc_code ||
+              activeBranch?.ifsc_code ||
+              companyGstIfsc
+            : activeBranch?.nongst_ifsc_code || companyNonGstIfsc
+          : isGstInvoice
+            ? companyGstIfsc
+            : companyNonGstIfsc
+    )?.trim() || "";
 
-  let resolvedBankBranch = (
-    overrideBankDetails?.bankBranch !== undefined
+  let resolvedBankBranch =
+    (overrideBankDetails?.bankBranch !== undefined
       ? overrideBankDetails.bankBranch
-      : (isSubBranchIssued 
-          ? (isGstInvoice ? (activeSubBranch?.gst_bank_branch || activeSubBranch?.bank_branch || activeBranch?.gst_bank_branch || activeBranch?.bank_branch || companyGstBranch) : (activeSubBranch?.nongst_bank_branch || activeBranch?.nongst_bank_branch || companyNonGstBranch))
-          : isBranchIssued 
-          ? (isGstInvoice ? (activeBranch?.gst_bank_branch || activeBranch?.bank_branch || companyGstBranch) : (activeBranch?.nongst_bank_branch || companyNonGstBranch))
-          : (isGstInvoice ? companyGstBranch : companyNonGstBranch)
-        )
-  )?.trim() || ""
+      : isSubBranchIssued
+        ? isGstInvoice
+          ? activeSubBranch?.gst_bank_branch ||
+            activeSubBranch?.bank_branch ||
+            activeBranch?.gst_bank_branch ||
+            activeBranch?.bank_branch ||
+            companyGstBranch
+          : activeSubBranch?.nongst_bank_branch ||
+            activeBranch?.nongst_bank_branch ||
+            companyNonGstBranch
+        : isBranchIssued
+          ? isGstInvoice
+            ? activeBranch?.gst_bank_branch ||
+              activeBranch?.bank_branch ||
+              companyGstBranch
+            : activeBranch?.nongst_bank_branch || companyNonGstBranch
+          : isGstInvoice
+            ? companyGstBranch
+            : companyNonGstBranch
+    )?.trim() || "";
 
   // STRICT NON-GST PRIVACY GUARD: Non-GST invoices must NEVER display corporate GST bank details or GST QR
   if (!isGstInvoice) {
-    const isAccNumSameAsGst = Boolean(companyGstAccNum && resolvedAccountNumber && resolvedAccountNumber.replace(/\s+/g, '') === companyGstAccNum.replace(/\s+/g, ''))
-    const isUpiSameAsGst = Boolean(companyGstUpi && resolvedUpiId && resolvedUpiId.toLowerCase().trim() === companyGstUpi.toLowerCase().trim())
+    const isAccNumSameAsGst = Boolean(
+      companyGstAccNum &&
+      resolvedAccountNumber &&
+      resolvedAccountNumber.replace(/\s+/g, "") ===
+        companyGstAccNum.replace(/\s+/g, ""),
+    );
+    const isUpiSameAsGst = Boolean(
+      companyGstUpi &&
+      resolvedUpiId &&
+      resolvedUpiId.toLowerCase().trim() === companyGstUpi.toLowerCase().trim(),
+    );
     if (isAccNumSameAsGst) {
-      resolvedAccountNumber = ""
-      resolvedBankName = ""
-      resolvedIfscCode = ""
-      resolvedAccountHolder = ""
-      resolvedBankBranch = ""
+      resolvedAccountNumber = "";
+      resolvedBankName = "";
+      resolvedIfscCode = "";
+      resolvedAccountHolder = "";
+      resolvedBankBranch = "";
     }
     if (isUpiSameAsGst) {
-      resolvedUpiId = ""
+      resolvedUpiId = "";
     }
   }
 
@@ -644,7 +1017,7 @@ export function OfficialInvoiceDocument({
     (activeCompany as any)?.signatureImageUrl ||
     (activeCompany as any)?.signature_url ||
     ""
-  )?.trim()
+  )?.trim();
 
   const companyStampFallback = (
     (companyDetails as any)?.stamp_image_url ||
@@ -654,73 +1027,109 @@ export function OfficialInvoiceDocument({
     (activeCompany as any)?.stampImageUrl ||
     (activeCompany as any)?.stamp_url ||
     ""
-  )?.trim()
+  )?.trim();
 
-  const resolvedSignatureUrl = overrideSignatureUrl || (
-    isSubBranchIssued 
-      ? (activeSubBranch?.signature_image_url?.trim() || activeBranch?.signature_image_url?.trim() || companySignatureFallback)
-      : isBranchIssued 
-      ? (activeBranch?.signature_image_url?.trim() || companySignatureFallback)
-      : companySignatureFallback
-  ) || ""
+  const resolvedSignatureUrl =
+    overrideSignatureUrl ||
+    (isSubBranchIssued
+      ? activeSubBranch?.signature_image_url?.trim() ||
+        activeBranch?.signature_image_url?.trim() ||
+        companySignatureFallback
+      : isBranchIssued
+        ? activeBranch?.signature_image_url?.trim() || companySignatureFallback
+        : companySignatureFallback) ||
+    "";
 
-  const resolvedStampUrl = overrideStampUrl || (
-    isSubBranchIssued 
-      ? (activeSubBranch?.stamp_image_url?.trim() || activeBranch?.stamp_image_url?.trim() || companyStampFallback)
-      : isBranchIssued 
-      ? (activeBranch?.stamp_image_url?.trim() || companyStampFallback)
-      : companyStampFallback
-  ) || ""
+  const resolvedStampUrl =
+    overrideStampUrl ||
+    (isSubBranchIssued
+      ? activeSubBranch?.stamp_image_url?.trim() ||
+        activeBranch?.stamp_image_url?.trim() ||
+        companyStampFallback
+      : isBranchIssued
+        ? activeBranch?.stamp_image_url?.trim() || companyStampFallback
+        : companyStampFallback) ||
+    "";
 
-  const resolvedSignatoryName = (isSubBranchIssued 
-    ? (activeSubBranch?.signatory_name || (activeSubBranch as any)?.partner_name || (activeSubBranch as any)?.partnerName || activeBranch?.signatory_name || (companyDetails as any)?.signatory_name || activeCompany?.signatory_name)
-    : isBranchIssued 
-    ? (activeBranch?.signatory_name || activeBranch?.managerName || (activeBranch as any)?.manager_name || (companyDetails as any)?.signatory_name || activeCompany?.signatory_name)
-    : ((companyDetails as any)?.signatory_name || activeCompany?.signatory_name))?.trim() || "Authorized Signatory"
+  const resolvedSignatoryName =
+    (isSubBranchIssued
+      ? activeSubBranch?.signatory_name ||
+        (activeSubBranch as any)?.partner_name ||
+        (activeSubBranch as any)?.partnerName ||
+        activeBranch?.signatory_name ||
+        (companyDetails as any)?.signatory_name ||
+        activeCompany?.signatory_name
+      : isBranchIssued
+        ? activeBranch?.signatory_name ||
+          activeBranch?.managerName ||
+          (activeBranch as any)?.manager_name ||
+          (companyDetails as any)?.signatory_name ||
+          activeCompany?.signatory_name
+        : (companyDetails as any)?.signatory_name ||
+          activeCompany?.signatory_name
+    )?.trim() || "Authorized Signatory";
 
-  const resolvedSignatoryDesignation = (isSubBranchIssued 
-    ? (activeSubBranch?.signatory_designation || `${(activeSubBranch as any)?.partner_type || 'Franchise'} Partner` || activeBranch?.signatory_designation || (companyDetails as any)?.signatory_designation || activeCompany?.signatory_designation)
-    : isBranchIssued 
-    ? (activeBranch?.signatory_designation || "Branch Manager" || (companyDetails as any)?.signatory_designation || activeCompany?.signatory_designation)
-    : ((companyDetails as any)?.signatory_designation || activeCompany?.signatory_designation))?.trim() || "Managing Director"
+  const resolvedSignatoryDesignation =
+    (isSubBranchIssued
+      ? activeSubBranch?.signatory_designation ||
+        `${(activeSubBranch as any)?.partner_type || "Franchise"} Partner` ||
+        activeBranch?.signatory_designation ||
+        (companyDetails as any)?.signatory_designation ||
+        activeCompany?.signatory_designation
+      : isBranchIssued
+        ? activeBranch?.signatory_designation ||
+          "Branch Manager" ||
+          (companyDetails as any)?.signatory_designation ||
+          activeCompany?.signatory_designation
+        : (companyDetails as any)?.signatory_designation ||
+          activeCompany?.signatory_designation
+    )?.trim() || "Managing Director";
 
   // ISO / Quality Certification Badge text (Editable)
-  const resolvedIsoCertification = (
-    isValidField((companyDetails as any)?.iso_certification)
-      ? String((companyDetails as any)?.iso_certification).trim()
-      : isSubBranchIssued && isValidField((activeSubBranch as any)?.iso_certification)
+  const resolvedIsoCertification = isValidField(
+    (companyDetails as any)?.iso_certification,
+  )
+    ? String((companyDetails as any)?.iso_certification).trim()
+    : isSubBranchIssued &&
+        isValidField((activeSubBranch as any)?.iso_certification)
       ? String((activeSubBranch as any)?.iso_certification).trim()
       : isBranchIssued && isValidField((activeBranch as any)?.iso_certification)
-      ? String((activeBranch as any)?.iso_certification).trim()
-      : isValidField((activeCompany as any)?.iso_certification)
-      ? String((activeCompany as any)?.iso_certification).trim()
-      : "An ISO 9001:2015 Certified Company"
-  )
+        ? String((activeBranch as any)?.iso_certification).trim()
+        : isValidField((activeCompany as any)?.iso_certification)
+          ? String((activeCompany as any)?.iso_certification).trim()
+          : "An ISO 9001:2015 Certified Company";
 
   // Terms & Conditions: Sub-Branch and Branch terms strictly OVERWRITE company terms
   const resolvedTermsAndNotes = (
-    (isSubBranchIssued && activeSubBranch?.terms_conditions && activeSubBranch.terms_conditions.trim())
+    isSubBranchIssued &&
+    activeSubBranch?.terms_conditions &&
+    activeSubBranch.terms_conditions.trim()
       ? activeSubBranch.terms_conditions
-      : (isBranchIssued && activeBranch?.terms_conditions && activeBranch.terms_conditions.trim())
-      ? activeBranch.terms_conditions
-      : (companyDetails?.terms_conditions?.trim() ||
-         activeCompany?.terms_conditions?.trim() ||
-         (invoice as any)?.terms?.trim() ||
-         "1. E. & O.E.\n2. Total payment due within due date to avoid suspension/cancellation.\n3. Please include invoice number in payment notes.\n4. All disputes subject to local jurisdiction.")
-  )?.trim()
+      : isBranchIssued &&
+          activeBranch?.terms_conditions &&
+          activeBranch.terms_conditions.trim()
+        ? activeBranch.terms_conditions
+        : companyDetails?.terms_conditions?.trim() ||
+          activeCompany?.terms_conditions?.trim() ||
+          (invoice as any)?.terms?.trim() ||
+          "1. E. & O.E.\n2. Total payment due within due date to avoid suspension/cancellation.\n3. Please include invoice number in payment notes.\n4. All disputes subject to local jurisdiction."
+  )?.trim();
 
   // Theme configuration based on GST (Teal theme) vs Non-GST (Light Blue theme)
   const theme = isGstInvoice
     ? {
         name: "gst-teal",
-        headerGradient: "bg-gradient-to-r from-[#005f69] via-[#007380] to-[#008a99]",
-        cardHeaderGradient: "bg-gradient-to-br from-[#005f69] via-[#007380] to-[#008a99]",
+        headerGradient:
+          "bg-gradient-to-r from-[#005f69] via-[#007380] to-[#008a99]",
+        cardHeaderGradient:
+          "bg-gradient-to-br from-[#005f69] via-[#007380] to-[#008a99]",
         primaryBg: "bg-[#005f69]",
         primaryText: "text-[#005f69]",
         lightBg: "bg-teal-50/70 dark:bg-teal-950/30",
         lightBorder: "border-teal-200/80 dark:border-teal-800/60",
         tableHeaderBg: "bg-[#005f69] text-white",
-        tableSubtotalBg: "bg-[#e0f7fa] text-[#005f69] dark:bg-[#005f69]/40 dark:text-teal-300",
+        tableSubtotalBg:
+          "bg-[#e0f7fa] text-[#005f69] dark:bg-[#005f69]/40 dark:text-teal-300",
         grandTotalBg: "bg-[#005f69] text-white",
         badgeBg: "bg-teal-50 text-teal-800 border-teal-300",
         accentRing: "ring-[#005f69]",
@@ -729,216 +1138,356 @@ export function OfficialInvoiceDocument({
       }
     : {
         name: "non-gst-light-blue",
-        headerGradient: "bg-gradient-to-r from-[#0284c7] via-[#0ea5e9] to-[#38bdf8]",
-        cardHeaderGradient: "bg-gradient-to-br from-[#0284c7] via-[#0ea5e9] to-[#38bdf8]",
+        headerGradient:
+          "bg-gradient-to-r from-[#0284c7] via-[#0ea5e9] to-[#38bdf8]",
+        cardHeaderGradient:
+          "bg-gradient-to-br from-[#0284c7] via-[#0ea5e9] to-[#38bdf8]",
         primaryBg: "bg-[#0ea5e9]",
         primaryText: "text-[#0284c7]",
         lightBg: "bg-sky-50/80 dark:bg-sky-950/30",
         lightBorder: "border-sky-200/90 dark:border-sky-800/60",
         tableHeaderBg: "bg-[#0284c7] text-white",
-        tableSubtotalBg: "bg-[#e0f2fe] text-[#0369a1] dark:bg-sky-950/40 dark:text-sky-300",
+        tableSubtotalBg:
+          "bg-[#e0f2fe] text-[#0369a1] dark:bg-sky-950/40 dark:text-sky-300",
         grandTotalBg: "bg-[#0284c7] text-white",
         badgeBg: "bg-sky-50 text-sky-800 border-sky-300",
         accentRing: "ring-[#0ea5e9]",
         sealColor: "text-[#0284c7] border-[#0284c7]",
-        invoiceTypeLabel: "INVOICE",
-      }
+        invoiceTypeLabel: "NORMAL INVOICE",
+      };
 
   // 3. Financial Computations
-  const gstRate = isGstInvoice ? (invoice.gstRate !== undefined && invoice.gstRate > 0 ? invoice.gstRate : 18) : 0
-  const setupCharge = typeof invoice.setupCharge === "number" ? invoice.setupCharge : 0
-  const discount = typeof invoice.discount === "number" 
-    ? invoice.discount 
-    : (invoice.discountsList ? invoice.discountsList.reduce((sum, d) => sum + (d.amount || 0), 0) : 0)
-  
-  const parsedInvoiced = parseCurrencyNumber(invoice.totalInvoiced)
+  const gstRate = isGstInvoice
+    ? invoice.gstRate !== undefined && invoice.gstRate > 0
+      ? invoice.gstRate
+      : 18
+    : 0;
+  const setupCharge =
+    typeof invoice.setupCharge === "number" ? invoice.setupCharge : 0;
+  const discount =
+    typeof invoice.discount === "number"
+      ? invoice.discount
+      : invoice.discountsList
+        ? invoice.discountsList.reduce((sum, d) => sum + (d.amount || 0), 0)
+        : 0;
+
+  const parsedInvoiced = parseCurrencyNumber(invoice.totalInvoiced);
 
   // 1. Line items resolution (Computed FIRST so financial summary perfectly matches the items table)
-  const finalRenderedRows = (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0)
-    ? invoice.items.filter(Boolean).map((it, idx) => {
-        const itAny = it as any
-        const rawRate = itAny?.rate ?? itAny?.unitPrice ?? itAny?.itemRate ?? itAny?.price ?? 0
-        const itemRate = typeof rawRate === "number" ? rawRate : parseCurrencyNumber(rawRate)
-        const itemQty = (itAny?.qty && itAny.qty > 0) ? itAny.qty : 1
-        const itemCharges = Array.isArray(itAny?.charges) 
-          ? itAny.charges.filter(Boolean).reduce((sum: number, c: any) => sum + (typeof c?.amount === "number" ? c.amount : parseCurrencyNumber(c?.amount || 0)), 0) 
-          : 0
-        const rowBase = (itemRate * itemQty) + itemCharges
-        const rowTax = isGstInvoice ? Math.round(rowBase * ((Number(itAny?.gstRate) || gstRate) / 100)) : 0
-        const rowTotal = isGstInvoice ? (Number(itAny?.totalAmount) || (rowBase + rowTax)) : rowBase
-        return {
-          ...it,
-          id: itAny?.id || `row_${idx}`,
-          serviceName: itAny?.serviceName || itAny?.name || invoice.project || invoice.primaryCategory || invoice.category || "Technology Services",
-          itemRate,
-          itemQty,
-          unit: itAny?.unit || "Project",
-          itemCharges,
-          rowBase,
-          rowTax,
-          rowTotal,
-        }
-      })
-    : [
-        {
-          id: "row_single_service",
-          serviceName: invoice.project || (invoice as any).title || "Services",
-          itemRate: (invoice.baseAmount && invoice.baseAmount > 0) ? invoice.baseAmount : (parsedInvoiced > 0 ? (parsedInvoiced + discount) : 0),
-          itemQty: 1,
-          unit: "Project",
-          itemCharges: setupCharge,
-          charges: setupCharge > 0 ? [{ id: "c1", name: "Platform / Setup Fee", amount: setupCharge }] : [],
-          gstRate: isGstInvoice ? gstRate : 0,
-          rowBase: ((invoice.baseAmount && invoice.baseAmount > 0) ? invoice.baseAmount : (parsedInvoiced > 0 ? (parsedInvoiced + discount) : 0)) + setupCharge,
-          rowTax: 0,
-          rowTotal: parsedInvoiced > 0 ? parsedInvoiced : ((invoice.baseAmount && invoice.baseAmount > 0) ? invoice.baseAmount : 0),
-        }
-      ]
+  const finalRenderedRows =
+    invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0
+      ? invoice.items.filter(Boolean).map((it, idx) => {
+          const itAny = it as any;
+          const rawRate =
+            itAny?.rate ??
+            itAny?.unitPrice ??
+            itAny?.itemRate ??
+            itAny?.price ??
+            0;
+          const itemRate =
+            typeof rawRate === "number"
+              ? rawRate
+              : parseCurrencyNumber(rawRate);
+          const itemQty = itAny?.qty && itAny.qty > 0 ? itAny.qty : 1;
+          const itemCharges = Array.isArray(itAny?.charges)
+            ? itAny.charges
+                .filter(Boolean)
+                .reduce(
+                  (sum: number, c: any) =>
+                    sum +
+                    (typeof c?.amount === "number"
+                      ? c.amount
+                      : parseCurrencyNumber(c?.amount || 0)),
+                  0,
+                )
+            : 0;
+          const rowBase = itemRate * itemQty + itemCharges;
+          const rowTax = isGstInvoice
+            ? Math.round(rowBase * ((Number(itAny?.gstRate) || gstRate) / 100))
+            : 0;
+          const rowTotal = isGstInvoice
+            ? Number(itAny?.totalAmount) || rowBase + rowTax
+            : rowBase;
+          return {
+            ...it,
+            id: itAny?.id || `row_${idx}`,
+            serviceName:
+              itAny?.serviceName ||
+              itAny?.name ||
+              invoice.project ||
+              invoice.primaryCategory ||
+              invoice.category ||
+              "Technology Services",
+            itemRate,
+            itemQty,
+            unit: itAny?.unit || "Project",
+            itemCharges,
+            rowBase,
+            rowTax,
+            rowTotal,
+          };
+        })
+      : [
+          {
+            id: "row_single_service",
+            serviceName:
+              invoice.project || (invoice as any).title || "Services",
+            itemRate:
+              invoice.baseAmount && invoice.baseAmount > 0
+                ? invoice.baseAmount
+                : parsedInvoiced > 0
+                  ? parsedInvoiced + discount
+                  : 0,
+            itemQty: 1,
+            unit: "Project",
+            itemCharges: setupCharge,
+            charges:
+              setupCharge > 0
+                ? [
+                    {
+                      id: "c1",
+                      name: "Platform / Setup Fee",
+                      amount: setupCharge,
+                    },
+                  ]
+                : [],
+            gstRate: isGstInvoice ? gstRate : 0,
+            rowBase:
+              (invoice.baseAmount && invoice.baseAmount > 0
+                ? invoice.baseAmount
+                : parsedInvoiced > 0
+                  ? parsedInvoiced + discount
+                  : 0) + setupCharge,
+            rowTax: 0,
+            rowTotal:
+              parsedInvoiced > 0
+                ? parsedInvoiced
+                : invoice.baseAmount && invoice.baseAmount > 0
+                  ? invoice.baseAmount
+                  : 0,
+          },
+        ];
 
-  const totalTableQty = finalRenderedRows.reduce((sum, it) => sum + it.itemQty, 0)
-  const totalTableBase = finalRenderedRows.reduce((sum, it) => sum + (it.itemRate * it.itemQty) + it.itemCharges, 0)
-  const totalTableGst = isGstInvoice ? finalRenderedRows.reduce((sum, it) => sum + it.rowTax, 0) : 0
-  const totalTableGross = isGstInvoice ? finalRenderedRows.reduce((sum, it) => sum + it.rowTotal, 0) : totalTableBase
+  const totalTableQty = finalRenderedRows.reduce(
+    (sum, it) => sum + it.itemQty,
+    0,
+  );
+  const totalTableBase = finalRenderedRows.reduce(
+    (sum, it) => sum + it.itemRate * it.itemQty + it.itemCharges,
+    0,
+  );
+  const totalTableGst = isGstInvoice
+    ? finalRenderedRows.reduce((sum, it) => sum + it.rowTax, 0)
+    : 0;
+  const totalTableGross = isGstInvoice
+    ? finalRenderedRows.reduce((sum, it) => sum + it.rowTotal, 0)
+    : totalTableBase;
 
   // 2. Gross Services Value before discounts (Strictly matches the total table base amount)
-  let grossServicesValue = totalTableBase
+  let grossServicesValue = totalTableBase;
   if (grossServicesValue <= 0) {
     if (invoice.baseAmount !== undefined && invoice.baseAmount > 0) {
       if (discount > 0 && Math.abs(invoice.baseAmount - parsedInvoiced) < 2) {
-        grossServicesValue = invoice.baseAmount + discount
+        grossServicesValue = invoice.baseAmount + discount;
       } else {
-        grossServicesValue = invoice.baseAmount
+        grossServicesValue = invoice.baseAmount;
       }
     } else {
-      grossServicesValue = parsedInvoiced > 0 ? (parsedInvoiced + discount) : 0
+      grossServicesValue = parsedInvoiced > 0 ? parsedInvoiced + discount : 0;
     }
   }
 
   // 3. Taxable Base Amount & Grand Total
-  const taxableBase = Math.max(0, grossServicesValue + setupCharge - discount)
+  const taxableBase = Math.max(0, grossServicesValue + setupCharge - discount);
 
-  const gstAmt = isGstInvoice && taxableBase > 0
-    ? (invoice.gstAmount !== undefined && invoice.gstAmount > 0 ? invoice.gstAmount : (totalTableGst > 0 ? totalTableGst : Math.round(taxableBase * (gstRate / 100))))
-    : 0
+  const gstAmt =
+    isGstInvoice && taxableBase > 0
+      ? invoice.gstAmount !== undefined && invoice.gstAmount > 0
+        ? invoice.gstAmount
+        : totalTableGst > 0
+          ? totalTableGst
+          : Math.round(taxableBase * (gstRate / 100))
+      : 0;
 
-  const cgstAmt = Math.round(gstAmt / 2)
-  const sgstAmt = gstAmt - cgstAmt
-  const calculatedTotal = isGstInvoice ? (taxableBase + gstAmt) : taxableBase
-  const totalVal = parsedInvoiced > 0 ? parsedInvoiced : Math.max(calculatedTotal, typeof (invoice as any).total === "number" ? (invoice as any).total : 0)
+  const cgstAmt = Math.round(gstAmt / 2);
+  const sgstAmt = gstAmt - cgstAmt;
+  const calculatedTotal = isGstInvoice ? taxableBase + gstAmt : taxableBase;
+  const totalVal =
+    parsedInvoiced > 0
+      ? parsedInvoiced
+      : Math.max(
+          calculatedTotal,
+          typeof (invoice as any).total === "number"
+            ? (invoice as any).total
+            : 0,
+        );
 
-  const rawReceived = parseCurrencyNumber(invoice.paymentReceived)
-  const parsedReceived = Math.min(rawReceived, totalVal)
-  const parsedDue = invoice.due !== undefined 
-    ? Math.min(parseCurrencyNumber(invoice.due), Math.max(0, totalVal - parsedReceived))
-    : Math.max(0, totalVal - parsedReceived)
+  const rawReceived = parseCurrencyNumber(invoice.paymentReceived);
+  const parsedReceived = Math.min(rawReceived, totalVal);
+  const parsedDue =
+    invoice.due !== undefined
+      ? Math.min(
+          parseCurrencyNumber(invoice.due),
+          Math.max(0, totalVal - parsedReceived),
+        )
+      : Math.max(0, totalVal - parsedReceived);
 
-  const isFullyPaid = invoice.status === "Fully paid" || invoice.status === "Credited" || (parsedDue === 0 && parsedReceived > 0)
-  const isPartPaid = invoice.status === "Partially paid" || (parsedReceived > 0 && parsedDue > 0)
+  const isFullyPaid =
+    invoice.status === "Fully paid" ||
+    invoice.status === "Credited" ||
+    (parsedDue === 0 && parsedReceived > 0);
+  const isPartPaid =
+    invoice.status === "Partially paid" ||
+    (parsedReceived > 0 && parsedDue > 0);
 
-  const statusBadgeText = isFullyPaid 
-    ? "PAID IN FULL" 
-    : isPartPaid 
-    ? "PART PAID" 
-    : "NOT PAID"
+  const statusBadgeText = isFullyPaid
+    ? "PAID IN FULL"
+    : isPartPaid
+      ? "PART PAID"
+      : "NOT PAID";
 
   // Resolve QR Code URL: 100% scanable high-res square modules with margin (Cascading from Sub-Branch -> Branch -> Parent Company)
-  const companyGstQr = (isCustomCompany ? (companyDetails?.gst_payment_qr_url ?? (companyDetails as any)?.payment_qr_url ?? "") : (activeCompany?.gst_payment_qr_url || (activeCompany as any)?.payment_qr_url || ""))?.trim()
-  const companyNonGstQr = (isCustomCompany ? (companyDetails?.nongst_payment_qr_url ?? "") : (activeCompany?.nongst_payment_qr_url || ""))?.trim()
-  const companyQr = isGstInvoice ? (companyGstQr || companyNonGstQr) : companyNonGstQr
+  const companyGstQr = (
+    isCustomCompany
+      ? (companyDetails?.gst_payment_qr_url ??
+        (companyDetails as any)?.payment_qr_url ??
+        "")
+      : activeCompany?.gst_payment_qr_url ||
+        (activeCompany as any)?.payment_qr_url ||
+        ""
+  )?.trim();
+  const companyNonGstQr = (
+    isCustomCompany
+      ? (companyDetails?.nongst_payment_qr_url ?? "")
+      : activeCompany?.nongst_payment_qr_url || ""
+  )?.trim();
+  const companyQr = isGstInvoice
+    ? companyGstQr || companyNonGstQr
+    : companyNonGstQr;
 
   // Helper to test if a value is an uploaded/custom image QR URL
   const isImageQrUrl = (url?: string | null): boolean => {
-    if (!url || typeof url !== "string") return false
-    const s = url.trim()
-    return s !== "" && s !== "none" && (s.startsWith("http") || s.startsWith("data:") || s.startsWith("/"))
-  }
+    if (!url || typeof url !== "string") return false;
+    const s = url.trim();
+    return (
+      s !== "" &&
+      s !== "none" &&
+      (s.startsWith("http") || s.startsWith("data:") || s.startsWith("/"))
+    );
+  };
 
   // QR Code Resolution: Strictly respects uploaded QR images; if cleared or deleted, NO QR is rendered
-  let customPaymentQrUrl: string | null = null
+  let customPaymentQrUrl: string | null = null;
   if (overrideBankDetails?.paymentQrUrl !== undefined) {
-    customPaymentQrUrl = isImageQrUrl(overrideBankDetails.paymentQrUrl) ? overrideBankDetails.paymentQrUrl : null
+    customPaymentQrUrl = isImageQrUrl(overrideBankDetails.paymentQrUrl)
+      ? overrideBankDetails.paymentQrUrl
+      : null;
   } else if (isSubBranchIssued) {
     const sbQr = isGstInvoice
-      ? (activeSubBranch?.gst_payment_qr_url || activeSubBranch?.payment_qr_url)
-      : activeSubBranch?.nongst_payment_qr_url
+      ? activeSubBranch?.gst_payment_qr_url || activeSubBranch?.payment_qr_url
+      : activeSubBranch?.nongst_payment_qr_url;
     const branchQr = isGstInvoice
-      ? (activeBranch?.gst_payment_qr_url || activeBranch?.payment_qr_url)
-      : activeBranch?.nongst_payment_qr_url
-    if (isImageQrUrl(sbQr)) customPaymentQrUrl = sbQr!
-    else if (isImageQrUrl(branchQr)) customPaymentQrUrl = branchQr!
-    else if (isGstInvoice && isImageQrUrl(companyQr)) customPaymentQrUrl = companyQr
-    else if (!isGstInvoice && isImageQrUrl(companyNonGstQr)) customPaymentQrUrl = companyNonGstQr
-    else customPaymentQrUrl = null
+      ? activeBranch?.gst_payment_qr_url || activeBranch?.payment_qr_url
+      : activeBranch?.nongst_payment_qr_url;
+    if (isImageQrUrl(sbQr)) customPaymentQrUrl = sbQr!;
+    else if (isImageQrUrl(branchQr)) customPaymentQrUrl = branchQr!;
+    else if (isGstInvoice && isImageQrUrl(companyQr))
+      customPaymentQrUrl = companyQr;
+    else if (!isGstInvoice && isImageQrUrl(companyNonGstQr))
+      customPaymentQrUrl = companyNonGstQr;
+    else customPaymentQrUrl = null;
   } else if (isBranchIssued) {
     const branchQr = isGstInvoice
-      ? (activeBranch?.gst_payment_qr_url || activeBranch?.payment_qr_url)
-      : activeBranch?.nongst_payment_qr_url
-    if (isImageQrUrl(branchQr)) customPaymentQrUrl = branchQr!
-    else if (isGstInvoice && isImageQrUrl(companyQr)) customPaymentQrUrl = companyQr
-    else if (!isGstInvoice && isImageQrUrl(companyNonGstQr)) customPaymentQrUrl = companyNonGstQr
-    else customPaymentQrUrl = null
+      ? activeBranch?.gst_payment_qr_url || activeBranch?.payment_qr_url
+      : activeBranch?.nongst_payment_qr_url;
+    if (isImageQrUrl(branchQr)) customPaymentQrUrl = branchQr!;
+    else if (isGstInvoice && isImageQrUrl(companyQr))
+      customPaymentQrUrl = companyQr;
+    else if (!isGstInvoice && isImageQrUrl(companyNonGstQr))
+      customPaymentQrUrl = companyNonGstQr;
+    else customPaymentQrUrl = null;
   } else {
-    const compQr = isGstInvoice ? companyQr : companyNonGstQr
-    if (isImageQrUrl(compQr)) customPaymentQrUrl = compQr
-    else customPaymentQrUrl = null
+    const compQr = isGstInvoice ? companyQr : companyNonGstQr;
+    if (isImageQrUrl(compQr)) customPaymentQrUrl = compQr;
+    else customPaymentQrUrl = null;
   }
 
   // Guard: If Non-GST, ensure payment QR URL is not accidentally the GST QR
-  if (!isGstInvoice && customPaymentQrUrl && companyGstQr && customPaymentQrUrl.trim() === companyGstQr.trim()) {
-    customPaymentQrUrl = null
+  if (
+    !isGstInvoice &&
+    customPaymentQrUrl &&
+    companyGstQr &&
+    customPaymentQrUrl.trim() === companyGstQr.trim()
+  ) {
+    customPaymentQrUrl = null;
   }
 
   // Generate Public Verification / View Online PDF QR Code against Invoice Number (Crisp 300x300 M-level ECC QR)
-  const invoiceNumOrId = (invoice as any).invoiceNumber || (invoice as any).invoice_number || invoice.id || "INV"
-  const originUrl = typeof window !== "undefined" && window.location.origin && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-    ? window.location.origin
-    : "https://crm.saampark.com"
-  const publicInvoiceViewUrl = `${originUrl}/public/invoice?id=${encodeURIComponent(String(invoice.id || invoiceNumOrId))}`
+  const invoiceNumOrId =
+    (invoice as any).invoiceNumber ||
+    (invoice as any).invoice_number ||
+    invoice.id ||
+    "INV";
+  const originUrl =
+    typeof window !== "undefined" && window.location.origin
+      ? window.location.origin
+      : "http://localhost:3001";
+  const publicInvoiceViewUrl = `${originUrl}/public/invoice?id=${encodeURIComponent(String(invoice.id || invoiceNumOrId))}`;
   const invoiceVerificationQrUrl = React.useMemo(() => {
-    return getQrCodeDataUri(publicInvoiceViewUrl, 240, 4) || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=4&ecc=M&data=${encodeURIComponent(publicInvoiceViewUrl)}`
-  }, [publicInvoiceViewUrl])
+    return (
+      getQrCodeDataUri(publicInvoiceViewUrl, 240, 4) ||
+      `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=4&ecc=M&data=${encodeURIComponent(publicInvoiceViewUrl)}`
+    );
+  }, [publicInvoiceViewUrl]);
 
   // Bottom Footer Text resolution (Customizable via Company Settings or Invoice Studio)
-  const fallbackContactText = [
-    resolvedEmail ? `Email: ${resolvedEmail}` : null,
-    resolvedPhone ? `Tel: ${resolvedPhone}` : null,
-    resolvedWebsite ? `Web: ${resolvedWebsite}` : null,
-  ].filter(Boolean).join("  •  ") || fullRegisteredCompanyName
+  const fallbackContactText =
+    [
+      resolvedEmail ? `Email: ${resolvedEmail}` : null,
+      resolvedPhone ? `Tel: ${resolvedPhone}` : null,
+      resolvedWebsite ? `Web: ${resolvedWebsite}` : null,
+    ]
+      .filter(Boolean)
+      .join("  •  ") || fullRegisteredCompanyName;
 
-  const customFooterText = 
+  const customFooterText =
     (invoice as any)?.bottom_footer_text ||
     (companyDetails as any)?.bottom_footer_text ||
     (activeCompany as any)?.bottom_footer_text ||
     (companyDetails as any)?.footer_text ||
     (activeCompany as any)?.footer_text ||
-    ""
+    "";
 
   const resolvedBottomFooterText = customFooterText.trim()
     ? customFooterText.trim()
-    : (fallbackContactText ? `OFFICIAL CONTACT & SUPPORT: ${fallbackContactText}` : fullRegisteredCompanyName)
+    : fallbackContactText
+      ? `OFFICIAL CONTACT & SUPPORT: ${fallbackContactText}`
+      : fullRegisteredCompanyName;
 
   // 4. Strict A4 Pagination Engine (2 items per page: 2 products fit on 1 A4 page; 3rd creates page 2 with same invoice format)
-  const ITEMS_PER_FIRST_PAGE = 2
-  const ITEMS_PER_SUBSEQUENT_PAGE = 2
+  const ITEMS_PER_FIRST_PAGE = 2;
+  const ITEMS_PER_SUBSEQUENT_PAGE = 2;
 
   const paginatedPages = React.useMemo(() => {
     if (finalRenderedRows.length <= ITEMS_PER_FIRST_PAGE) {
-      return [{
-        pageNumber: 1,
-        items: finalRenderedRows,
-        startIndex: 0,
-        isFirstPage: true,
-        isLastPage: true,
-      }]
+      return [
+        {
+          pageNumber: 1,
+          items: finalRenderedRows,
+          startIndex: 0,
+          isFirstPage: true,
+          isLastPage: true,
+        },
+      ];
     }
 
     const pages: Array<{
-      pageNumber: number
-      items: typeof finalRenderedRows
-      startIndex: number
-      isFirstPage: boolean
-      isLastPage: boolean
-    }> = []
+      pageNumber: number;
+      items: typeof finalRenderedRows;
+      startIndex: number;
+      isFirstPage: boolean;
+      isLastPage: boolean;
+    }> = [];
 
     // Page 1: first 3 items
     pages.push({
@@ -947,78 +1496,117 @@ export function OfficialInvoiceDocument({
       startIndex: 0,
       isFirstPage: true,
       isLastPage: false,
-    })
+    });
 
     // Subsequent pages
-    let currentIndex = ITEMS_PER_FIRST_PAGE
-    let pageNum = 2
+    let currentIndex = ITEMS_PER_FIRST_PAGE;
+    let pageNum = 2;
 
     while (currentIndex < finalRenderedRows.length) {
-      const nextItems = finalRenderedRows.slice(currentIndex, currentIndex + ITEMS_PER_SUBSEQUENT_PAGE)
-      const isLast = (currentIndex + ITEMS_PER_SUBSEQUENT_PAGE) >= finalRenderedRows.length
+      const nextItems = finalRenderedRows.slice(
+        currentIndex,
+        currentIndex + ITEMS_PER_SUBSEQUENT_PAGE,
+      );
+      const isLast =
+        currentIndex + ITEMS_PER_SUBSEQUENT_PAGE >= finalRenderedRows.length;
       pages.push({
         pageNumber: pageNum,
         items: nextItems,
         startIndex: currentIndex,
         isFirstPage: false,
         isLastPage: isLast,
-      })
-      currentIndex += ITEMS_PER_SUBSEQUENT_PAGE
-      pageNum++
+      });
+      currentIndex += ITEMS_PER_SUBSEQUENT_PAGE;
+      pageNum++;
     }
 
-    return pages
-  }, [finalRenderedRows])
+    return pages;
+  }, [finalRenderedRows]);
 
-  const totalPages = paginatedPages.length
+  const totalPages = paginatedPages.length;
 
-  const hasDue = parsedDue > 0
-  const hasBankName = isValidField(resolvedBankName)
-  const hasAccountNum = isValidField(resolvedAccountNumber)
-  const hasIfsc = isValidField(resolvedIfscCode)
-  const hasAccountHolder = isValidField(resolvedAccountHolder) && Boolean(hasAccountNum || hasBankName || hasIfsc)
-  const hasBankBranch = isValidField(resolvedBankBranch) && Boolean(hasAccountNum || hasBankName || hasIfsc)
-  const hasUpiId = isValidField(resolvedUpiId)
-  const hasQr = Boolean(customPaymentQrUrl && customPaymentQrUrl.trim() && customPaymentQrUrl !== "none" && !customPaymentQrUrl.includes("undefined") && !customPaymentQrUrl.includes("null"))
+  const hasDue = parsedDue > 0;
+  const hasBankName = isValidField(resolvedBankName);
+  const hasAccountNum = isValidField(resolvedAccountNumber);
+  const hasIfsc = isValidField(resolvedIfscCode);
+  const hasAccountHolder =
+    isValidField(resolvedAccountHolder) &&
+    Boolean(hasAccountNum || hasBankName || hasIfsc);
+  const hasBankBranch =
+    isValidField(resolvedBankBranch) &&
+    Boolean(hasAccountNum || hasBankName || hasIfsc);
+  const hasUpiId = isValidField(resolvedUpiId);
+  const hasQr = Boolean(
+    customPaymentQrUrl &&
+    customPaymentQrUrl.trim() &&
+    customPaymentQrUrl !== "none" &&
+    !customPaymentQrUrl.includes("undefined") &&
+    !customPaymentQrUrl.includes("null"),
+  );
 
-  const hasAnyBankInfo = Boolean(hasAccountNum || hasBankName || hasIfsc)
-  const hasUpiDetails = Boolean(hasUpiId)
-  const hasAnyPaymentInfo = Boolean(hasAnyBankInfo || hasUpiDetails || hasQr)
-  const hasBankDetails = hasAnyBankInfo
+  const hasAnyBankInfo = Boolean(hasAccountNum || hasBankName || hasIfsc);
+  const hasUpiDetails = Boolean(hasUpiId);
+  const hasAnyPaymentInfo = Boolean(hasAnyBankInfo || hasUpiDetails || hasQr);
+  const hasBankDetails = hasAnyBankInfo;
 
-  const hasContactInfo = Boolean(isValidField(resolvedPhone) || isValidField(resolvedWebsite) || isValidField(resolvedEmail))
-  const hasCin = isValidField(resolvedCin)
-  const hasGstin = isGstInvoice && isValidField(resolvedGstin)
-  const hasPan = isValidField(resolvedPan)
-  const hasMsme = isValidField(resolvedMsme)
-  const hasLegalIds = Boolean(hasCin || hasGstin || hasPan || hasMsme)
-
-
+  const hasContactInfo = Boolean(
+    isValidField(resolvedPhone) ||
+    isValidField(resolvedWebsite) ||
+    isValidField(resolvedEmail),
+  );
+  const hasCin = isValidField(resolvedCin);
+  const hasGstin = isGstInvoice && isValidField(resolvedGstin);
+  const hasPan = isValidField(resolvedPan);
+  const hasMsme = isValidField(resolvedMsme);
+  const hasLegalIds = Boolean(hasCin || hasGstin || hasPan || hasMsme);
 
   const renderTopHeader = (pageNumber: number = 1, totalPgs: number = 1) => (
     <div className="flex flex-col gap-2.5 border-b border-zinc-200 pb-2.5">
       {/* 3-Column Top Identity Grid: Left = Logo, Center = Big SAAMPARK & Division/Subtitle, Right = Invoice Card */}
-      <div 
+      <div
         className="flex flex-row justify-between items-start gap-3 w-full print:flex-row print:justify-between print:items-start print-doc-header-row"
-        style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', flexWrap: 'nowrap' }}
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          width: "100%",
+          flexWrap: "nowrap",
+        }}
       >
         {/* Top-Left Logo Card: PERMANENTLY FIXED (No move, no drag, no scale increase/decrease) */}
         {resolvedLogoUrl ? (
-          <div 
+          <div
             className="relative w-28 h-28 sm:w-[120px] sm:h-[120px] rounded-2xl overflow-hidden shadow-2xs shrink-0 border border-zinc-200 bg-white flex items-center justify-center p-1.5 print:w-[115px] print:h-[115px] print:shrink-0 print-doc-header-logo select-none"
-            style={{ width: '120px', height: '120px', minWidth: '120px', minHeight: '120px', flexShrink: 0 }}
+            style={{
+              width: "120px",
+              height: "120px",
+              minWidth: "120px",
+              minHeight: "120px",
+              flexShrink: 0,
+            }}
           >
-            <img 
-              src={resolvedLogoUrl} 
-              alt={resolvedBrandName || "Entity Logo"} 
-              className="max-w-full max-h-full object-contain mx-auto print:max-w-full print:max-h-full select-none" 
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            <img
+              src={resolvedLogoUrl}
+              alt={resolvedBrandName || "Entity Logo"}
+              className="max-w-full max-h-full object-contain mx-auto print:max-w-full print:max-h-full select-none"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+              }}
             />
           </div>
         ) : (
-          <div 
+          <div
             className="relative w-28 h-28 sm:w-[120px] sm:h-[120px] rounded-2xl overflow-hidden shadow-md shrink-0 border border-teal-900/30 bg-gradient-to-b from-[#004e59] via-[#005c68] to-[#003840] flex flex-col items-center justify-center p-2 text-white text-center print:w-[115px] print:h-[115px] print:shrink-0 print-doc-header-logo select-none"
-            style={{ width: '120px', height: '120px', minWidth: '120px', minHeight: '120px', flexShrink: 0 }}
+            style={{
+              width: "120px",
+              height: "120px",
+              minWidth: "120px",
+              minHeight: "120px",
+              flexShrink: 0,
+            }}
           >
             <Sparkles className="w-5 h-5 mb-1 text-teal-200 drop-shadow-sm" />
             <div className="font-black text-[11px] tracking-wider uppercase leading-tight font-sans whitespace-pre-wrap">
@@ -1031,9 +1619,9 @@ export function OfficialInvoiceDocument({
         )}
 
         {/* Center: BIG SAAMPARK and in below BIGGER SECONDARY LINE (TECHNOLOGY AND RESEARCH PVT LTD / CONSULTANCY SERVICES) */}
-        <div 
+        <div
           className="flex-1 flex flex-col items-center justify-center text-center min-w-[280px] px-2 sm:px-4 shrink print:min-w-[320px] print:flex-1 print-doc-header-center"
-          style={{ flex: '1 1 auto', minWidth: '280px', textAlign: 'center' }}
+          style={{ flex: "1 1 auto", minWidth: "280px", textAlign: "center" }}
         >
           <div className="flex items-center justify-center gap-0.5 flex-wrap">
             <EditableText
@@ -1045,15 +1633,16 @@ export function OfficialInvoiceDocument({
               className="text-2xl sm:text-3xl md:text-[34px] font-black tracking-widest sm:tracking-[0.2em] leading-none text-zinc-950 uppercase font-sans text-center drop-shadow-2xs whitespace-pre-line break-words print:whitespace-pre-line"
             />
             {resolvedTrademarkSymbol && resolvedTrademarkSymbol !== "none" ? (
-              resolvedTrademarkSymbol === "TM" || resolvedTrademarkSymbol === "™" ? (
-                <span 
+              resolvedTrademarkSymbol === "TM" ||
+              resolvedTrademarkSymbol === "™" ? (
+                <span
                   className="inline-flex items-center justify-center w-[21px] h-[21px] min-w-[21px] min-h-[21px] rounded-full border-[1.5px] border-[#0a194e] text-[#0a194e] bg-white font-bold text-[8.5px] tracking-tight leading-none shrink-0 -translate-y-3.5 sm:-translate-y-4 -ml-2 shadow-xs select-none"
                   title="Trademark"
                 >
                   TM
                 </span>
               ) : (
-                <span 
+                <span
                   className="inline-flex items-center justify-center w-[19px] h-[19px] min-w-[19px] min-h-[19px] rounded-full border-[1.5px] border-[#0a194e] text-[#0a194e] bg-white font-black text-[10px] leading-none shrink-0 -translate-y-3.5 sm:-translate-y-4 -ml-2 shadow-xs select-none"
                   title="Registered Trademark"
                 >
@@ -1064,7 +1653,7 @@ export function OfficialInvoiceDocument({
           </div>
 
           {/* Secondary Line (Header Line 2): Cleanly renders when provided, stays blank when cleared */}
-          {(cleanHeaderSecondaryLine || interactive) ? (
+          {cleanHeaderSecondaryLine || interactive ? (
             <div className="max-w-[480px] mx-auto text-center w-full">
               <EditableText
                 as="h2"
@@ -1097,29 +1686,79 @@ export function OfficialInvoiceDocument({
             <p className="text-[10px] sm:text-[10.5px] font-semibold text-zinc-600 font-mono pt-1.5 flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap">
               {hasCin && (
                 <span className="inline-flex items-center gap-1">
-                  <EditableText value="CIN:" interactive={interactive} className="text-zinc-500 font-sans text-[9.5px] font-bold" />
-                  <EditableText value={resolvedCin} onChange={(val) => onFieldChange?.("cin", val)} interactive={interactive} fieldKey="cin" placeholder="CIN Number..." className="text-zinc-800 font-bold" />
+                  <EditableText
+                    value="CIN:"
+                    interactive={interactive}
+                    className="text-zinc-500 font-sans text-[9.5px] font-bold"
+                  />
+                  <EditableText
+                    value={resolvedCin}
+                    onChange={(val) => onFieldChange?.("cin", val)}
+                    interactive={interactive}
+                    fieldKey="cin"
+                    placeholder="CIN Number..."
+                    className="text-zinc-800 font-bold"
+                  />
                 </span>
               )}
               {hasGstin && (
                 <span className="inline-flex items-center gap-1">
-                  {hasCin ? <span className="text-zinc-300 mr-0.5">|</span> : null}
-                  <EditableText value="GSTIN:" interactive={interactive} className="text-zinc-500 font-sans text-[9.5px] font-bold" />
-                  <EditableText value={resolvedGstin} onChange={(val) => onFieldChange?.("gstin", val)} interactive={interactive} fieldKey="gstin" placeholder="GSTIN..." className="text-zinc-900 font-black" />
+                  {hasCin ? (
+                    <span className="text-zinc-300 mr-0.5">|</span>
+                  ) : null}
+                  <EditableText
+                    value="GSTIN:"
+                    interactive={interactive}
+                    className="text-zinc-500 font-sans text-[9.5px] font-bold"
+                  />
+                  <EditableText
+                    value={resolvedGstin}
+                    onChange={(val) => onFieldChange?.("gstin", val)}
+                    interactive={interactive}
+                    fieldKey="gstin"
+                    placeholder="GSTIN..."
+                    className="text-zinc-900 font-black"
+                  />
                 </span>
               )}
               {hasPan && (
                 <span className="inline-flex items-center gap-1">
-                  {(hasCin || hasGstin) ? <span className="text-zinc-300 mr-0.5">|</span> : null}
-                  <EditableText value="PAN:" interactive={interactive} className="text-zinc-500 font-sans text-[9.5px] font-bold" />
-                  <EditableText value={resolvedPan} onChange={(val) => onFieldChange?.("pan", val)} interactive={interactive} fieldKey="pan" placeholder="PAN..." className="text-zinc-900 font-black" />
+                  {hasCin || hasGstin ? (
+                    <span className="text-zinc-300 mr-0.5">|</span>
+                  ) : null}
+                  <EditableText
+                    value="PAN:"
+                    interactive={interactive}
+                    className="text-zinc-500 font-sans text-[9.5px] font-bold"
+                  />
+                  <EditableText
+                    value={resolvedPan}
+                    onChange={(val) => onFieldChange?.("pan", val)}
+                    interactive={interactive}
+                    fieldKey="pan"
+                    placeholder="PAN..."
+                    className="text-zinc-900 font-black"
+                  />
                 </span>
               )}
               {hasMsme && (
                 <span className="inline-flex items-center gap-1">
-                  {(hasCin || hasGstin || hasPan) ? <span className="text-zinc-300 mr-0.5">|</span> : null}
-                  <EditableText value="MSME:" interactive={interactive} className="text-zinc-500 font-sans text-[9.5px] font-bold" />
-                  <EditableText value={resolvedMsme} onChange={(val) => onFieldChange?.("msme_reg", val)} interactive={interactive} fieldKey="msme_reg" placeholder="MSME Reg..." className="text-zinc-900 font-semibold" />
+                  {hasCin || hasGstin || hasPan ? (
+                    <span className="text-zinc-300 mr-0.5">|</span>
+                  ) : null}
+                  <EditableText
+                    value="MSME:"
+                    interactive={interactive}
+                    className="text-zinc-500 font-sans text-[9.5px] font-bold"
+                  />
+                  <EditableText
+                    value={resolvedMsme}
+                    onChange={(val) => onFieldChange?.("msme_reg", val)}
+                    interactive={interactive}
+                    fieldKey="msme_reg"
+                    placeholder="MSME Reg..."
+                    className="text-zinc-900 font-semibold"
+                  />
                 </span>
               )}
             </p>
@@ -1127,13 +1766,21 @@ export function OfficialInvoiceDocument({
         </div>
 
         {/* Right: Header Card with Status Badge & Dates */}
-        <div 
+        <div
           className={`w-52 min-w-[200px] max-w-[210px] rounded-lg ${theme.cardHeaderGradient} text-white p-3 shadow-md shrink-0 flex flex-col self-start space-y-1.5 print:w-[200px] print:min-w-[200px] print:shrink-0 print-doc-header-card`}
-          style={{ width: '200px', minWidth: '200px', maxWidth: '210px', flexShrink: 0 }}
+          style={{
+            width: "200px",
+            minWidth: "200px",
+            maxWidth: "210px",
+            flexShrink: 0,
+          }}
         >
           <div className="flex items-center justify-between border-b border-white/20 pb-1">
             <EditableText
-              value={theme.invoiceTypeLabel + (totalPgs > 1 ? ` (P.${pageNumber}/${totalPgs})` : '')}
+              value={
+                theme.invoiceTypeLabel +
+                (totalPgs > 1 ? ` (P.${pageNumber}/${totalPgs})` : "")
+              }
               interactive={interactive}
               className="font-black text-[11px] tracking-wider uppercase text-white"
             />
@@ -1141,23 +1788,51 @@ export function OfficialInvoiceDocument({
               value={statusBadgeText}
               interactive={interactive}
               className={`px-2 py-0.5 rounded-full text-[8.5px] font-black tracking-wider uppercase ${
-                isFullyPaid ? "bg-white text-emerald-800" : isPartPaid ? "bg-white text-amber-800" : "bg-white text-rose-800"
+                isFullyPaid
+                  ? "bg-white text-emerald-800"
+                  : isPartPaid
+                    ? "bg-white text-amber-800"
+                    : "bg-white text-rose-800"
               }`}
             />
           </div>
 
           <div className="space-y-1 text-[10px]">
             <div>
-              <EditableText value="INVOICE NO:" interactive={interactive} className="text-white/80 text-[8px] uppercase tracking-wider font-semibold block" />
-              <EditableText value={invoiceNumOrId} interactive={interactive} className="font-mono text-white text-[12.5px] font-black break-all leading-tight block" />
+              <EditableText
+                value="INVOICE NO:"
+                interactive={interactive}
+                className="text-white/80 text-[8px] uppercase tracking-wider font-semibold block"
+              />
+              <EditableText
+                value={invoiceNumOrId}
+                interactive={interactive}
+                className="font-mono text-white text-[12.5px] font-black break-all leading-tight block"
+              />
             </div>
             <div className="flex items-center gap-2 pt-0.5">
-              <EditableText value="DATE:" interactive={interactive} className="text-white/80 text-[8px] uppercase font-bold tracking-wider shrink-0 w-8" />
-              <EditableText value={formatInvoiceDate(invoice.billDate)} interactive={interactive} className="text-white font-mono text-[9.5px] font-bold" />
+              <EditableText
+                value="DATE:"
+                interactive={interactive}
+                className="text-white/80 text-[8px] uppercase font-bold tracking-wider shrink-0 w-8"
+              />
+              <EditableText
+                value={formatInvoiceDate(invoice.billDate)}
+                interactive={interactive}
+                className="text-white font-mono text-[9.5px] font-bold"
+              />
             </div>
             <div className="flex items-center gap-2">
-              <EditableText value="DUE:" interactive={interactive} className="text-white/80 text-[8px] uppercase font-bold tracking-wider shrink-0 w-8" />
-              <EditableText value={hasDue ? formatInvoiceDate(invoice.dueDate) : "-"} interactive={interactive} className="text-white font-mono text-[9.5px] font-bold" />
+              <EditableText
+                value="DUE:"
+                interactive={interactive}
+                className="text-white/80 text-[8px] uppercase font-bold tracking-wider shrink-0 w-8"
+              />
+              <EditableText
+                value={hasDue ? formatInvoiceDate(invoice.dueDate) : "-"}
+                interactive={interactive}
+                className="text-white font-mono text-[9.5px] font-bold"
+              />
             </div>
           </div>
         </div>
@@ -1169,10 +1844,14 @@ export function OfficialInvoiceDocument({
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
             {isValidField(resolvedFullOfficeAddress || resolvedAddress) && (
               <div className="flex items-center gap-1.5 flex-grow basis-auto min-w-[280px]">
-                <span className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}>
+                <span
+                  className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}
+                >
                   <MapPin size={8} />
                 </span>
-                <span className="text-zinc-900 font-bold text-[9px] shrink-0">Office:</span>
+                <span className="text-zinc-900 font-bold text-[9px] shrink-0">
+                  Office:
+                </span>
                 <EditableText
                   value={resolvedFullOfficeAddress || resolvedAddress}
                   onChange={(val) => onFieldChange?.("address", val)}
@@ -1188,26 +1867,53 @@ export function OfficialInvoiceDocument({
               <div className="flex items-center gap-3 flex-wrap justify-end text-[9px] flex-grow-0 ml-auto">
                 {isValidField(resolvedPhone) && (
                   <p className="flex items-center gap-1 shrink-0">
-                    <span className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}>
+                    <span
+                      className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}
+                    >
                       <Phone size={7.5} />
                     </span>
-                    <EditableText value={resolvedPhone} onChange={(val) => onFieldChange?.("phone", val)} interactive={interactive} fieldKey="phone" placeholder="+91..." className="font-mono text-zinc-800 font-semibold" />
+                    <EditableText
+                      value={resolvedPhone}
+                      onChange={(val) => onFieldChange?.("phone", val)}
+                      interactive={interactive}
+                      fieldKey="phone"
+                      placeholder="+91..."
+                      className="font-mono text-zinc-800 font-semibold"
+                    />
                   </p>
                 )}
                 {isValidField(resolvedEmail) && (
                   <p className="flex items-center gap-1 shrink-0">
-                    <span className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}>
+                    <span
+                      className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}
+                    >
                       <Mail size={7.5} />
                     </span>
-                    <EditableText value={resolvedEmail} onChange={(val) => onFieldChange?.("email", val)} interactive={interactive} fieldKey="email" placeholder="Email..." className="text-zinc-700" />
+                    <EditableText
+                      value={resolvedEmail}
+                      onChange={(val) => onFieldChange?.("email", val)}
+                      interactive={interactive}
+                      fieldKey="email"
+                      placeholder="Email..."
+                      className="text-zinc-700"
+                    />
                   </p>
                 )}
                 {isValidField(resolvedWebsite) && (
-                  <p className="flex items-center gap-1 max-w-[220px] truncate">
-                    <span className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}>
+                  <p className="flex items-center gap-1 whitespace-normal break-all">
+                    <span
+                      className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}
+                    >
                       <Globe size={7.5} />
                     </span>
-                    <EditableText value={resolvedWebsite} onChange={(val) => onFieldChange?.("website", val)} interactive={interactive} fieldKey="website" placeholder="Website..." className="text-zinc-700 truncate" />
+                    <EditableText
+                      value={resolvedWebsite}
+                      onChange={(val) => onFieldChange?.("website", val)}
+                      interactive={interactive}
+                      fieldKey="website"
+                      placeholder="Website..."
+                      className="text-zinc-700 whitespace-normal break-all"
+                    />
                   </p>
                 )}
               </div>
@@ -1216,39 +1922,61 @@ export function OfficialInvoiceDocument({
         </div>
       )}
     </div>
-  )
+  );
 
-  const renderCompactSubsequentHeader = (pageNumber: number, totalPgs: number) => (
+  const renderCompactSubsequentHeader = (
+    pageNumber: number,
+    totalPgs: number,
+  ) => (
     <div className="flex justify-between items-center border-b border-zinc-200 pb-2 mb-2">
       <div className="flex items-center gap-2">
         <h2 className="text-xs font-black tracking-tight text-zinc-900 uppercase">
           {fullRegisteredCompanyName}
         </h2>
-        <span className="text-[9.5px] text-zinc-500 font-mono">| Invoice: <strong>{invoiceNumOrId}</strong></span>
+        <span className="text-[9.5px] text-zinc-500 font-mono">
+          | Invoice: <strong>{invoiceNumOrId}</strong>
+        </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className={`px-2.5 py-0.5 rounded-md ${theme.primaryBg} text-white font-mono font-bold text-[9px] uppercase tracking-wider`}>
+        <span
+          className={`px-2.5 py-0.5 rounded-md ${theme.primaryBg} text-white font-mono font-bold text-[9px] uppercase tracking-wider`}
+        >
           Page {pageNumber} of {totalPgs}
         </span>
       </div>
     </div>
-  )
+  );
 
   const renderEntityHierarchyStrip = () => {
     if (isSubBranchIssued && activeSubBranch) {
-      const parentName = resolvedParentBranch?.name || activeBranch?.name || "Main Operational Branch"
-      const parentCode = resolvedParentBranch?.code || activeBranch?.code
-      const parentManager = resolvedParentBranch?.managerName || (resolvedParentBranch as any)?.manager_name || (activeBranch?.managerName || (activeBranch as any)?.manager_name)
-      const parentCity = resolvedParentBranch?.city || activeBranch?.city
-      const parentLogo = resolvedParentBranch?.logo_url || activeBranch?.logo_url
+      const parentName =
+        resolvedParentBranch?.name ||
+        activeBranch?.name ||
+        "Main Operational Branch";
+      const parentCode = resolvedParentBranch?.code || activeBranch?.code;
+      const parentManager =
+        resolvedParentBranch?.managerName ||
+        (resolvedParentBranch as any)?.manager_name ||
+        activeBranch?.managerName ||
+        (activeBranch as any)?.manager_name;
+      const parentCity = resolvedParentBranch?.city || activeBranch?.city;
+      const parentLogo =
+        resolvedParentBranch?.logo_url || activeBranch?.logo_url;
 
-      const subName = activeSubBranch.name || "Franchise Sub-Branch"
-      const subCode = activeSubBranch.code
-      const partnerName = activeSubBranch.partner_name || (activeSubBranch as any)?.partnerName
-      const partnerPhone = activeSubBranch.partner_phone || (activeSubBranch as any)?.partnerPhone || activeSubBranch.phone
-      const partnerEmail = activeSubBranch.partner_email || (activeSubBranch as any)?.partnerEmail || activeSubBranch.email
-      const subCity = activeSubBranch.city || activeSubBranch.state
-      const subLogo = activeSubBranch.logo_url
+      const subName = activeSubBranch.name || "Franchise Sub-Branch";
+      const subCode = activeSubBranch.code;
+      const partnerName =
+        activeSubBranch.partner_name || (activeSubBranch as any)?.partnerName;
+      const partnerPhone =
+        activeSubBranch.partner_phone ||
+        (activeSubBranch as any)?.partnerPhone ||
+        activeSubBranch.phone;
+      const partnerEmail =
+        activeSubBranch.partner_email ||
+        (activeSubBranch as any)?.partnerEmail ||
+        activeSubBranch.email;
+      const subCity = activeSubBranch.city || activeSubBranch.state;
+      const subLogo = activeSubBranch.logo_url;
 
       return (
         <div className="w-full rounded-lg bg-gradient-to-r from-blue-50/90 via-slate-50 to-emerald-50/90 border border-zinc-200/90 p-2.5 shadow-2xs">
@@ -1256,7 +1984,11 @@ export function OfficialInvoiceDocument({
             {/* Left: Parent Branch */}
             <div className="flex items-center gap-2.5 min-w-0 pr-0 sm:pr-2">
               {parentLogo ? (
-                <img src={parentLogo} alt={parentName} className="w-7 h-7 rounded-md object-contain border border-blue-200 bg-white p-0.5 shrink-0" />
+                <img
+                  src={parentLogo}
+                  alt={parentName}
+                  className="w-7 h-7 rounded-md object-contain border border-blue-200 bg-white p-0.5 shrink-0"
+                />
               ) : (
                 <span className="w-7 h-7 rounded-md bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
                   <Building2 size={14} />
@@ -1282,7 +2014,10 @@ export function OfficialInvoiceDocument({
                 </div>
                 <div className="flex items-center gap-2 text-[9px] text-zinc-600 mt-0.5 flex-wrap">
                   {parentManager && (
-                    <span>Mgr: <strong className="text-zinc-800">{parentManager}</strong></span>
+                    <span>
+                      Mgr:{" "}
+                      <strong className="text-zinc-800">{parentManager}</strong>
+                    </span>
                   )}
                   {parentCity && (
                     <span className="flex items-center gap-1 text-zinc-500 font-medium">
@@ -1297,7 +2032,11 @@ export function OfficialInvoiceDocument({
             {/* Right: Franchise Sub-Branch */}
             <div className="flex items-center gap-2.5 min-w-0 pt-2 sm:pt-0 pl-0 sm:pl-2">
               {subLogo ? (
-                <img src={subLogo} alt={subName} className="w-7 h-7 rounded-md object-contain border border-emerald-200 bg-white p-0.5 shrink-0" />
+                <img
+                  src={subLogo}
+                  alt={subName}
+                  className="w-7 h-7 rounded-md object-contain border border-emerald-200 bg-white p-0.5 shrink-0"
+                />
               ) : (
                 <span className="w-7 h-7 rounded-md bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
                   <ShieldCheck size={14} />
@@ -1323,14 +2062,23 @@ export function OfficialInvoiceDocument({
                 </div>
                 <div className="flex items-center gap-2 text-[9px] text-zinc-600 mt-0.5 flex-wrap">
                   {partnerName && (
-                    <span>Partner: <strong className="text-zinc-800">{partnerName}</strong></span>
+                    <span>
+                      Partner:{" "}
+                      <strong className="text-zinc-800">{partnerName}</strong>
+                    </span>
                   )}
                   {partnerPhone && (
-                    <span>• Tel: <strong className="text-zinc-800">{partnerPhone}</strong></span>
+                    <span>
+                      • Tel:{" "}
+                      <strong className="text-zinc-800">{partnerPhone}</strong>
+                    </span>
                   )}
                   {subCity && (
                     <span className="flex items-center gap-1 text-zinc-500 font-medium">
-                      <MapPin size={8.5} className="text-emerald-600 shrink-0" />
+                      <MapPin
+                        size={8.5}
+                        className="text-emerald-600 shrink-0"
+                      />
                       <span>{subCity}</span>
                     </span>
                   )}
@@ -1339,25 +2087,33 @@ export function OfficialInvoiceDocument({
             </div>
           </div>
         </div>
-      )
+      );
     }
 
     if (isBranchIssued && activeBranch) {
-      const branchName = activeBranch.name || "Regional Operations Branch"
-      const branchCode = activeBranch.code
-      const branchManager = activeBranch.managerName || (activeBranch as any)?.manager_name
-      const branchLocation = [activeBranch.city, activeBranch.state].filter(Boolean).join(", ")
-      const branchPhone = activeBranch.phone
-      const branchEmail = activeBranch.email
-      const managerPhone = activeBranch.managerPhone || (activeBranch as any)?.manager_phone
-      const branchLogo = activeBranch.logo_url
+      const branchName = activeBranch.name || "Regional Operations Branch";
+      const branchCode = activeBranch.code;
+      const branchManager =
+        activeBranch.managerName || (activeBranch as any)?.manager_name;
+      const branchLocation = [activeBranch.city, activeBranch.state]
+        .filter(Boolean)
+        .join(", ");
+      const branchPhone = activeBranch.phone;
+      const branchEmail = activeBranch.email;
+      const managerPhone =
+        activeBranch.managerPhone || (activeBranch as any)?.manager_phone;
+      const branchLogo = activeBranch.logo_url;
 
       return (
         <div className="w-full rounded-lg bg-blue-50/80 border border-blue-200/90 p-2.5 shadow-2xs">
           <div className="flex items-center justify-between gap-2.5">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               {branchLogo ? (
-                <img src={branchLogo} alt={branchName} className="w-7 h-7 rounded-md object-contain border border-blue-200 bg-white p-0.5 shrink-0" />
+                <img
+                  src={branchLogo}
+                  alt={branchName}
+                  className="w-7 h-7 rounded-md object-contain border border-blue-200 bg-white p-0.5 shrink-0"
+                />
               ) : (
                 <span className="w-7 h-7 rounded-md bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
                   <Building2 size={14} />
@@ -1382,20 +2138,29 @@ export function OfficialInvoiceDocument({
                   )}
                   {branchManager && (
                     <span className="text-[9px] text-zinc-600">
-                      • Manager: <strong className="text-zinc-800">{branchManager}</strong>
+                      • Manager:{" "}
+                      <strong className="text-zinc-800">{branchManager}</strong>
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-[8.5px] text-zinc-600 mt-0.5 flex-wrap">
                   {managerPhone && (
-                    <span>Mgr Tel: <strong className="text-zinc-800 font-mono">{managerPhone}</strong></span>
+                    <span>
+                      Mgr Tel:{" "}
+                      <strong className="text-zinc-800 font-mono">
+                        {managerPhone}
+                      </strong>
+                    </span>
                   )}
                   {branchPhone && (
-                    <span>• Branch Tel: <strong className="text-zinc-800 font-mono">{branchPhone}</strong></span>
+                    <span>
+                      • Branch Tel:{" "}
+                      <strong className="text-zinc-800 font-mono">
+                        {branchPhone}
+                      </strong>
+                    </span>
                   )}
-                  {branchEmail && (
-                    <span>• {branchEmail}</span>
-                  )}
+                  {branchEmail && <span>• {branchEmail}</span>}
                 </div>
               </div>
             </div>
@@ -1408,18 +2173,22 @@ export function OfficialInvoiceDocument({
             )}
           </div>
         </div>
-      )
+      );
     }
 
-    return null
-  }
+    return null;
+  };
 
   const renderInfoCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
       {/* Box 1: BILL TO (6 cols) */}
-      <div className={`sm:col-span-6 p-3 rounded-lg ${theme.lightBg} border ${theme.lightBorder} space-y-1 shadow-2xs`}>
+      <div
+        className={`sm:col-span-6 p-3 rounded-lg ${theme.lightBg} border ${theme.lightBorder} space-y-1 shadow-2xs`}
+      >
         <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-zinc-700">
-          <span className={`w-4 h-4 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}>
+          <span
+            className={`w-4 h-4 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}
+          >
             <UserCheck size={9} />
           </span>
           <EditableText
@@ -1440,13 +2209,27 @@ export function OfficialInvoiceDocument({
             </span>
           )}
         </div>
-        {isValidField(invoice.contactPersonName || (invoice as any).primaryContact || (invoice as any).clientContactPerson || clientDetails?.primaryContact) && (
+        {isValidField(
+          invoice.contactPersonName ||
+            (invoice as any).primaryContact ||
+            (invoice as any).clientContactPerson ||
+            clientDetails?.primaryContact,
+        ) && (
           <p className="text-[10px] text-zinc-900 font-bold flex items-center gap-1 pt-0.5">
             <span className="text-[8.5px] text-zinc-500 font-extrabold uppercase tracking-wider">
-              {isValidField(invoice.clientDesignation || clientDetails?.designation) ? `${invoice.clientDesignation || clientDetails?.designation}:` : "Attn:"}
+              {isValidField(
+                invoice.clientDesignation || clientDetails?.designation,
+              )
+                ? `${invoice.clientDesignation || clientDetails?.designation}:`
+                : "Attn:"}
             </span>
             <EditableText
-              value={invoice.contactPersonName || (invoice as any).primaryContact || (invoice as any).clientContactPerson || clientDetails?.primaryContact}
+              value={
+                invoice.contactPersonName ||
+                (invoice as any).primaryContact ||
+                (invoice as any).clientContactPerson ||
+                clientDetails?.primaryContact
+              }
               interactive={interactive}
               className="text-zinc-900 font-extrabold text-[10.5px]"
             />
@@ -1455,68 +2238,157 @@ export function OfficialInvoiceDocument({
         {(invoice.clientPhone || clientDetails?.phone) && (
           <p className="text-[9.5px] text-zinc-800 font-bold flex items-center gap-1">
             <Phone size={9} className="text-blue-600 shrink-0" />
-            <EditableText value="Phone:" interactive={interactive} className="font-bold mr-0.5 text-zinc-600" />
-            <EditableText value={invoice.clientPhone || clientDetails?.phone} interactive={interactive} className="font-mono text-zinc-900 font-bold" />
+            <EditableText
+              value="Phone:"
+              interactive={interactive}
+              className="font-bold mr-0.5 text-zinc-600"
+            />
+            <EditableText
+              value={invoice.clientPhone || clientDetails?.phone}
+              interactive={interactive}
+              className="font-mono text-zinc-900 font-bold"
+            />
           </p>
         )}
         {(invoice.clientEmail || clientDetails?.email) && (
           <p className="text-[9.5px] text-zinc-500 font-mono flex items-center gap-1">
             <Mail size={9} className="text-zinc-400 shrink-0" />
-            <EditableText value={invoice.clientEmail || clientDetails?.email} interactive={interactive} />
+            <EditableText
+              value={invoice.clientEmail || clientDetails?.email}
+              interactive={interactive}
+            />
           </p>
         )}
         {isValidField(invoice.clientAddress || clientDetails?.address) && (
           <p className="text-[9.5px] text-zinc-600 leading-tight">
-            <EditableText value="Address:" interactive={interactive} className="font-bold mr-1" />
+            <EditableText
+              value="Address:"
+              interactive={interactive}
+              className="font-bold mr-1"
+            />
             <EditableText
               value={invoice.clientAddress || clientDetails?.address}
               interactive={interactive}
             />
           </p>
         )}
-        {isValidField([invoice.clientCity, (invoice as any).clientDistrict || (clientDetails as any)?.district, invoice.clientState].filter(Boolean).join(", ") || [clientDetails?.city, (clientDetails as any)?.district, clientDetails?.state].filter(Boolean).join(", ")) && (
+        {isValidField(
+          [
+            invoice.clientCity,
+            (invoice as any).clientDistrict || (clientDetails as any)?.district,
+            invoice.clientState,
+          ]
+            .filter(Boolean)
+            .join(", ") ||
+            [
+              clientDetails?.city,
+              (clientDetails as any)?.district,
+              clientDetails?.state,
+            ]
+              .filter(Boolean)
+              .join(", "),
+        ) && (
           <p className="text-[9.5px] text-zinc-600 flex items-center gap-1">
             <MapPin size={9} className="text-zinc-500 shrink-0" />
-            <EditableText value="Location:" interactive={interactive} className="font-bold mr-1" />
             <EditableText
-              value={[invoice.clientCity, (invoice as any).clientDistrict || (clientDetails as any)?.district, invoice.clientState].filter(Boolean).join(", ") || [clientDetails?.city, (clientDetails as any)?.district, clientDetails?.state].filter(Boolean).join(", ")}
+              value="Location:"
+              interactive={interactive}
+              className="font-bold mr-1"
+            />
+            <EditableText
+              value={
+                [
+                  invoice.clientCity,
+                  (invoice as any).clientDistrict ||
+                    (clientDetails as any)?.district,
+                  invoice.clientState,
+                ]
+                  .filter(Boolean)
+                  .join(", ") ||
+                [
+                  clientDetails?.city,
+                  (clientDetails as any)?.district,
+                  clientDetails?.state,
+                ]
+                  .filter(Boolean)
+                  .join(", ")
+              }
               interactive={interactive}
             />
           </p>
         )}
-        {isGstInvoice && isValidField(invoice.clientGstin || clientDetails?.gstNumber || clientDetails?.vatNumber) && (
+        {isGstInvoice &&
+          isValidField(
+            invoice.clientGstin ||
+              clientDetails?.gstNumber ||
+              clientDetails?.vatNumber,
+          ) && (
+            <p className="text-[9px] font-mono font-bold text-zinc-800">
+              <EditableText
+                value="Client GSTIN:"
+                interactive={interactive}
+                className="font-bold mr-1 font-sans"
+              />
+              <EditableText
+                value={
+                  invoice.clientGstin ||
+                  clientDetails?.gstNumber ||
+                  clientDetails?.vatNumber
+                }
+                interactive={interactive}
+              />
+            </p>
+          )}
+        {isValidField(
+          (clientDetails as any)?.panNumber || (invoice as any)?.clientPan,
+        ) && (
           <p className="text-[9px] font-mono font-bold text-zinc-800">
-            <EditableText value="Client GSTIN:" interactive={interactive} className="font-bold mr-1 font-sans" />
-            <EditableText value={invoice.clientGstin || clientDetails?.gstNumber || clientDetails?.vatNumber} interactive={interactive} />
-          </p>
-        )}
-        {isValidField((clientDetails as any)?.panNumber || (invoice as any)?.clientPan) && (
-          <p className="text-[9px] font-mono font-bold text-zinc-800">
-            <EditableText value="Client PAN:" interactive={interactive} className="font-bold mr-1 font-sans" />
-            <EditableText value={(invoice as any)?.clientPan || (clientDetails as any)?.panNumber} interactive={interactive} />
+            <EditableText
+              value="Client PAN:"
+              interactive={interactive}
+              className="font-bold mr-1 font-sans"
+            />
+            <EditableText
+              value={
+                (invoice as any)?.clientPan || (clientDetails as any)?.panNumber
+              }
+              interactive={interactive}
+            />
           </p>
         )}
       </div>
 
       {/* Box 2: SERVICE / ENGAGEMENT DETAILS (6 cols) with embedded Official Verification QR beside it */}
-      <div className={`sm:col-span-6 p-3 rounded-lg ${theme.lightBg} border ${theme.lightBorder} shadow-2xs flex items-center justify-between gap-3`}>
+      <div
+        className={`sm:col-span-6 p-3 rounded-lg ${theme.lightBg} border ${theme.lightBorder} shadow-2xs flex items-center justify-between gap-3`}
+      >
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-zinc-700">
-            <span className={`w-4 h-4 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}>
+            <span
+              className={`w-4 h-4 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}
+            >
               <Briefcase size={9} />
             </span>
             <EditableText
-              value="PRIMARY CATEGORY &amp; DOMAIN"
+              value="PRIMARY CATEGORY"
               interactive={interactive}
               className="font-black text-[10px] uppercase tracking-wider text-zinc-700"
             />
           </div>
           {(() => {
-            let cat = String(invoice.primaryCategory || invoice.category || invoice.project || "Website Development").trim();
+            let cat = String(
+              invoice.primaryCategory ||
+                invoice.category ||
+                invoice.project ||
+                "Website Development",
+            ).trim();
             if (cat === "Website") cat = "Website Development";
-            else if (cat === "Custom Software") cat = "Custom Software Application";
-            else if (cat === "Cloud Infrastructure") cat = "Cloud Infrastructure & Domain";
-            else if (cat === "Digital Marketing") cat = "Digital Marketing & Social Media Retainer";
+            else if (cat === "Custom Software")
+              cat = "Custom Software Application";
+            else if (cat === "Cloud Infrastructure")
+              cat = "Cloud Infrastructure & Domain";
+            else if (cat === "Digital Marketing")
+              cat = "Digital Marketing & Social Media Retainer";
             return (
               <>
                 <EditableText
@@ -1525,11 +2397,22 @@ export function OfficialInvoiceDocument({
                   className="font-bold text-xs sm:text-sm text-zinc-900 truncate block"
                 />
                 <p className="text-[9.5px] text-zinc-600 font-mono">
-                  <EditableText value="Scheme:" interactive={interactive} className="font-bold font-sans mr-1" />
-                  <EditableText value={isGstInvoice ? 'GST Tax Invoice' : 'Non-GST Direct Invoice'} interactive={interactive} />
+                  <EditableText
+                    value="Scheme:"
+                    interactive={interactive}
+                    className="font-bold font-sans mr-1"
+                  />
+                  <EditableText
+                    value={isGstInvoice ? "Tax Invoice" : "Normal Invoice"}
+                    interactive={interactive}
+                  />
                 </p>
                 <p className="text-[9.5px] text-zinc-600 truncate">
-                  <EditableText value="Primary Category:" interactive={interactive} className="font-bold mr-1" />
+                  <EditableText
+                    value="Primary Category:"
+                    interactive={interactive}
+                    className="font-bold mr-1"
+                  />
                   <EditableText value={cat} interactive={interactive} />
                 </p>
               </>
@@ -1537,31 +2420,45 @@ export function OfficialInvoiceDocument({
           })()}
           {isSubBranchIssued ? (
             <p className="text-[9px] text-emerald-800 dark:text-emerald-300 truncate font-semibold">
-              <EditableText value="Unit:" interactive={interactive} className="font-bold mr-1" />
-              <EditableText value={`${activeSubBranch?.name} ${activeSubBranch?.code ? `[${activeSubBranch.code}]` : ""}`} interactive={interactive} />
+              <EditableText
+                value="Unit:"
+                interactive={interactive}
+                className="font-bold mr-1"
+              />
+              <EditableText
+                value={`${activeSubBranch?.name} ${activeSubBranch?.code ? `[${activeSubBranch.code}]` : ""}`}
+                interactive={interactive}
+              />
             </p>
           ) : isBranchIssued && activeBranch ? (
             <p className="text-[9px] text-blue-900 dark:text-blue-300 truncate font-semibold">
-              <EditableText value="Branch:" interactive={interactive} className="font-bold mr-1" />
-              <EditableText value={`${activeBranch.name} ${activeBranch.code ? `[${activeBranch.code}]` : ""}`} interactive={interactive} />
+              <EditableText
+                value="Branch:"
+                interactive={interactive}
+                className="font-bold mr-1"
+              />
+              <EditableText
+                value={`${activeBranch.name} ${activeBranch.code ? `[${activeBranch.code}]` : ""}`}
+                interactive={interactive}
+              />
             </p>
           ) : null}
         </div>
 
         {/* Official Scan & Verify QR Code beside Project Scope (Crisp Square) */}
         <div className="shrink-0 text-center flex flex-col items-center justify-center bg-white p-2 border border-zinc-200 shadow-2xs rounded-xl aspect-square">
-          <a 
-            href={publicInvoiceViewUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href={publicInvoiceViewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="group block"
             title="Scan or click to view invoice verification online"
           >
-            <img 
-              src={invoiceVerificationQrUrl} 
-              alt={`QR ${invoiceNumOrId}`} 
-              className="w-20 h-20 sm:w-22 sm:h-22 print:w-[26mm] print:h-[26mm] aspect-square bg-white object-contain group-hover:scale-105 transition-transform" 
-              style={{ imageRendering: 'pixelated' }}
+            <img
+              src={invoiceVerificationQrUrl}
+              alt={`QR ${invoiceNumOrId}`}
+              className="w-20 h-20 sm:w-22 sm:h-22 print:w-[26mm] print:h-[26mm] aspect-square bg-white object-contain group-hover:scale-105 transition-transform"
+              style={{ imageRendering: "pixelated" }}
             />
           </a>
           <EditableText
@@ -1572,45 +2469,92 @@ export function OfficialInvoiceDocument({
         </div>
       </div>
     </div>
-  )
+  );
 
-  const renderTable = (itemsToRender: any[], startIndex: number, showSubtotal: boolean) => {
-    const pageSubtotalQty = itemsToRender.reduce((sum, it) => sum + it.itemQty, 0)
-    const pageSubtotalBase = itemsToRender.reduce((sum, it) => sum + (it.itemRate * it.itemQty) + it.itemCharges, 0)
-    const pageSubtotalGst = isGstInvoice ? itemsToRender.reduce((sum, it) => sum + it.rowTax, 0) : 0
-    const pageSubtotalGross = isGstInvoice ? itemsToRender.reduce((sum, it) => sum + it.rowTotal, 0) : pageSubtotalBase
+  const renderTable = (
+    itemsToRender: any[],
+    startIndex: number,
+    showSubtotal: boolean,
+  ) => {
+    const pageSubtotalQty = itemsToRender.reduce(
+      (sum, it) => sum + it.itemQty,
+      0,
+    );
+    const pageSubtotalBase = itemsToRender.reduce(
+      (sum, it) => sum + it.itemRate * it.itemQty + it.itemCharges,
+      0,
+    );
+    const pageSubtotalGst = isGstInvoice
+      ? itemsToRender.reduce((sum, it) => sum + it.rowTax, 0)
+      : 0;
+    const pageSubtotalGross = isGstInvoice
+      ? itemsToRender.reduce((sum, it) => sum + it.rowTotal, 0)
+      : pageSubtotalBase;
 
     return (
       <div className="rounded-xl border border-zinc-200 overflow-hidden shadow-2xs mt-1.5">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className={`${theme.tableHeaderBg} text-[10px] uppercase font-black tracking-wider`}>
+            <tr
+              className={`${theme.tableHeaderBg} text-[10px] uppercase font-black tracking-wider`}
+            >
               <th className="py-2.5 px-3 w-10 text-center">
-                <EditableText value="#" interactive={interactive} className="text-white" />
+                <EditableText
+                  value="#"
+                  interactive={interactive}
+                  className="text-white"
+                />
               </th>
               <th className="py-2.5 px-3">
-                <EditableText value="Service / Product Description" interactive={interactive} className="text-white" />
+                <EditableText
+                  value="Service / Product Description"
+                  interactive={interactive}
+                  className="text-white"
+                />
               </th>
               <th className="py-2.5 px-2 w-12 text-center">
-                <EditableText value="Qty" interactive={interactive} className="text-white" />
+                <EditableText
+                  value="Qty"
+                  interactive={interactive}
+                  className="text-white"
+                />
               </th>
               <th className="py-2.5 px-2 w-14 text-center">
-                <EditableText value="Unit" interactive={interactive} className="text-white" />
+                <EditableText
+                  value="Unit"
+                  interactive={interactive}
+                  className="text-white"
+                />
               </th>
               <th className="py-2.5 px-2.5 w-24 text-right">
-                <EditableText value="Unit Rate" interactive={interactive} className="text-white" />
+                <EditableText
+                  value="Unit Rate"
+                  interactive={interactive}
+                  className="text-white"
+                />
               </th>
               <th className="py-2.5 px-2.5 w-28 text-right">
-                <EditableText value={isGstInvoice ? "GST Rate / Amt" : "Taxes"} interactive={interactive} className="text-white" />
+                <EditableText
+                  value={isGstInvoice ? "GST Rate / Amt" : "Taxes"}
+                  interactive={interactive}
+                  className="text-white"
+                />
               </th>
               <th className="py-2.5 px-3 w-28 text-right">
-                <EditableText value="Amount (INR)" interactive={interactive} className="text-white" />
+                <EditableText
+                  value="Amount (INR)"
+                  interactive={interactive}
+                  className="text-white"
+                />
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 text-[11px] text-zinc-800 bg-white">
             {itemsToRender.map((item, idx) => (
-              <tr key={item.id || idx} className="hover:bg-zinc-50/80 transition-colors">
+              <tr
+                key={item.id || idx}
+                className="hover:bg-zinc-50/80 transition-colors"
+              >
                 <td className="py-2.5 px-3 text-center font-mono font-bold text-zinc-500">
                   {startIndex + idx + 1}
                 </td>
@@ -1626,15 +2570,21 @@ export function OfficialInvoiceDocument({
                     </div>
                   )}
                 </td>
-                <td className="py-2.5 px-2 text-center font-mono">{item.itemQty}</td>
-                <td className="py-2.5 px-2 text-center text-zinc-500">{item.unit || "Unit"}</td>
+                <td className="py-2.5 px-2 text-center font-mono">
+                  {item.itemQty}
+                </td>
+                <td className="py-2.5 px-2 text-center text-zinc-500">
+                  {item.unit || "Unit"}
+                </td>
                 <td className="py-2.5 px-2.5 text-right font-mono font-semibold">
                   ₹{safeFormatCurrency(item.itemRate)}
                 </td>
                 <td className="py-2.5 px-2.5 text-right font-mono text-zinc-600">
                   {isGstInvoice ? (
                     <div>
-                      <span className="font-bold">{item.gstRate || gstRate}%</span>
+                      <span className="font-bold">
+                        {item.gstRate || gstRate}%
+                      </span>
                       <span className="text-[8.5px] text-zinc-500 block">
                         (₹{safeFormatCurrency(item.rowTax)})
                       </span>
@@ -1651,14 +2601,21 @@ export function OfficialInvoiceDocument({
           </tbody>
           {showSubtotal && (
             <tfoot>
-              <tr className={`${theme.tableSubtotalBg} font-bold text-[10px] border-t border-zinc-200`}>
-                <td colSpan={2} className="py-2.5 px-3 uppercase tracking-wider">
+              <tr
+                className={`${theme.tableSubtotalBg} font-bold text-[10px] border-t border-zinc-200`}
+              >
+                <td
+                  colSpan={2}
+                  className="py-2.5 px-3 uppercase tracking-wider"
+                >
                   <EditableText
                     value="SUBTOTAL SERVICES & BASE AMOUNT"
                     interactive={interactive}
                   />
                 </td>
-                <td className="py-2.5 px-2 text-center font-mono">{pageSubtotalQty}</td>
+                <td className="py-2.5 px-2 text-center font-mono">
+                  {pageSubtotalQty}
+                </td>
                 <td className="py-2.5 px-2 text-center">Items</td>
                 <td className="py-2.5 px-2.5 text-right font-mono">
                   ₹{safeFormatCurrency(pageSubtotalBase)}
@@ -1674,20 +2631,28 @@ export function OfficialInvoiceDocument({
           )}
         </table>
       </div>
-    )
-  }
+    );
+  };
 
-  const renderFinancialsAndFooter = (pageNumber: number = 1, totalPgs: number = 1) => (
+  const renderFinancialsAndFooter = (
+    pageNumber: number = 1,
+    totalPgs: number = 1,
+  ) => (
     <div className="flex-1 flex flex-col justify-between space-y-2.5 mt-auto pt-1">
       {/* 2-COLUMN BALANCED MATRIX: LEFT = TOTAL IN WORDS + BANK & UPI PAYMENT DETAILS; RIGHT = FINANCIAL SUMMARY */}
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-stretch">
         {/* Left 6 Columns: Amount in Words + Bank & UPI Payment Details */}
         <div className="sm:col-span-6 flex flex-col justify-between gap-2">
           {/* Card 1: TOTAL AMOUNT IN WORDS */}
-          <div className={`p-2.5 sm:p-3 rounded-lg ${theme.lightBg} border ${theme.lightBorder} space-y-1 shadow-2xs`}>
+          <div
+            className={`p-2.5 sm:p-3 rounded-lg ${theme.lightBg} border ${theme.lightBorder} space-y-1 shadow-2xs`}
+          >
             <div className="font-black text-[9px] uppercase tracking-wider text-zinc-600 flex items-center gap-1">
               <FileText size={11} className={theme.primaryText} />
-              <EditableText value="TOTAL AMOUNT IN WORDS" interactive={interactive} />
+              <EditableText
+                value="TOTAL AMOUNT IN WORDS"
+                interactive={interactive}
+              />
             </div>
             <EditableText
               value={numberToIndianWords(totalVal)}
@@ -1698,13 +2663,21 @@ export function OfficialInvoiceDocument({
 
           {/* Card 2: BANK & UPI PAYMENT DETAILS (Renders ONLY if bank or UPI details are entered. If gap/blank, completely blank!) */}
           {hasAnyPaymentInfo && (
-            <div className={`p-2.5 sm:p-3 rounded-lg ${theme.lightBg} border ${theme.lightBorder} space-y-2 shadow-2xs flex-1 flex flex-col justify-between`}>
+            <div
+              className={`p-2.5 sm:p-3 rounded-lg ${theme.lightBg} border ${theme.lightBorder} space-y-2 shadow-2xs flex-1 flex flex-col justify-between`}
+            >
               <div className="flex items-center justify-between border-b border-zinc-200/80 dark:border-zinc-700/60 pb-1">
                 <span className="font-black text-[9.5px] uppercase tracking-wider text-zinc-800 dark:text-zinc-200 flex items-center gap-1">
                   <Landmark size={12} className={theme.primaryText} />
-                  <EditableText 
-                    value={hasAnyBankInfo && hasUpiDetails ? "BANK & UPI PAYMENT DETAILS" : hasAnyBankInfo ? "BANK PAYMENT DETAILS" : "UPI PAYMENT DETAILS"} 
-                    interactive={interactive} 
+                  <EditableText
+                    value={
+                      hasAnyBankInfo && hasUpiDetails
+                        ? "BANK & UPI PAYMENT DETAILS"
+                        : hasAnyBankInfo
+                          ? "BANK PAYMENT DETAILS"
+                          : "UPI PAYMENT DETAILS"
+                    }
+                    interactive={interactive}
                   />
                 </span>
                 <EditableText
@@ -1714,16 +2687,20 @@ export function OfficialInvoiceDocument({
                 />
               </div>
 
-              <div className={`grid ${hasQr && (hasAnyBankInfo || hasUpiDetails) ? "grid-cols-12" : "grid-cols-1"} gap-2.5 items-center`}>
+              <div
+                className={`grid ${hasQr && (hasAnyBankInfo || hasUpiDetails) ? "grid-cols-12" : "grid-cols-1"} gap-2.5 items-center`}
+              >
                 {/* Left side of card: UPI QR Code & Instant Scan (only if QR exists) */}
                 {hasQr && (
-                  <div className={`${(hasAnyBankInfo || hasUpiDetails) ? "col-span-4" : "w-full"} flex flex-col items-center justify-center text-center space-y-1`}>
+                  <div
+                    className={`${hasAnyBankInfo || hasUpiDetails ? "col-span-4" : "w-full"} flex flex-col items-center justify-center text-center space-y-1`}
+                  >
                     <div className="bg-white p-1.5 rounded-none border border-zinc-300 shadow-2xs shrink-0 aspect-square">
-                      <img 
-                        src={customPaymentQrUrl || undefined} 
-                        alt="UPI Payment QR Code" 
-                        className="w-20 h-20 print:w-[26mm] print:h-[26mm] aspect-square object-contain" 
-                        style={{ imageRendering: 'pixelated' }}
+                      <img
+                        src={customPaymentQrUrl || undefined}
+                        alt="UPI Payment QR Code"
+                        className="w-20 h-20 print:w-[26mm] print:h-[26mm] aspect-square object-contain"
+                        style={{ imageRendering: "pixelated" }}
                       />
                     </div>
                     <EditableText
@@ -1736,10 +2713,14 @@ export function OfficialInvoiceDocument({
 
                 {/* Right side of card: Direct Bank Account & UPI Details (Renders ONLY if bank or UPI info is present) */}
                 {(hasAnyBankInfo || hasUpiDetails) && (
-                  <div className={`${hasQr ? "col-span-8" : "w-full"} space-y-1 text-[9px] text-zinc-700 dark:text-zinc-300`}>
+                  <div
+                    className={`${hasQr ? "col-span-8" : "w-full"} space-y-1 text-[9px] text-zinc-700 dark:text-zinc-300`}
+                  >
                     {hasBankName && (
                       <div className="flex justify-between items-center gap-1">
-                        <span className="text-zinc-500 font-medium shrink-0">Bank:</span>
+                        <span className="text-zinc-500 font-medium shrink-0">
+                          Bank:
+                        </span>
                         <EditableText
                           value={resolvedBankName}
                           onChange={(val) => onFieldChange?.("bank_name", val)}
@@ -1750,76 +2731,108 @@ export function OfficialInvoiceDocument({
                         />
                       </div>
                     )}
-                  {hasAccountNum && (
-                    <div className="flex justify-between items-center gap-1 font-mono">
-                      <span className="text-zinc-500 font-medium font-sans shrink-0">A/C No:</span>
-                      <EditableText
-                        value={resolvedAccountNumber}
-                        onChange={(val) => onFieldChange?.("account_number", val)}
-                        interactive={interactive}
-                        fieldKey="account_number"
-                        placeholder="Account number..."
-                        className="text-zinc-900 dark:text-zinc-100 font-extrabold text-right flex-1"
-                      />
-                    </div>
-                  )}
-                  {hasIfsc && (
-                    <div className="flex justify-between items-center gap-1 font-mono">
-                      <span className="text-zinc-500 font-medium font-sans shrink-0">IFSC:</span>
-                      <EditableText
-                        value={resolvedIfscCode}
-                        onChange={(val) => onFieldChange?.("ifsc_code", val)}
-                        interactive={interactive}
-                        fieldKey="ifsc_code"
-                        placeholder="IFSC code..."
-                        className="text-zinc-900 dark:text-zinc-100 font-extrabold uppercase text-right flex-1"
-                      />
-                    </div>
-                  )}
-                  {hasAccountHolder && (
-                    <div className="flex justify-between items-center gap-1">
-                      <span className="text-zinc-500 font-medium shrink-0">A/C Name:</span>
-                      <EditableText
-                        value={resolvedAccountHolder}
-                        onChange={(val) => onFieldChange?.("account_holder", val)}
-                        interactive={interactive}
-                        fieldKey="account_holder"
-                        placeholder="A/C holder..."
-                        className="text-zinc-900 dark:text-zinc-100 font-bold truncate text-right flex-1"
-                      />
-                    </div>
-                  )}
-                  {hasUpiId && (
-                    <div className="flex justify-between items-center gap-1 pt-0.5 border-t border-zinc-200/60 dark:border-zinc-700/50 font-mono">
-                      <span className="text-zinc-500 font-medium font-sans shrink-0">UPI ID:</span>
-                      <EditableText
-                        value={resolvedUpiId}
-                        onChange={(val) => onFieldChange?.("upi_id", val)}
-                        interactive={interactive}
-                        fieldKey="upi_id"
-                        placeholder="UPI ID..."
-                        className="text-indigo-700 dark:text-indigo-300 font-black truncate bg-indigo-50 dark:bg-indigo-950/60 px-1 py-0.2 rounded border border-indigo-200 dark:border-indigo-800 text-right flex-1"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                    {hasAccountNum && (
+                      <div className="flex justify-between items-center gap-1 font-mono">
+                        <span className="text-zinc-500 font-medium font-sans shrink-0">
+                          A/C No:
+                        </span>
+                        <EditableText
+                          value={resolvedAccountNumber}
+                          onChange={(val) =>
+                            onFieldChange?.("account_number", val)
+                          }
+                          interactive={interactive}
+                          fieldKey="account_number"
+                          placeholder="Account number..."
+                          className="text-zinc-900 dark:text-zinc-100 font-extrabold text-right flex-1"
+                        />
+                      </div>
+                    )}
+                    {hasIfsc && (
+                      <div className="flex justify-between items-center gap-1 font-mono">
+                        <span className="text-zinc-500 font-medium font-sans shrink-0">
+                          IFSC:
+                        </span>
+                        <EditableText
+                          value={resolvedIfscCode}
+                          onChange={(val) => onFieldChange?.("ifsc_code", val)}
+                          interactive={interactive}
+                          fieldKey="ifsc_code"
+                          placeholder="IFSC code..."
+                          className="text-zinc-900 dark:text-zinc-100 font-extrabold uppercase text-right flex-1"
+                        />
+                      </div>
+                    )}
+                    {hasAccountHolder && (
+                      <div className="flex justify-between items-center gap-1">
+                        <span className="text-zinc-500 font-medium shrink-0">
+                          A/C Name:
+                        </span>
+                        <EditableText
+                          value={resolvedAccountHolder}
+                          onChange={(val) =>
+                            onFieldChange?.("account_holder", val)
+                          }
+                          interactive={interactive}
+                          fieldKey="account_holder"
+                          placeholder="A/C holder..."
+                          className="text-zinc-900 dark:text-zinc-100 font-bold text-right flex-1 whitespace-normal break-words leading-snug"
+                        />
+                      </div>
+                    )}
+                    {hasUpiId && (
+                      <div className="flex justify-between items-center gap-1 pt-0.5 border-t border-zinc-200/60 dark:border-zinc-700/50 font-mono">
+                        <span className="text-zinc-500 font-medium font-sans shrink-0">
+                          UPI ID:
+                        </span>
+                        <EditableText
+                          value={resolvedUpiId}
+                          onChange={(val) => onFieldChange?.("upi_id", val)}
+                          interactive={interactive}
+                          fieldKey="upi_id"
+                          placeholder="UPI ID..."
+                          className="text-indigo-700 dark:text-indigo-300 font-black truncate bg-indigo-50 dark:bg-indigo-950/60 px-1 py-0.2 rounded border border-indigo-200 dark:border-indigo-800 text-right flex-1"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Payment App Badges */}
               {(hasUpiDetails || hasAnyBankInfo) && (
                 <div className="flex items-center justify-between gap-1 pt-0.5 border-t border-zinc-200/70 dark:border-zinc-700/60 text-[7px] font-bold text-zinc-500">
-                  <EditableText value="Accepted:" interactive={interactive} className="uppercase text-[7px] font-extrabold text-zinc-400" />
+                  <EditableText
+                    value="Accepted:"
+                    interactive={interactive}
+                    className="uppercase text-[7px] font-extrabold text-zinc-400"
+                  />
                   <div className="flex items-center gap-1">
                     {hasUpiDetails && (
                       <>
-                        <EditableText value="GPay" interactive={interactive} className="px-1.5 py-0.2 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300" />
-                        <EditableText value="PhonePe" interactive={interactive} className="px-1.5 py-0.2 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300" />
-                        <EditableText value="Paytm" interactive={interactive} className="px-1.5 py-0.2 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300" />
+                        <EditableText
+                          value="GPay"
+                          interactive={interactive}
+                          className="px-1.5 py-0.2 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
+                        />
+                        <EditableText
+                          value="PhonePe"
+                          interactive={interactive}
+                          className="px-1.5 py-0.2 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
+                        />
+                        <EditableText
+                          value="Paytm"
+                          interactive={interactive}
+                          className="px-1.5 py-0.2 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
+                        />
                       </>
                     )}
                     {hasAnyBankInfo && (
-                      <EditableText value="NEFT/IMPS" interactive={interactive} className="px-1.5 py-0.2 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300" />
+                      <EditableText
+                        value="NEFT/IMPS"
+                        interactive={interactive}
+                        className="px-1.5 py-0.2 rounded bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
+                      />
                     )}
                   </div>
                 </div>
@@ -1833,95 +2846,180 @@ export function OfficialInvoiceDocument({
           <div className="p-3 sm:p-3.5 rounded-lg bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-1 text-zinc-700 dark:text-zinc-300 shadow-2xs h-full flex flex-col justify-between">
             <div className="space-y-0.5">
               <div className="flex justify-between py-0.5">
-                <EditableText value="Total Services Value" interactive={interactive} />
-                <span className="font-mono font-semibold">₹{safeFormatCurrency(grossServicesValue)}</span>
+                <EditableText
+                  value="Total Services Value"
+                  interactive={interactive}
+                />
+                <span className="font-mono font-semibold">
+                  ₹{safeFormatCurrency(grossServicesValue)}
+                </span>
               </div>
               {setupCharge > 0 && (
                 <div className="flex justify-between py-0.5">
-                  <EditableText value="Platform / Setup Charge" interactive={interactive} />
-                  <span className="font-mono">₹{safeFormatCurrency(setupCharge)}</span>
+                  <EditableText
+                    value="Platform / Setup Charge"
+                    interactive={interactive}
+                  />
+                  <span className="font-mono">
+                    ₹{safeFormatCurrency(setupCharge)}
+                  </span>
                 </div>
               )}
 
               {invoice.discountsList && invoice.discountsList.length > 0 ? (
                 invoice.discountsList.map((d: any) => (
-                  <div key={d.id} className="flex justify-between py-0.5 text-zinc-500">
+                  <div
+                    key={d.id}
+                    className="flex justify-between py-0.5 text-zinc-500"
+                  >
                     <span>Less: {d.name}</span>
-                    <span className="font-mono">(-) ₹{safeFormatCurrency(d.amount)}</span>
+                    <span className="font-mono">
+                      (-) ₹{safeFormatCurrency(d.amount)}
+                    </span>
                   </div>
                 ))
               ) : discount > 0 ? (
                 <div className="flex justify-between py-0.5 text-zinc-500">
-                  <EditableText value="Less: Promotional Discount" interactive={interactive} />
-                  <span className="font-mono">(-) ₹{safeFormatCurrency(discount)}</span>
+                  <EditableText
+                    value="Less: Promotional Discount"
+                    interactive={interactive}
+                  />
+                  <span className="font-mono">
+                    (-) ₹{safeFormatCurrency(discount)}
+                  </span>
                 </div>
               ) : null}
 
               <div className="flex justify-between py-1 border-t border-zinc-200 dark:border-zinc-700 font-bold text-zinc-900 dark:text-zinc-100">
-                <EditableText value={isGstInvoice ? "Taxable Base Amount" : "Base Amount"} interactive={interactive} />
-                <span className="font-mono">₹{safeFormatCurrency(taxableBase)}</span>
+                <EditableText
+                  value={isGstInvoice ? "Taxable Base Amount" : "Base Amount"}
+                  interactive={interactive}
+                />
+                <span className="font-mono">
+                  ₹{safeFormatCurrency(taxableBase)}
+                </span>
               </div>
 
               {isGstInvoice && (
                 <>
                   <div className="flex justify-between py-0.5 text-zinc-600 dark:text-zinc-400">
-                    <EditableText value={`CGST (${(gstRate / 2).toFixed(1)}%)`} interactive={interactive} />
-                    <span className="font-mono">₹{safeFormatCurrency(cgstAmt)}</span>
+                    <EditableText
+                      value={`CGST (${(gstRate / 2).toFixed(1)}%)`}
+                      interactive={interactive}
+                    />
+                    <span className="font-mono">
+                      ₹{safeFormatCurrency(cgstAmt)}
+                    </span>
                   </div>
                   <div className="flex justify-between py-0.5 text-zinc-600 dark:text-zinc-400">
-                    <EditableText value={`SGST (${(gstRate / 2).toFixed(1)}%)`} interactive={interactive} />
-                    <span className="font-mono">₹{safeFormatCurrency(sgstAmt)}</span>
+                    <EditableText
+                      value={`SGST (${(gstRate / 2).toFixed(1)}%)`}
+                      interactive={interactive}
+                    />
+                    <span className="font-mono">
+                      ₹{safeFormatCurrency(sgstAmt)}
+                    </span>
                   </div>
                 </>
               )}
 
-              {(Number(invoice.creditDeduction) > 0 || Number((invoice as any).appliedCreditNotes) > 0) && (
+              {(Number(invoice.creditDeduction) > 0 ||
+                Number((invoice as any).appliedCreditNotes) > 0) && (
                 <div className="flex justify-between py-0.5 text-indigo-700 dark:text-indigo-400 font-bold bg-indigo-50/80 dark:bg-indigo-950/40 px-1 rounded">
-                  <EditableText value="Less: Credit Note Applied" interactive={interactive} />
-                  <span className="font-mono">(-) ₹{safeFormatCurrency(Number(invoice.creditDeduction) || Number((invoice as any).appliedCreditNotes) || 0)}</span>
+                  <EditableText
+                    value="Less: Credit Note Applied"
+                    interactive={interactive}
+                  />
+                  <span className="font-mono">
+                    (-) ₹
+                    {safeFormatCurrency(
+                      Number(invoice.creditDeduction) ||
+                        Number((invoice as any).appliedCreditNotes) ||
+                        0,
+                    )}
+                  </span>
                 </div>
               )}
             </div>
 
-            <div className={`flex justify-between p-2 sm:p-2.5 rounded-lg ${theme.grandTotalBg} font-black text-[10.5px] sm:text-[11px] tracking-wide my-1.5 shadow-xs`}>
-              <EditableText value="GRAND TOTAL (NET PAYABLE)" interactive={interactive} className="text-white" />
-              <span className="font-mono text-sm sm:text-base">₹{safeFormatCurrency(totalVal)}</span>
+            <div
+              className={`flex justify-between p-2 sm:p-2.5 rounded-lg ${theme.grandTotalBg} font-black text-[10.5px] sm:text-[11px] tracking-wide my-1.5 shadow-xs`}
+            >
+              <EditableText
+                value="GRAND TOTAL (NET PAYABLE)"
+                interactive={interactive}
+                className="text-white"
+              />
+              <span className="font-mono text-sm sm:text-base">
+                ₹{safeFormatCurrency(totalVal)}
+              </span>
             </div>
 
             <div className="space-y-0.5">
               <div className="flex justify-between py-0.5 text-emerald-700 dark:text-emerald-400 font-bold">
-                <EditableText value="Received Amount" interactive={interactive} />
-                <span className="font-mono">₹{safeFormatCurrency(parsedReceived)}</span>
+                <EditableText
+                  value="Received Amount"
+                  interactive={interactive}
+                />
+                <span className="font-mono">
+                  ₹{safeFormatCurrency(parsedReceived)}
+                </span>
               </div>
 
               <div className="flex justify-between py-0.5 border-t border-zinc-200 dark:border-zinc-700 font-black text-[9.5px] text-rose-600 dark:text-rose-400">
-                <EditableText value="Current Balance (Total Due)" interactive={interactive} />
-                <span className="font-mono">₹{safeFormatCurrency(parsedDue)}</span>
+                <EditableText
+                  value="Current Balance (Total Due)"
+                  interactive={interactive}
+                />
+                <span className="font-mono">
+                  ₹{safeFormatCurrency(parsedDue)}
+                </span>
               </div>
 
               <div className="flex justify-between pt-0.5 text-[9px] text-zinc-500">
                 <EditableText value="Next Due Date" interactive={interactive} />
-                <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{hasDue ? formatInvoiceDate(invoice.dueDate) : "-"}</span>
+                <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">
+                  {hasDue ? formatInvoiceDate(invoice.dueDate) : "-"}
+                </span>
               </div>
 
-              {invoice.paymentStructure && invoice.paymentStructure !== "Full Payment" && (
-                <div className="pt-1 mt-0.5 border-t border-zinc-200 dark:border-zinc-700/80 text-[8.5px] text-zinc-600 dark:text-zinc-400">
-                  <EditableText value="Plan:" interactive={interactive} className="font-bold mr-1 text-zinc-500" />
-                  <EditableText value={invoice.paymentStructure} interactive={interactive} className="font-semibold text-zinc-800 dark:text-zinc-200" />
-                </div>
-              )}
+              {invoice.paymentStructure &&
+                invoice.paymentStructure !== "Full Payment" && (
+                  <div className="pt-1 mt-0.5 border-t border-zinc-200 dark:border-zinc-700/80 text-[8.5px] text-zinc-600 dark:text-zinc-400">
+                    <EditableText
+                      value="Plan:"
+                      interactive={interactive}
+                      className="font-bold mr-1 text-zinc-500"
+                    />
+                    <EditableText
+                      value={invoice.paymentStructure}
+                      interactive={interactive}
+                      className="font-semibold text-zinc-800 dark:text-zinc-200"
+                    />
+                  </div>
+                )}
             </div>
           </div>
         </div>
       </div>
 
       {/* DIGITAL MARKETING & SOCIAL MEDIA CAMPAIGN PACKAGE SPECIFICATIONS (FORM NO - 9) */}
-      {Boolean((invoice as any)?.marketingPackage?.enabled || (invoice as any)?.marketingPackage?.planName || (invoice as any)?.primaryCategory === "Digital Marketing") && (
+      {Boolean(
+        (invoice as any)?.marketingPackage?.enabled ||
+        (invoice as any)?.marketingPackage?.planName ||
+        (invoice as any)?.primaryCategory === "Digital Marketing",
+      ) && (
         <div className="p-3 sm:p-3.5 rounded-lg border border-purple-200 bg-purple-50/70 dark:bg-purple-950/30 text-xs space-y-2 shadow-2xs">
           <div className="flex items-center justify-between border-b border-purple-200/80 dark:border-purple-800/60 pb-1.5">
             <span className="font-extrabold text-purple-900 dark:text-purple-200 flex items-center gap-1.5 text-[11px] sm:text-xs">
-              <Megaphone size={14} className="text-purple-700 dark:text-purple-400" />
-              <span>DIGITAL MARKETING CAMPAIGN &amp; ADS PACKAGE ({(invoice as any).marketingPackage?.planName || "Grow - 2"})</span>
+              <Megaphone
+                size={14}
+                className="text-purple-700 dark:text-purple-400"
+              />
+              <span>
+                DIGITAL MARKETING CAMPAIGN &amp; ADS PACKAGE (
+                {(invoice as any).marketingPackage?.planName || "Grow - 2"})
+              </span>
             </span>
             <span className="text-[9.5px] font-black px-2 py-0.5 rounded bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100 uppercase tracking-wider">
               FORM NO - 9
@@ -1930,34 +3028,64 @@ export function OfficialInvoiceDocument({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10.5px] sm:text-[11px] text-zinc-700 dark:text-zinc-300">
             <div>
               <span className="text-zinc-500 font-medium">Duration:</span>{" "}
-              <strong className="text-purple-950 dark:text-purple-200">{(invoice as any).marketingPackage?.packageDuration || "1 month"}</strong>{" "}
-              {(invoice as any).marketingPackage?.startDate && <span>({(invoice as any).marketingPackage.startDate} - {(invoice as any).marketingPackage.expireDate || "Ongoing"})</span>}
+              <strong className="text-purple-950 dark:text-purple-200">
+                {(invoice as any).marketingPackage?.packageDuration ||
+                  "1 month"}
+              </strong>{" "}
+              {(invoice as any).marketingPackage?.startDate && (
+                <span>
+                  ({(invoice as any).marketingPackage.startDate} -{" "}
+                  {(invoice as any).marketingPackage.expireDate || "Ongoing"})
+                </span>
+              )}
             </div>
             <div>
               <span className="text-zinc-500 font-medium">Deliverables:</span>{" "}
-              <strong className="text-purple-950 dark:text-purple-200">{(invoice as any).marketingPackage?.postersCount || 12} Posters/Creatives</strong> •{" "}
-              <strong className="text-purple-950 dark:text-purple-200">{(invoice as any).marketingPackage?.videosCount || 2} AI Video Reels</strong>
+              <strong className="text-purple-950 dark:text-purple-200">
+                {(invoice as any).marketingPackage?.postersCount || 12}{" "}
+                Posters/Creatives
+              </strong>{" "}
+              •{" "}
+              <strong className="text-purple-950 dark:text-purple-200">
+                {(invoice as any).marketingPackage?.videosCount || 2} AI Video
+                Reels
+              </strong>
             </div>
             {(invoice as any).marketingPackage?.hasRealModelShoot && (
               <div className="col-span-1 sm:col-span-2 text-purple-800 dark:text-purple-300 font-semibold flex items-center gap-1">
-                <span>📸 Real Model Shoot: {(invoice as any).marketingPackage.modelShootDate || "Scheduled"} ({(invoice as any).marketingPackage.modelShootNotes || "Included in Retainer"})</span>
+                <span>
+                  📸 Real Model Shoot:{" "}
+                  {(invoice as any).marketingPackage.modelShootDate ||
+                    "Scheduled"}{" "}
+                  (
+                  {(invoice as any).marketingPackage.modelShootNotes ||
+                    "Included in Retainer"}
+                  )
+                </span>
               </div>
             )}
             {(invoice as any).marketingPackage?.targetLocations && (
               <div className="col-span-1 sm:col-span-2 text-zinc-600 dark:text-zinc-400 text-[10px]">
-                <span className="font-semibold text-zinc-700 dark:text-zinc-300">🎯 Geo Audience &amp; Pin Codes:</span> {(invoice as any).marketingPackage.targetLocations}
+                <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                  🎯 Geo Audience &amp; Pin Codes:
+                </span>{" "}
+                {(invoice as any).marketingPackage.targetLocations}
               </div>
             )}
-            {Array.isArray((invoice as any).assignedMembers) && (invoice as any).assignedMembers.length > 0 && (
-              <div className="col-span-1 sm:col-span-2 text-[10px] text-purple-900 dark:text-purple-300 font-medium flex items-center gap-1.5 flex-wrap pt-0.5">
-                <span className="font-bold">👥 Assigned Marketing Team:</span>
-                {(invoice as any).assignedMembers.map((m: any, i: number) => (
-                  <span key={i} className="px-1.5 py-0.2 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 font-bold border border-purple-200">
-                    {m.memberName} ({m.memberRole || "Specialist"})
-                  </span>
-                ))}
-              </div>
-            )}
+            {Array.isArray((invoice as any).assignedMembers) &&
+              (invoice as any).assignedMembers.length > 0 && (
+                <div className="col-span-1 sm:col-span-2 text-[10px] text-purple-900 dark:text-purple-300 font-medium flex items-center gap-1.5 flex-wrap pt-0.5">
+                  <span className="font-bold">👥 Assigned Marketing Team:</span>
+                  {(invoice as any).assignedMembers.map((m: any, i: number) => (
+                    <span
+                      key={i}
+                      className="px-1.5 py-0.2 rounded bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 font-bold border border-purple-200"
+                    >
+                      {m.memberName} ({m.memberRole || "Specialist"})
+                    </span>
+                  ))}
+                </div>
+              )}
           </div>
         </div>
       )}
@@ -1998,7 +3126,13 @@ export function OfficialInvoiceDocument({
                   </div>
                   {invoice.acceptedAt && (
                     <div className="text-[6.5px] text-zinc-500 font-mono">
-                      {new Date(Number(invoice.acceptedAt) || invoice.acceptedAt).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(
+                        Number(invoice.acceptedAt) || invoice.acceptedAt,
+                      ).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
                     </div>
                   )}
                 </div>
@@ -2011,7 +3145,11 @@ export function OfficialInvoiceDocument({
                 className="text-[9px] font-black uppercase text-zinc-700 dark:text-zinc-300 block"
               />
               <EditableText
-                value={invoice.clientAccepted ? "✓ Digitally Accepted & Confirmed" : "Accepted & Confirmed"}
+                value={
+                  invoice.clientAccepted
+                    ? "✓ Digitally Accepted & Confirmed"
+                    : "Accepted & Confirmed"
+                }
                 interactive={interactive}
                 className={`text-[7.5px] font-medium block ${invoice.clientAccepted ? "text-emerald-600 font-bold" : "text-zinc-500"}`}
               />
@@ -2023,10 +3161,10 @@ export function OfficialInvoiceDocument({
             {/* Official Stamp / Seal - positioned right close to the signature */}
             {resolvedStampUrl ? (
               <div className="w-18 h-18 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center p-0.5 select-none relative mb-1">
-                <img 
-                  src={resolvedStampUrl} 
-                  alt="Official Company Seal" 
-                  className="max-h-18 max-w-18 sm:max-h-20 sm:max-w-20 object-contain drop-shadow-xs pointer-events-none select-none" 
+                <img
+                  src={resolvedStampUrl}
+                  alt="Official Company Seal"
+                  className="max-h-18 max-w-18 sm:max-h-20 sm:max-w-20 object-contain drop-shadow-xs pointer-events-none select-none"
                 />
               </div>
             ) : null}
@@ -2036,14 +3174,14 @@ export function OfficialInvoiceDocument({
               <EditableText
                 value={`For ${fullRegisteredCompanyName} ${isSubBranchIssued && activeSubBranch ? `(${activeSubBranch.name})` : isBranchIssued && activeBranch ? `(${activeBranch.name})` : ""}`}
                 interactive={interactive}
-                className="text-[8.5px] font-bold text-zinc-500 uppercase tracking-tight truncate max-w-[175px] block"
+                className="text-[8.5px] font-bold text-zinc-500 uppercase tracking-tight whitespace-normal break-words leading-tight block"
               />
               <div className="h-12 flex items-center justify-center">
                 {resolvedSignatureUrl ? (
-                  <img 
-                    src={resolvedSignatureUrl} 
-                    alt="Authorized Signature" 
-                    className="max-h-12 max-w-[150px] object-contain drop-shadow-xs pointer-events-none select-none" 
+                  <img
+                    src={resolvedSignatureUrl}
+                    alt="Authorized Signature"
+                    className="max-h-12 max-w-[150px] object-contain drop-shadow-xs pointer-events-none select-none"
                   />
                 ) : (
                   /* Elegant Digital Calligraphic Signature Graphic */
@@ -2072,7 +3210,9 @@ export function OfficialInvoiceDocument({
                 />
                 <EditableText
                   value={resolvedSignatoryDesignation || "Managing Director"}
-                  onChange={(val) => onFieldChange?.("signatory_designation", val)}
+                  onChange={(val) =>
+                    onFieldChange?.("signatory_designation", val)
+                  }
                   interactive={interactive}
                   fieldKey="signatory_designation"
                   placeholder="Designation..."
@@ -2084,7 +3224,9 @@ export function OfficialInvoiceDocument({
         </div>
 
         {/* BOTTOM BANNER WITH CUSTOM FOOTER / SUPPORT & CONTACT DETAILS & PAGE NUMBER */}
-        <div className={`rounded-lg ${theme.headerGradient} text-white px-3 py-1.5 text-[8px] sm:text-[8.5px] font-medium flex items-center justify-between gap-2 shadow-xs`}>
+        <div
+          className={`rounded-lg ${theme.headerGradient} text-white px-3 py-1.5 text-[8px] sm:text-[8.5px] font-medium flex items-center justify-between gap-2 shadow-xs`}
+        >
           <div className="flex-1 min-w-0 pr-2">
             <EditableText
               value={resolvedBottomFooterText}
@@ -2103,15 +3245,19 @@ export function OfficialInvoiceDocument({
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderPageFooterOnly = (pageNumber: number, totalPgs: number) => (
     <div className="mt-auto shrink-0 pt-2 border-t border-zinc-200 space-y-1.5">
       <div className="flex justify-between items-center bg-zinc-50 px-2.5 py-1 rounded-lg border border-zinc-200 text-[8px] text-zinc-600">
         <span>Continued to Next Page...</span>
-        <span className="font-mono font-bold text-zinc-800">Page {pageNumber} of {totalPgs}</span>
+        <span className="font-mono font-bold text-zinc-800">
+          Page {pageNumber} of {totalPgs}
+        </span>
       </div>
-      <div className={`rounded-lg ${theme.headerGradient} text-white px-2.5 py-1 text-[7.5px] sm:text-[8px] font-medium flex items-center justify-between gap-2 shadow-xs`}>
+      <div
+        className={`rounded-lg ${theme.headerGradient} text-white px-2.5 py-1 text-[7.5px] sm:text-[8px] font-medium flex items-center justify-between gap-2 shadow-xs`}
+      >
         <div className="flex-1 min-w-0 pr-2 text-white whitespace-pre-wrap break-words leading-tight">
           {resolvedBottomFooterText}
         </div>
@@ -2122,179 +3268,212 @@ export function OfficialInvoiceDocument({
         </div>
       </div>
     </div>
-  )
+  );
 
   return (
-    <div id="printable-invoice" className="w-full flex flex-col items-center gap-6 py-2 print:p-0 print:gap-0 print:m-0">
+    <div
+      id="printable-invoice"
+      className="w-full flex flex-col items-center gap-6 py-2 print:p-0 print:gap-0 print:m-0"
+    >
       {paginatedPages.map((pg) => (
         <div
           key={`invoice-page-${pg.pageNumber}`}
           className="a4-page bg-white text-zinc-900 font-sans p-5 sm:p-6 text-xs shadow-2xl border border-zinc-200/90 rounded-lg w-full max-w-[794px] min-h-[1080px] mx-auto relative flex flex-col justify-between gap-3 sm:gap-3.5 overflow-visible print:w-[210mm] print:max-w-[210mm] print:h-auto print:min-h-[282mm] print:max-h-none print:p-[6mm_8mm] print:gap-2 print:m-0 print:shadow-none print:border-none print:rounded-none page-break-after"
         >
           {/* Draggable Custom Text Stamps / Badges Overlay (on page 1) */}
-          {pg.isFirstPage && customStamps && customStamps.map((stamp: CustomTextStamp) => {
-            const curSize = stamp.fontSize || 12
-            const curRot = stamp.rotation ?? (stamp.bgStyle === "stamp" ? -12 : 0)
-            const curStyle = stamp.bgStyle || "stamp"
-            const curColor = stamp.color || "#0d9488"
-            const isBold = stamp.isBold !== false
+          {pg.isFirstPage &&
+            customStamps &&
+            customStamps.map((stamp: CustomTextStamp) => {
+              const curSize = stamp.fontSize || 12;
+              const curRot =
+                stamp.rotation ?? (stamp.bgStyle === "stamp" ? -12 : 0);
+              const curStyle = stamp.bgStyle || "stamp";
+              const curColor = stamp.color || "#0d9488";
+              const isBold = stamp.isBold !== false;
 
-            return (
-              <motion.div
-                key={stamp.id}
-                drag={interactive}
-                dragMomentum={false}
-                dragElastic={0}
-                whileDrag={{ scale: 1.05, zIndex: 60 }}
-                animate={{ x: stamp.x, y: stamp.y, rotate: curRot }}
-                onDragEnd={(_, info) => {
-                  if (onCustomStampMove) {
-                    onCustomStampMove(stamp.id, {
-                      x: stamp.x + info.offset.x,
-                      y: stamp.y + info.offset.y,
-                    })
-                  }
-                }}
-                className={`absolute z-30 select-none transition-shadow group ${
-                  interactive ? "cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-blue-400 p-1" : ""
-                }`}
-                style={{
-                  left: "35%",
-                  top: "18%",
-                }}
-              >
-                {/* Floating Interactive Micro-Toolbar (visible on hover when in interactive mode) */}
-                {interactive && (
-                  <div className="absolute -top-9 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity bg-zinc-900/95 backdrop-blur-sm text-white px-2 py-1 rounded-xl shadow-xl flex items-center gap-1.5 z-40 text-[9px] pointer-events-auto whitespace-nowrap border border-white/20">
-                    <span className="text-[7.5px] font-bold text-zinc-400 select-none">✥ Drag</span>
-
-                    {/* Zoom In / Zoom Out Font Size Controls */}
-                    <div className="flex items-center bg-zinc-800 rounded px-1 py-0.5 gap-1 border border-zinc-700">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onCustomStampUpdate?.(stamp.id, { fontSize: Math.max(8, curSize - 2) })
-                        }}
-                        className="text-[9px] font-bold hover:text-teal-300 px-1 cursor-pointer"
-                        title="Zoom out text (Decrease font size)"
-                      >
-                        A-
-                      </button>
-                      <span className="font-mono text-[8.5px] text-zinc-300 font-bold">{curSize}px</span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onCustomStampUpdate?.(stamp.id, { fontSize: Math.min(48, curSize + 2) })
-                        }}
-                        className="text-[9px] font-bold hover:text-teal-300 px-1 cursor-pointer"
-                        title="Zoom in text (Increase font size)"
-                      >
-                        A+
-                      </button>
-                    </div>
-
-                    {/* Quick Color Swatches */}
-                    <div className="flex items-center gap-0.5">
-                      {[
-                        { color: "#0d9488", title: "Teal" },
-                        { color: "#dc2626", title: "Crimson" },
-                        { color: "#2563eb", title: "Blue" },
-                        { color: "#d97706", title: "Amber" },
-                        { color: "#7c3aed", title: "Purple" },
-                        { color: "#18181b", title: "Black" },
-                      ].map((c) => (
-                        <button
-                          key={c.color}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onCustomStampUpdate?.(stamp.id, { color: c.color })
-                          }}
-                          className={`w-3 h-3 rounded-full border border-white/40 cursor-pointer ${curColor === c.color ? 'ring-2 ring-white scale-110' : 'hover:scale-105'}`}
-                          style={{ backgroundColor: c.color }}
-                          title={c.title}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Rotation Cycle Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        const rotSequence = [0, -12, -24, 15, 45]
-                        const nextIndex = (rotSequence.indexOf(curRot) + 1) % rotSequence.length
-                        onCustomStampUpdate?.(stamp.id, { rotation: rotSequence[nextIndex] })
-                      }}
-                      className="px-1.5 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700 text-[8px] font-bold cursor-pointer"
-                      title="Rotate stamp angle"
-                    >
-                      ⟳ {curRot}°
-                    </button>
-
-                    {/* Style Preset Cycler */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        const styleSequence: ("stamp" | "badge" | "clean" | "watermark")[] = ["stamp", "badge", "clean", "watermark"]
-                        const nextIndex = (styleSequence.indexOf(curStyle) + 1) % styleSequence.length
-                        onCustomStampUpdate?.(stamp.id, { bgStyle: styleSequence[nextIndex] })
-                      }}
-                      className="px-1.5 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700 text-[8px] font-bold uppercase cursor-pointer"
-                      title="Cycle style: Stamp, Badge, Clean, Watermark"
-                    >
-                      {curStyle}
-                    </button>
-
-                    {/* Remove Stamp Button */}
-                    {onRemoveCustomStamp && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onRemoveCustomStamp(stamp.id)
-                        }}
-                        className="w-4 h-4 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-[9px] font-bold cursor-pointer ml-0.5 shadow-xs"
-                        title="Delete custom text sticker"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Actual Custom Stamp Element (Editable in-place) */}
-                <div
-                  className={`flex items-center gap-1.5 ${
-                    curStyle === "stamp"
-                      ? "px-3 py-1 rounded-lg border-2 border-dashed font-black uppercase tracking-wider shadow-md backdrop-blur-xs bg-white/95"
-                      : curStyle === "badge"
-                      ? "px-3 py-0.5 rounded-full border-2 font-bold uppercase tracking-wider shadow-sm backdrop-blur-xs bg-white/95"
-                      : curStyle === "watermark"
-                      ? "p-2 font-black uppercase tracking-widest opacity-25 select-none"
-                      : "px-2 py-0.5 font-bold"
+              return (
+                <motion.div
+                  key={stamp.id}
+                  drag={interactive}
+                  dragMomentum={false}
+                  dragElastic={0}
+                  whileDrag={{ scale: 1.05, zIndex: 60 }}
+                  animate={{ x: stamp.x, y: stamp.y, rotate: curRot }}
+                  onDragEnd={(_, info) => {
+                    if (onCustomStampMove) {
+                      onCustomStampMove(stamp.id, {
+                        x: stamp.x + info.offset.x,
+                        y: stamp.y + info.offset.y,
+                      });
+                    }
+                  }}
+                  className={`absolute z-30 select-none transition-shadow group ${
+                    interactive
+                      ? "cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-blue-400 p-1"
+                      : ""
                   }`}
                   style={{
-                    borderColor: curColor,
-                    color: curColor,
-                    fontSize: `${curSize}px`,
-                    fontWeight: isBold ? 800 : 500,
+                    left: "35%",
+                    top: "18%",
                   }}
                 >
-                  <EditableText
-                    value={stamp.text}
-                    onChange={(val) => onCustomStampUpdate?.(stamp.id, { text: val })}
-                    interactive={interactive}
-                    placeholder="Enter custom text..."
-                    className="outline-none"
-                  />
-                </div>
-              </motion.div>
-            )
-          })}
+                  {/* Floating Interactive Micro-Toolbar (visible on hover when in interactive mode) */}
+                  {interactive && (
+                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity bg-zinc-900/95 backdrop-blur-sm text-white px-2 py-1 rounded-xl shadow-xl flex items-center gap-1.5 z-40 text-[9px] pointer-events-auto whitespace-nowrap border border-white/20">
+                      <span className="text-[7.5px] font-bold text-zinc-400 select-none">
+                        ✥ Drag
+                      </span>
+
+                      {/* Zoom In / Zoom Out Font Size Controls */}
+                      <div className="flex items-center bg-zinc-800 rounded px-1 py-0.5 gap-1 border border-zinc-700">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCustomStampUpdate?.(stamp.id, {
+                              fontSize: Math.max(8, curSize - 2),
+                            });
+                          }}
+                          className="text-[9px] font-bold hover:text-teal-300 px-1 cursor-pointer"
+                          title="Zoom out text (Decrease font size)"
+                        >
+                          A-
+                        </button>
+                        <span className="font-mono text-[8.5px] text-zinc-300 font-bold">
+                          {curSize}px
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCustomStampUpdate?.(stamp.id, {
+                              fontSize: Math.min(48, curSize + 2),
+                            });
+                          }}
+                          className="text-[9px] font-bold hover:text-teal-300 px-1 cursor-pointer"
+                          title="Zoom in text (Increase font size)"
+                        >
+                          A+
+                        </button>
+                      </div>
+
+                      {/* Quick Color Swatches */}
+                      <div className="flex items-center gap-0.5">
+                        {[
+                          { color: "#0d9488", title: "Teal" },
+                          { color: "#dc2626", title: "Crimson" },
+                          { color: "#2563eb", title: "Blue" },
+                          { color: "#d97706", title: "Amber" },
+                          { color: "#7c3aed", title: "Purple" },
+                          { color: "#18181b", title: "Black" },
+                        ].map((c) => (
+                          <button
+                            key={c.color}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCustomStampUpdate?.(stamp.id, {
+                                color: c.color,
+                              });
+                            }}
+                            className={`w-3 h-3 rounded-full border border-white/40 cursor-pointer ${curColor === c.color ? "ring-2 ring-white scale-110" : "hover:scale-105"}`}
+                            style={{ backgroundColor: c.color }}
+                            title={c.title}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Rotation Cycle Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rotSequence = [0, -12, -24, 15, 45];
+                          const nextIndex =
+                            (rotSequence.indexOf(curRot) + 1) %
+                            rotSequence.length;
+                          onCustomStampUpdate?.(stamp.id, {
+                            rotation: rotSequence[nextIndex],
+                          });
+                        }}
+                        className="px-1.5 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700 text-[8px] font-bold cursor-pointer"
+                        title="Rotate stamp angle"
+                      >
+                        ⟳ {curRot}°
+                      </button>
+
+                      {/* Style Preset Cycler */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const styleSequence: (
+                            | "stamp"
+                            | "badge"
+                            | "clean"
+                            | "watermark"
+                          )[] = ["stamp", "badge", "clean", "watermark"];
+                          const nextIndex =
+                            (styleSequence.indexOf(curStyle) + 1) %
+                            styleSequence.length;
+                          onCustomStampUpdate?.(stamp.id, {
+                            bgStyle: styleSequence[nextIndex],
+                          });
+                        }}
+                        className="px-1.5 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded border border-zinc-700 text-[8px] font-bold uppercase cursor-pointer"
+                        title="Cycle style: Stamp, Badge, Clean, Watermark"
+                      >
+                        {curStyle}
+                      </button>
+
+                      {/* Remove Stamp Button */}
+                      {onRemoveCustomStamp && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRemoveCustomStamp(stamp.id);
+                          }}
+                          className="w-4 h-4 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-[9px] font-bold cursor-pointer ml-0.5 shadow-xs"
+                          title="Delete custom text sticker"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Actual Custom Stamp Element (Editable in-place) */}
+                  <div
+                    className={`flex items-center gap-1.5 ${
+                      curStyle === "stamp"
+                        ? "px-3 py-1 rounded-lg border-2 border-dashed font-black uppercase tracking-wider shadow-md backdrop-blur-xs bg-white/95"
+                        : curStyle === "badge"
+                          ? "px-3 py-0.5 rounded-full border-2 font-bold uppercase tracking-wider shadow-sm backdrop-blur-xs bg-white/95"
+                          : curStyle === "watermark"
+                            ? "p-2 font-black uppercase tracking-widest opacity-25 select-none"
+                            : "px-2 py-0.5 font-bold"
+                    }`}
+                    style={{
+                      borderColor: curColor,
+                      color: curColor,
+                      fontSize: `${curSize}px`,
+                      fontWeight: isBold ? 800 : 500,
+                    }}
+                  >
+                    <EditableText
+                      value={stamp.text}
+                      onChange={(val) =>
+                        onCustomStampUpdate?.(stamp.id, { text: val })
+                      }
+                      interactive={interactive}
+                      placeholder="Enter custom text..."
+                      className="outline-none"
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
 
           {/* PAGE CONTENT (Top to mid sections) - Consistent invoice format across all pages */}
           <div className="flex flex-col gap-2 shrink-0">
@@ -2305,13 +3484,11 @@ export function OfficialInvoiceDocument({
           </div>
 
           {/* FINANCIALS, SIGNATURES & STICKY FOOTER */}
-          {pg.isLastPage ? (
-            renderFinancialsAndFooter(pg.pageNumber, totalPages)
-          ) : (
-            renderPageFooterOnly(pg.pageNumber, totalPages)
-          )}
+          {pg.isLastPage
+            ? renderFinancialsAndFooter(pg.pageNumber, totalPages)
+            : renderPageFooterOnly(pg.pageNumber, totalPages)}
         </div>
       ))}
     </div>
-  )
+  );
 }

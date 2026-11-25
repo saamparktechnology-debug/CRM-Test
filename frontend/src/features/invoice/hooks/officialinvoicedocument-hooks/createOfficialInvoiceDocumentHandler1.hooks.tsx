@@ -95,7 +95,7 @@ export function createOfficialInvoiceDocumentHandler1(getCtrl: () => any) {
                 interactive={interactive}
                 fieldKey="division_name"
                 placeholder="CORPORATE SUBTITLE / DIVISION (OPTIONAL)"
-                className="text-xs sm:text-sm md:text-[14px] font-black tracking-wider text-zinc-800 uppercase font-sans mt-1.5 block leading-tight text-center whitespace-pre-wrap break-words print:text-[13px] print:whitespace-pre-wrap"
+                className="text-xs sm:text-sm md:text-[14px] font-black tracking-wider text-zinc-800 uppercase font-sans mt-1.5 block leading-tight text-center whitespace-normal break-words print:text-[13px] print:whitespace-normal"
               />
             </div>
           ) : null}
@@ -225,11 +225,11 @@ export function createOfficialInvoiceDocumentHandler1(getCtrl: () => any) {
                   </p>
                 )}
                 {isValidField(resolvedWebsite) && (
-                  <p className="flex items-center gap-1 max-w-[220px] truncate">
+                  <p className="flex items-center gap-1 whitespace-normal break-all">
                     <span className={`w-3.5 h-3.5 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shrink-0`}>
                       <Globe size={7.5} />
                     </span>
-                    <EditableText value={resolvedWebsite} onChange={(val) => onFieldChange?.("website", val)} interactive={interactive} fieldKey="website" placeholder="Website..." className="text-zinc-700 truncate" />
+                    <EditableText value={resolvedWebsite} onChange={(val) => onFieldChange?.("website", val)} interactive={interactive} fieldKey="website" placeholder="Website..." className="text-zinc-700 whitespace-normal break-all" />
                   </p>
                 )}
               </div>

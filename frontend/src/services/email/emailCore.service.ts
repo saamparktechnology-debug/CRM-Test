@@ -46,29 +46,135 @@ export async function sendInvoiceDetailsEmailNotification(
     ? `${window.location.origin}/sales/invoices?view=${encodeURIComponent(invoice.id)}`
     : `https://crm.saampark.com/sales/invoices?view=${encodeURIComponent(invoice.id)}`
 
+  const parseNum = (val: any): number => {
+    if (typeof val === "number") return Number.isFinite(val) ? val : 0
+    if (val === null || val === undefined) return 0
+    const cleaned = String(val).replace(/[^0-9.-]/g, "")
+    const n = Number(cleaned)
+    return Number.isFinite(n) ? n : 0
+  }
+  const fmtInr = (n: number) => `₹${Math.max(0, Math.round(n)).toLocaleString("en-IN")}`
+
+  const invAny = invoice as any
+  const safeItems = Array.isArray(invoice.items) ? invoice.items.filter(Boolean) : []
+  const itemsHaveGst = safeItems.some((it: any) => parseNum(it.gstRate) > 0 || parseNum(it.gstAmount) > 0)
+  const invIdUpper = String(invoice.id || "").toUpperCase().trim()
+  const isNonGst =
+    invAny.isNonGst === true ||
+    String(invAny.taxType || "").toLowerCase() === "nongst" ||
+    invIdUpper.startsWith("NG") ||
+    (invAny.isNonGst !== false && !itemsHaveGst && invoice.gstRate === 0 && parseNum(invoice.gstAmount ?? invAny.tax) === 0)
+
+  const gstRateNum = isNonGst ? 0 : (parseNum(invoice.gstRate) > 0 ? parseNum(invoice.gstRate) : 18)
+
+  const itemsBaseSum = safeItems.reduce((sum: number, it: any) => {
+    const qty = parseNum(it.qty || it.quantity) || 1
+    const rate = parseNum(it.rate ?? it.unitPrice ?? it.price)
+    return sum + rate * qty
+  }, 0)
+
+  const itemsGstSum = isNonGst
+    ? 0
+    : safeItems.reduce((sum: number, it: any) => {
+        const qty = parseNum(it.qty || it.quantity) || 1
+        const rate = parseNum(it.rate ?? it.unitPrice ?? it.price)
+        const base = rate * qty
+        const itGstRate = it.gstRate !== undefined ? parseNum(it.gstRate) : gstRateNum
+        const itGstAmt = parseNum(it.gstAmount) > 0 ? parseNum(it.gstAmount) : Math.round(base * (itGstRate / 100))
+        return sum + itGstAmt
+      }, 0)
+
+  const itemsGrossSum = isNonGst
+    ? itemsBaseSum
+    : safeItems.reduce((sum: number, it: any) => {
+        const qty = parseNum(it.qty || it.quantity) || 1
+        const rate = parseNum(it.rate ?? it.unitPrice ?? it.price)
+        const base = rate * qty
+        const itGstRate = it.gstRate !== undefined ? parseNum(it.gstRate) : gstRateNum
+        const itGstAmt = parseNum(it.gstAmount) > 0 ? parseNum(it.gstAmount) : Math.round(base * (itGstRate / 100))
+        const rowTotal = parseNum(it.totalAmount) > 0 ? parseNum(it.totalAmount) : base + itGstAmt
+        return sum + rowTotal
+      }, 0)
+
+  const subtotalNum = parseNum(invoice.baseAmount ?? invAny.subtotal) || itemsBaseSum
+  const discountsListSum = Array.isArray(invoice.discountsList)
+    ? invoice.discountsList.reduce((s: number, d: any) => s + Math.max(0, parseNum(d?.amount)), 0)
+    : 0
+  const discountNum = Math.max(0, parseNum(invoice.discount) || discountsListSum)
+  const splitPaymentsList = Array.isArray(invAny.splitPayments) ? invAny.splitPayments : []
+  const isSplitPaymentFlag = Boolean(invAny.isSplitPayment || splitPaymentsList.some((sp: any) => parseNum(sp?.amount) > 0))
+  const emiScheduleList = Array.isArray(invAny.emiCustomSchedule) ? invAny.emiCustomSchedule : []
+  const setupChargeNum = Math.max(0, parseNum(invoice.setupCharge))
+  const taxableBaseNum = Math.max(0, subtotalNum - discountNum + setupChargeNum)
+  const taxNum = isNonGst
+    ? 0
+    : (parseNum(invoice.gstAmount ?? invAny.tax) > 0
+        ? parseNum(invoice.gstAmount ?? invAny.tax)
+        : (discountNum > 0
+            ? Math.round(taxableBaseNum * (gstRateNum / 100))
+            : (itemsGstSum > 0 ? itemsGstSum : Math.round(taxableBaseNum * (gstRateNum / 100)))))
+  const creditDeductionNum = Math.max(0, parseNum(invAny.creditDeduction))
+  const computedTotalNum = Math.max(0, taxableBaseNum + taxNum - creditDeductionNum)
+
+  const parsedTotalNum = parseNum(invoice.totalInvoiced) || parseNum(invAny.total)
+  const effectiveTotalNum = parsedTotalNum > 0 ? parsedTotalNum : (computedTotalNum > 0 ? computedTotalNum : itemsGrossSum)
+
+  let receivedNum = Math.max(0, parseNum(invoice.paymentReceived) || parseNum(invAny.paidAmount))
+  const statusNorm = String(invoice.status || "").toLowerCase().trim()
+  const planNorm = String(invAny.paymentPlan || "").toLowerCase().trim()
+  if ((statusNorm === "fully paid" || statusNorm === "paid" || planNorm === "full") && receivedNum === 0 && effectiveTotalNum > 0) {
+    receivedNum = effectiveTotalNum
+  }
+  if (receivedNum > effectiveTotalNum && effectiveTotalNum > 0) {
+    receivedNum = effectiveTotalNum
+  }
+  const dueNum = Math.max(0, effectiveTotalNum - receivedNum)
+
+  const formattedTotal = fmtInr(effectiveTotalNum)
+  const formattedReceived = fmtInr(receivedNum)
+  const formattedDue = fmtInr(dueNum)
+  const docLabel = isNonGst ? "Normal Invoice" : "Tax Invoice"
+
   // 1. In-App Notification
   recordInAppNotification(
     recipient,
-    `New Invoice: ${invoice.id} - ${invoice.project}`,
-    `Invoice ${invoice.id} for ${invoice.project} of ${invoice.totalInvoiced} (Due: ${invoice.due || invoice.totalInvoiced}) has been issued. Click to view digital invoice.`,
+    `New ${docLabel}: ${invoice.id} - ${invoice.project}`,
+    `${docLabel} ${invoice.id} for ${invoice.project} of ${formattedTotal} (Due: ${formattedDue}) has been issued. Click to view digital invoice.`,
     { invoiceId: invoice.id, viewUrl: invoiceUrl }
   )
 
   // 2. Send Real Email via Backend SMTP
   try {
-    const res = await api.post("/email/send-invoice", {
+    await api.post("/email/send-invoice", {
       to: recipient,
       clientName: invoice.client,
       invoiceId: invoice.id,
       project: invoice.project,
       billDate: invoice.billDate,
       dueDate: invoice.dueDate,
-      totalAmount: invoice.totalInvoiced,
-      receivedAmount: invoice.paymentReceived || "₹0",
-      dueAmount: invoice.due || invoice.totalInvoiced,
-      items: invoice.items || [],
+      isNonGst,
+      taxType: isNonGst ? "nongst" : "gst",
+      subtotal: subtotalNum,
+      discount: discountNum,
+      discountType: invAny.discountType,
+      discountValue: invAny.discountValue,
+      setupCharge: setupChargeNum,
+      gstRate: gstRateNum,
+      taxAmount: taxNum,
+      creditDeduction: creditDeductionNum,
+      totalAmount: formattedTotal,
+      receivedAmount: formattedReceived,
+      dueAmount: formattedDue,
+      paymentPlan: invAny.paymentPlan,
+      paymentStructure: invAny.paymentStructure,
+      paymentMethod: invAny.paymentMethod,
+      isSplitPayment: isSplitPaymentFlag,
+      splitPayments: splitPaymentsList,
+      emiCustomSchedule: emiScheduleList,
+      status: invoice.status,
+      items: safeItems,
       viewUrl: invoiceUrl,
-      companyId: (invoice as any).companyId || (invoice as any).company_id || undefined,
+      companyId: invAny.companyId || invAny.company_id || undefined,
     })
     return { success: true, message: `Invoice email successfully delivered to ${recipient}` }
   } catch (err: any) {

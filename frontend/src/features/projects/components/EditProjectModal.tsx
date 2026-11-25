@@ -193,10 +193,23 @@ export function EditProjectModal({
     String(project.totalAmount ?? project.baseAmount ?? price ?? project.price ?? "0").replace(/[^0-9.]/g, "")
   ) || 0
 
-  // Effective client paid amount: derived from attached invoice or project payments
-  const clientPaidAmount = attachedInvoice && typeof attachedInvoice.paidAmount === "number"
-    ? attachedInvoice.paidAmount
-    : (typeof project.paidAmount === "number"
+  // Effective client paid amount: derived from attached invoice (paymentReceived or paidAmount) or project payments
+  const parseMoneyVal = (v: any): number => {
+    if (typeof v === "number") return Number.isFinite(v) ? v : 0
+    if (v === null || v === undefined) return 0
+    const n = Number(String(v).replace(/[^0-9.-]/g, ""))
+    return Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0
+  }
+  const attachedInvoicePaid = attachedInvoice
+    ? (parseMoneyVal(attachedInvoice.paymentReceived) ||
+       parseMoneyVal((attachedInvoice as any).paidAmount) ||
+       (String(attachedInvoice.status || "").toLowerCase().includes("fully") || String(attachedInvoice.status || "").toLowerCase() === "paid"
+         ? (parseMoneyVal(attachedInvoice.totalInvoiced) || numericProjectTotal)
+         : 0))
+    : null
+  const clientPaidAmount = attachedInvoicePaid !== null
+    ? attachedInvoicePaid
+    : (typeof project.paidAmount === "number" && project.paidAmount > 0
       ? project.paidAmount
       : (project.paymentStatus === "Paid" || project.status === "Completed"
         ? numericProjectTotal

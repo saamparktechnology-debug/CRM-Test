@@ -276,7 +276,32 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
     subscriptionAdvance,
     effectiveSubAdvance,
     subPrepaidCycles,
+    selectedTargetModule,
+    setSelectedTargetModule,
   } = ctrl;
+
+  const syncLocationIntoAddress = (overrides: {
+    city?: string;
+    policeStation?: string;
+    district?: string;
+    state?: string;
+    pincode?: string;
+  }) => {
+    const nextCity = (overrides.city !== undefined ? overrides.city : clientCity || "").trim();
+    const nextPs = (overrides.policeStation !== undefined ? overrides.policeStation : clientPoliceStation || "").trim();
+    const nextDist = (overrides.district !== undefined ? overrides.district : clientDistrict || "").trim();
+    const nextState = (overrides.state !== undefined ? overrides.state : clientState || "").trim();
+    const nextPin = (overrides.pincode !== undefined ? overrides.pincode : clientPincode || "").trim();
+    const parts = [
+      nextCity,
+      nextPs ? `PS: ${nextPs}` : "",
+      nextDist,
+      nextState,
+    ].filter(Boolean);
+    if (parts.length === 0 && !nextPin) return;
+    const formatted = `${parts.join(", ")}${nextPin ? ` - ${nextPin}` : ""}`;
+    setClientAddress?.(formatted);
+  };
 
   const dynamicServicePresets = React.useMemo(() => {
     const all = servicePresetOpts.map((o: any) => ({
@@ -2685,6 +2710,7 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                             }
                           }
                           if (cat === "Digital Marketing") {
+                            setSelectedTargetModule?.("digital_marketing");
                             const defaultPkg =
                               createDefaultMarketingPackage(
                                 "Package 02 - Grow",
@@ -4011,7 +4037,11 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         {pincodePlaces.length > 0 ? (
                           <select
                             value={clientCity}
-                            onChange={(e) => setClientCity(e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setClientCity(val);
+                              syncLocationIntoAddress({ city: val });
+                            }}
                             className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
                           >
                             {pincodePlaces.map((p) => (
@@ -4037,9 +4067,11 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         {pincodeBlocks && pincodeBlocks.length > 0 ? (
                           <select
                             value={clientPoliceStation || ""}
-                            onChange={(e) =>
-                              setClientPoliceStation?.(e.target.value)
-                            }
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setClientPoliceStation?.(val);
+                              syncLocationIntoAddress({ policeStation: val });
+                            }}
                             className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
                           >
                             <option value="">
@@ -4056,9 +4088,11 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         ) : (
                           <Input
                             value={clientPoliceStation || ""}
-                            onChange={(e) =>
-                              setClientPoliceStation?.(e.target.value)
-                            }
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setClientPoliceStation?.(val);
+                              syncLocationIntoAddress({ policeStation: val });
+                            }}
                             placeholder="Police Station / Block"
                           />
                         )}
@@ -4072,7 +4106,11 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         {pincodeDistricts.length > 0 ? (
                           <select
                             value={clientDistrict}
-                            onChange={(e) => setClientDistrict(e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setClientDistrict(val);
+                              syncLocationIntoAddress({ district: val });
+                            }}
                             className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
                           >
                             {pincodeDistricts.map((d) => (
@@ -4098,7 +4136,11 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                         {pincodeStates.length > 0 ? (
                           <select
                             value={clientState}
-                            onChange={(e) => setClientState(e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setClientState(val);
+                              syncLocationIntoAddress({ state: val });
+                            }}
                             className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold text-xs"
                           >
                             {pincodeStates.map((s) => (
@@ -5632,6 +5674,96 @@ export function DocumentStudioModalSection1({ ctrl }: { ctrl: any }) {
                       </div>
                     </div>
                   )}
+
+                  {/* Post-Billing Destination Module Selector (Project / Subscription / Digital Marketing) */}
+                  <div className="p-4 rounded-2xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <span className="font-extrabold text-zinc-800 dark:text-zinc-100 text-xs flex items-center gap-1.5">
+                        <Layers size={15} className="text-indigo-600 dark:text-indigo-400" />
+                        <span>Open Module After Billing</span>
+                      </span>
+                      <span className="text-[10.5px] text-zinc-500 dark:text-zinc-400">
+                        Select which module to create &amp; open automatically on save
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTargetModule?.("project")}
+                        className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer flex items-start gap-2.5 ${
+                          (selectedTargetModule || "project") === "project"
+                            ? "border-blue-600 bg-blue-50/90 dark:bg-blue-950/50 text-blue-900 dark:text-blue-100 shadow-sm ring-1 ring-blue-500/30"
+                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-blue-300 dark:hover:border-blue-700"
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg shrink-0 ${(selectedTargetModule || "project") === "project" ? "bg-blue-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"}`}>
+                          <Briefcase size={15} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-xs">Project</span>
+                            {(selectedTargetModule || "project") === "project" && (
+                              <CheckCircle2 size={14} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-snug">
+                            Opens at Unassigned in Project module
+                          </p>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTargetModule?.("subscription")}
+                        className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer flex items-start gap-2.5 ${
+                          selectedTargetModule === "subscription"
+                            ? "border-purple-600 bg-purple-50/90 dark:bg-purple-950/50 text-purple-900 dark:text-purple-100 shadow-sm ring-1 ring-purple-500/30"
+                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-purple-300 dark:hover:border-purple-700"
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg shrink-0 ${selectedTargetModule === "subscription" ? "bg-purple-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"}`}>
+                          <RefreshCw size={15} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-xs">Subscription</span>
+                            {selectedTargetModule === "subscription" && (
+                              <CheckCircle2 size={14} className="text-purple-600 dark:text-purple-400 shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-snug">
+                            Opens in Subscription module
+                          </p>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTargetModule?.("digital_marketing")}
+                        className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer flex items-start gap-2.5 ${
+                          selectedTargetModule === "digital_marketing"
+                            ? "border-emerald-600 bg-emerald-50/90 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-100 shadow-sm ring-1 ring-emerald-500/30"
+                            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-emerald-300 dark:hover:border-emerald-700"
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg shrink-0 ${selectedTargetModule === "digital_marketing" ? "bg-emerald-600 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"}`}>
+                          <Sparkles size={15} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-xs">Digital Marketing</span>
+                            {selectedTargetModule === "digital_marketing" && (
+                              <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-snug">
+                            Opens in Digital Marketing module
+                          </p>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </>

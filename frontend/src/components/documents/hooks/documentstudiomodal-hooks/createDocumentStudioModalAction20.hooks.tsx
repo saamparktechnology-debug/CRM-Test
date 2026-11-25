@@ -148,6 +148,8 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
       calculatedSubtotal,
       taxableBase,
       calculatedDiscount,
+      discountType,
+      discountValue,
       effectiveCreditDeduction,
       numSetupCharge,
       calculatedGst,
@@ -170,6 +172,8 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
       projectTitle,
       grandTotal,
       onClose,
+      selectedTargetModule,
+      router,
     } = getCtrl();
     const __fn: any = async () => {
       if (!clientName.trim() && !selectedClient?.name) {
@@ -378,15 +382,22 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
               taxableBase: taxableBase,
               taxableAmount: taxableBase,
               discount: calculatedDiscount,
+              discountType,
+              discountValue,
               creditDeduction: effectiveCreditDeduction,
               setupCharge: numSetupCharge,
+              isNonGst: docScheme === "nongst",
+              taxType: docScheme,
+              targetModule: selectedTargetModule || "project",
               gstRate: mode === "invoice" && docScheme === "gst" ? 18 : 0,
               gstAmount: calculatedGst,
               tax: calculatedGst,
               totalInvoiced: `₹${effectiveDocTotal.toLocaleString("en-IN")}`,
               total: effectiveDocTotal,
               paymentReceived: `₹${advancePaidNum.toLocaleString("en-IN")}`,
+              paidAmount: advancePaidNum,
               due: `₹${effectiveDue.toLocaleString("en-IN")}`,
+              dueAmount: effectiveDue,
               status:
                 effectiveDue === 0
                   ? "Fully paid"
@@ -434,6 +445,7 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
               clientPoliceStation,
               referByCategory,
               referredByName,
+              isSplitPayment: Boolean(isSplitPayment),
               splitPayments: isSplitPayment ? splitPayments : undefined,
               emiCustomSchedule: paymentPlan === "part" ? emiCustomSchedule : undefined,
               emiMonths: emiTenureMonths,
@@ -696,8 +708,9 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
                 }
               }
 
-              // If Subscription based, auto create in Subscriptions section
-              if (paymentPlan === "subscription") {
+              const resolvedTargetModule = selectedTargetModule || "project";
+              // If Subscription selected (or subscription plan), auto create in Subscriptions section
+              if (resolvedTargetModule === "subscription" || paymentPlan === "subscription") {
                 try {
                   await addSubscription(
                     {
@@ -713,8 +726,8 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
                         selectedClient?.companyName || clientName || "Client",
                       planName: `${effectiveCategory} - ${items[0]?.serviceName || effectiveProjectName} (${subscriptionDurationMonths}-Month ${subscriptionCycle} @ ₹${activeSubRate})`,
                       status: "Active",
-                      amount: `₹${activeSubRate.toLocaleString("en-IN")}`,
-                      numericAmount: activeSubRate,
+                      amount: `₹${(activeSubRate > 0 ? activeSubRate : effectiveDocTotal).toLocaleString("en-IN")}`,
+                      numericAmount: activeSubRate > 0 ? activeSubRate : effectiveDocTotal,
                       billingCycle: (subscriptionCycle === "Yearly"
                         ? "Annually"
                         : subscriptionCycle) as any,
@@ -740,8 +753,8 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
                 }
               }
 
-              // Auto-link/create project in Projects module
-              if (effectiveProjectName && effectiveProjectName.trim()) {
+              // Auto-link/create project in Projects module when Project is selected
+              if (resolvedTargetModule === "project" && effectiveProjectName && effectiveProjectName.trim()) {
                 try {
                   const { getProjects, addProject } =
                     await import("@/features/projects/services/projectService");
@@ -831,7 +844,7 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
                             .toISOString()
                             .split("T")[0],
                         progress: 0,
-                        status: "Open", // Default to Open when invoice created
+                        status: "Unassigned", // Open at Unassigned in Project module
                         paymentStatus:
                           effectiveDue === 0
                             ? "Paid"
@@ -910,7 +923,7 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
                   !effectiveCategory.toLowerCase().includes("android") &&
                   !effectiveCategory.toLowerCase().includes("ios"));
 
-              if (isDigitalMarketingEntity) {
+              if (resolvedTargetModule === "digital_marketing" || isDigitalMarketingEntity) {
                 try {
                   const { MarketingService } =
                     await import("@/features/marketing/services/marketingService");
@@ -1007,6 +1020,26 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
               }
 
               onSaveSuccess?.(saved || finalDocPayload);
+
+              // Automatically open the selected destination module
+              const isFeaturePath =
+                typeof window !== "undefined" &&
+                window.location.pathname.startsWith("/feature");
+              const routePrefix = isFeaturePath ? "/feature" : "";
+              const targetRoute =
+                resolvedTargetModule === "subscription"
+                  ? `${routePrefix}/subscriptions`
+                  : resolvedTargetModule === "digital_marketing"
+                    ? `${routePrefix}/marketing`
+                    : `${routePrefix}/projects?filter=Unassigned`;
+              setTimeout(() => {
+                onClose?.();
+                if (router?.push) {
+                  router.push(targetRoute);
+                } else if (typeof window !== "undefined") {
+                  window.location.href = targetRoute;
+                }
+              }, 300);
             } else if (mode === "quotation") {
               const effectiveQuotationItems =
                 deliverables.length > 0 && items.length <= 1
@@ -1339,10 +1372,10 @@ export function createDocumentStudioModalAction20(getCtrl: () => any) {
           },
           {
             actionType: initialData?.id ? "update" : "create",
-            loadingTitle: `${actionLabel} Official ${docLabel}...`,
+            loadingTitle: `${actionLabel} ${docLabel}...`,
             loadingMsg: `Compiling line items, recalculating GST/discounts, and updating CRM records for ${clientName || "Client"}...`,
             successTitle: `${docLabel} ${initialData?.id ? "Updated" : "Created"} Successfully!`,
-            successMsg: `Official ${docLabel} #${docNumber} has been safely saved and synchronized with your workspace.`,
+            successMsg: `${docLabel} #${docNumber} has been safely saved and synchronized with your workspace.`,
             minLoadingMs: 650,
             autoCloseMs: 2200,
           },

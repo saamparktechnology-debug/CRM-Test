@@ -25,7 +25,7 @@ export function DocumentStudioModalSection2({ ctrl }: { ctrl: any }) {
                   mode === "estimate" ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300" :
                   docScheme === "gst" ? "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300" : "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300"
                 }`}>
-                  {isMarketing ? "Marketing Retainer" : mode === "quotation" ? "Quotation" : mode === "estimate" ? "Estimate" : docScheme === "gst" ? "GST Invoice" : "Non-GST"}
+                  {isMarketing ? "Marketing Retainer" : mode === "quotation" ? "Quotation" : mode === "estimate" ? "Estimate" : docScheme === "gst" ? "Tax Invoice" : "Normal Invoice"}
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-zinc-500 font-mono font-bold mt-0.5 truncate">

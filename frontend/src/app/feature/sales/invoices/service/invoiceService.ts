@@ -207,10 +207,12 @@ export const generateInvoiceNumber = (
   const dateStr = `${d}${m}${y}`;
 
   // Standard serial format: INV-(date)001 for GST, NG-(date)001 for Non-GST
-  const prefix = isNonGst ? `NG-${dateStr}` : `INV-${dateStr}`;
-  const unhyphenatedPrefix = isNonGst ? `NG${dateStr}` : `INV${dateStr}`;
-  const legacyPrefix = isNonGst ? `NGINV-${dateStr}-` : `INV-${dateStr}-`;
-  const legacyHyphen = isNonGst ? `NG-${dateStr}-` : `INV-${dateStr}-`;
+  const fyStartYear = parsedDate.getMonth() >= 3 ? parsedDate.getFullYear() : parsedDate.getFullYear() - 1;
+  const finYear = `${fyStartYear}-${String(fyStartYear + 1).slice(-2)}`;
+  const prefix = isNonGst ? `NG-${dateStr}` : `INV-${finYear}-`;
+  const unhyphenatedPrefix = isNonGst ? `NG${dateStr}` : `INV-${finYear}`;
+  const legacyPrefix = isNonGst ? `NGINV-${dateStr}-` : `INV-${finYear}-`;
+  const legacyHyphen = isNonGst ? `NG-${dateStr}-` : `INV-${finYear}-`;
 
   const deletedIds = getLocalDeletedIds();
 
@@ -261,7 +263,7 @@ export const generateInvoiceNumber = (
   }
 
   const nextSeq = maxSeq + 1;
-  const seqStr = String(nextSeq).padStart(3, "0");
+  const seqStr = String(nextSeq).padStart(isNonGst ? 3 : 4, "0");
   return `${prefix}${seqStr}`;
 };
 

@@ -56,6 +56,15 @@ export function ProjectList({
   const canDeleteProject = typeof canPerformAction === 'function' ? canPerformAction(user, "Projects", "delete") : true
 
   const [activeFilter, setActiveFilter] = React.useState("All projects")
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    const filterParam = params.get("filter") || params.get("status")
+    if (filterParam) {
+      setActiveFilter(filterParam)
+    }
+  }, [])
   const [categoryFilter, setCategoryFilter] = React.useState<"all" | "software" | "marketing">("all")
   const [searchQuery, setSearchQuery] = React.useState("")
   const [isFiltersDropdownOpen, setIsFiltersDropdownOpen] = React.useState(false)
@@ -92,6 +101,7 @@ export function ProjectList({
     if (categoryFilter === "software" && isMarketing) return false
     if (categoryFilter === "marketing" && !isMarketing) return false
 
+    if (activeFilter === "Unassigned") return matchesSearch && (p.status === "Unassigned" || !Array.isArray(p.members) || p.members.length === 0)
     if (activeFilter === "Digital Marketing") {
       return matchesSearch && isMarketing
     }

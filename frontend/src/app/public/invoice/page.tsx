@@ -173,7 +173,7 @@ function PublicInvoiceContent() {
             </span>
             <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
               <ShieldCheck size={12} />
-              <span>{isGstInvoice ? "Digital Tax Invoice Verified" : "Digital Invoice Verified"}</span>
+              <span>{isGstInvoice ? "Tax Invoice Verified" : "Normal Invoice Verified"}</span>
             </span>
           </div>
         </div>
@@ -246,7 +246,7 @@ function PublicInvoiceContent() {
             </div>
             <div>
               <p className="text-xs font-bold leading-tight">
-                Please review this official invoice and click &ldquo;Accept Invoice&rdquo;
+                Please review this invoice and click &ldquo;Accept Invoice&rdquo;
               </p>
               <p className="text-[11px] text-blue-700 dark:text-blue-400 mt-0.5">
                 Confirming registers your formal acceptance directly with the administration team.

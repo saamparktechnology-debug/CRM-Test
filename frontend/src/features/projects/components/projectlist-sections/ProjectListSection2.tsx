@@ -161,8 +161,8 @@ export function ProjectListSection2({ ctrl }: { ctrl: any }) {
           {/* Filter Pills matching Image 1 */}
           <div className="flex items-center gap-1.5 overflow-x-auto text-xs ml-1">
             {(isMarketingAllowed
-              ? ["All projects", "Digital Marketing", "Open projects", "Completed", "High Priority", "Upcoming"]
-              : ["All projects", "Open projects", "Completed", "High Priority", "Upcoming"]
+              ? ["All projects", "Unassigned", "Digital Marketing", "Open projects", "Completed", "High Priority", "Upcoming"]
+              : ["All projects", "Unassigned", "Open projects", "Completed", "High Priority", "Upcoming"]
             ).map((f) => {
               const isActive = activeFilter === f
               return (

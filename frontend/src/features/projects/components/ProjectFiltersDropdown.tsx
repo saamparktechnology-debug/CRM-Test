@@ -12,6 +12,7 @@ interface ProjectFiltersDropdownProps {
 
 export const filterOptions = [
   { id: "All projects", label: "All projects" },
+  { id: "Unassigned", label: "Unassigned" },
   { id: "Completed", label: "Completed" },
   { id: "High Priority", label: "High Priority" },
   { id: "Open projects", label: "Open projects" },

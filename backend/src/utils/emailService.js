@@ -565,9 +565,26 @@ async function sendInvoiceDetailsEmail({
   project = 'Service',
   billDate,
   dueDate,
-  totalAmount,
+  subtotal = null,
+  discount = 0,
+  discountType = undefined,
+  discountValue = 0,
+  setupCharge = 0,
+  gstRate = null,
+  taxAmount = null,
+  creditDeduction = 0,
+  totalAmount = null,
   receivedAmount = '₹0',
-  dueAmount = '₹0',
+  dueAmount = null,
+  isNonGst = undefined,
+  taxType = undefined,
+  paymentPlan = undefined,
+  paymentStructure = undefined,
+  paymentMethod = undefined,
+  isSplitPayment = false,
+  splitPayments = [],
+  emiCustomSchedule = [],
+  status = undefined,
   items = [],
   viewUrl = `https://crm.saampark.com/sales/invoices?view=${invoiceId}`,
   downloadUrl = null,
@@ -578,21 +595,195 @@ async function sendInvoiceDetailsEmail({
 
   const effectiveDownloadUrl = downloadUrl || (viewUrl.includes('?') ? `${viewUrl}&action=download` : `${viewUrl}?action=download`);
 
-  const itemsHtml = (items && items.length > 0)
-    ? items.map(it => `
+  const parseNum = (val) => {
+    if (typeof val === 'number') return Number.isFinite(val) ? val : 0;
+    if (val === null || val === undefined) return 0;
+    const cleaned = String(val).replace(/[^0-9.-]/g, '');
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const fmtInr = (n) => `₹${Math.max(0, Math.round(Number(n) || 0)).toLocaleString('en-IN')}`;
+
+  const safeItems = Array.isArray(items) ? items.filter(Boolean) : [];
+  const itemsHaveGst = safeItems.some((it) => parseNum(it.gstRate) > 0 || parseNum(it.gstAmount) > 0);
+  const invIdUpper = String(invoiceId || '').toUpperCase().trim();
+  const isNonGstInvoice =
+    isNonGst === true ||
+    String(taxType || '').toLowerCase() === 'nongst' ||
+    invIdUpper.startsWith('NG') ||
+    (isNonGst !== false && !itemsHaveGst && gstRate !== null && parseNum(gstRate) === 0 && parseNum(taxAmount) === 0);
+
+  const effectiveGstRate = isNonGstInvoice
+    ? 0
+    : (gstRate !== null && parseNum(gstRate) > 0 ? parseNum(gstRate) : 18);
+
+  const normalizedItems = safeItems.map((it) => {
+    const qty = parseNum(it.qty || it.quantity) || 1;
+    const rate = parseNum(it.rate ?? it.unitPrice ?? it.price);
+    const lineBase = rate * qty;
+    const itemGstRate = isNonGstInvoice
+      ? 0
+      : (it.gstRate !== undefined && it.gstRate !== null ? parseNum(it.gstRate) : effectiveGstRate);
+    const lineTax = isNonGstInvoice
+      ? 0
+      : (parseNum(it.gstAmount) > 0 ? parseNum(it.gstAmount) : Math.round(lineBase * (itemGstRate / 100)));
+    const lineTotal = isNonGstInvoice
+      ? lineBase
+      : (parseNum(it.totalAmount) > 0 ? parseNum(it.totalAmount) : lineBase + lineTax);
+    return {
+      serviceName: it.serviceName || it.name || it.description || project,
+      qty,
+      rate,
+      lineBase,
+      itemGstRate,
+      lineTax,
+      lineTotal,
+    };
+  });
+
+  const itemsBaseSum = normalizedItems.reduce((s, it) => s + it.lineBase, 0);
+  const itemsTaxSum = normalizedItems.reduce((s, it) => s + it.lineTax, 0);
+  const itemsTotalSum = normalizedItems.reduce((s, it) => s + it.lineTotal, 0);
+
+  const subtotalNum = parseNum(subtotal) > 0 ? parseNum(subtotal) : itemsBaseSum;
+  const discountNum = Math.max(0, parseNum(discount));
+  const setupChargeNum = Math.max(0, parseNum(setupCharge));
+  const taxableBaseNum = Math.max(0, subtotalNum - discountNum + setupChargeNum);
+  const taxNum = isNonGstInvoice
+    ? 0
+    : (taxAmount !== null && parseNum(taxAmount) > 0
+        ? parseNum(taxAmount)
+        : (discountNum > 0
+            ? Math.round(taxableBaseNum * (effectiveGstRate / 100))
+            : (itemsTaxSum > 0 ? itemsTaxSum : Math.round(taxableBaseNum * (effectiveGstRate / 100)))));
+  const creditDeductionNum = Math.max(0, parseNum(creditDeduction));
+  const computedGrandTotal = Math.max(0, taxableBaseNum + taxNum - creditDeductionNum);
+
+  const passedTotalNum = parseNum(totalAmount);
+  const grandTotalNum = passedTotalNum > 0
+    ? passedTotalNum
+    : (computedGrandTotal > 0 ? computedGrandTotal : itemsTotalSum);
+
+  let receivedNum = Math.max(0, parseNum(receivedAmount));
+  const statusNorm = String(status || '').toLowerCase().trim();
+  const planNorm = String(paymentPlan || '').toLowerCase().trim();
+  if ((statusNorm === 'fully paid' || statusNorm === 'paid' || planNorm === 'full') && receivedNum === 0 && grandTotalNum > 0) {
+    receivedNum = grandTotalNum;
+  }
+  if (receivedNum > grandTotalNum && grandTotalNum > 0) {
+    receivedNum = grandTotalNum;
+  }
+
+  const dueNum = Math.max(0, grandTotalNum - receivedNum);
+
+  const validSplits = Array.isArray(splitPayments)
+    ? splitPayments.filter((s) => s && (parseNum(s.amount) > 0 || (s.method && String(s.method).trim())))
+    : [];
+  const hasSplitPayments = Boolean(isSplitPayment && validSplits.length > 0) || validSplits.some((s) => parseNum(s.amount) > 0);
+  const validEmis = Array.isArray(emiCustomSchedule)
+    ? emiCustomSchedule.filter((e) => e && (parseNum(e.amount) > 0 || e.dueDate))
+    : [];
+
+  const paymentPlanLabel = (() => {
+    if (paymentStructure && String(paymentStructure).trim()) return String(paymentStructure).trim();
+    if (planNorm === 'full') return 'Full Payment';
+    if (planNorm === 'advance') return 'Advance Payment';
+    if (planNorm === 'part') return 'Part Payment (EMI)';
+    if (planNorm === 'subscription') return 'Subscription';
+    return paymentMethod || 'Standard Settlement';
+  })();
+
+  const resolvedPaymentModeDisplay = hasSplitPayments
+    ? `Split Payment (${validSplits.map((s) => s.method || 'Payment').join(' + ')})`
+    : (paymentMethod && String(paymentMethod).trim() ? String(paymentMethod).trim() : paymentPlanLabel);
+
+  const discountLabel =
+    String(discountType || '').toLowerCase() === 'percentage' && parseNum(discountValue) > 0
+      ? `Discount (${parseNum(discountValue)}%):`
+      : 'Discount:';
+
+  const splitPaymentsHtml = hasSplitPayments
+    ? `
+          <!-- Split Payment Breakdown -->
+          <div style="background-color: #161f30; border: 1px solid #334155; border-radius: 14px; padding: 18px 20px; margin-bottom: 24px;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #38bdf8; margin-bottom: 10px;">
+              💳 Payment Mode &amp; Split Breakdown
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+              <thead>
+                <tr style="border-bottom: 1px solid #334155;">
+                  <th style="padding: 6px 0; text-align: left; color: #94a3b8; font-size: 11px; text-transform: uppercase;">Mode</th>
+                  <th style="padding: 6px 0; text-align: left; color: #94a3b8; font-size: 11px; text-transform: uppercase;">Reference / Note</th>
+                  <th style="padding: 6px 0; text-align: right; color: #94a3b8; font-size: 11px; text-transform: uppercase;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${validSplits.map((sp) => `
+                  <tr style="border-bottom: 1px solid #1f2937;">
+                    <td style="padding: 8px 0; color: #f3f4f6; font-weight: 600;">${sp.method || 'Payment'}</td>
+                    <td style="padding: 8px 0; color: #9ca3af;">${sp.reference || '-'}</td>
+                    <td style="padding: 8px 0; text-align: right; color: #34d399; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(parseNum(sp.amount))}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+      `
+    : '';
+
+  const emiScheduleHtml = (planNorm === 'part' && validEmis.length > 0)
+    ? `
+          <!-- EMI Installment Schedule -->
+          <div style="background-color: #161f30; border: 1px solid #334155; border-radius: 14px; padding: 18px 20px; margin-bottom: 24px;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #60a5fa; margin-bottom: 10px;">
+              📅 EMI Installment Schedule
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+              <thead>
+                <tr style="border-bottom: 1px solid #334155;">
+                  <th style="padding: 6px 0; text-align: left; color: #94a3b8; font-size: 11px; text-transform: uppercase;">Installment</th>
+                  <th style="padding: 6px 0; text-align: center; color: #94a3b8; font-size: 11px; text-transform: uppercase;">Due Date</th>
+                  <th style="padding: 6px 0; text-align: right; color: #94a3b8; font-size: 11px; text-transform: uppercase;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${validEmis.map((em, idx) => `
+                  <tr style="border-bottom: 1px solid #1f2937;">
+                    <td style="padding: 8px 0; color: #f3f4f6; font-weight: 600;">EMI #${idx + 1}</td>
+                    <td style="padding: 8px 0; text-align: center; color: #fbbf24; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${em.dueDate || '-'}</td>
+                    <td style="padding: 8px 0; text-align: right; color: #f3f4f6; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(parseNum(em.amount))}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+      `
+    : '';
+
+  const docHeading = isNonGstInvoice ? 'Normal Invoice' : 'Tax Invoice';
+  const docBadge = isNonGstInvoice ? `NORMAL INVOICE • ${brand.shortName}` : `TAX INVOICE • ${brand.shortName}`;
+  const docIntroType = isNonGstInvoice ? 'normal invoice' : 'tax invoice';
+  const headerGradient = isNonGstInvoice
+    ? 'linear-gradient(135deg, #0284c7, #0ea5e9)'
+    : 'linear-gradient(135deg, #059669, #0f766e)';
+
+  const itemsHtml = normalizedItems.length > 0
+    ? normalizedItems.map((it) => `
         <tr style="border-bottom: 1px solid #1f2937;">
-          <td style="padding: 12px 14px; color: #f3f4f6; font-size: 13px; font-weight: 500;">${it.serviceName || project}</td>
-          <td style="padding: 12px 14px; color: #9ca3af; font-size: 13px; text-align: center;">${it.qty || 1}</td>
-          <td style="padding: 12px 14px; color: #d1d5db; font-size: 13px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">₹${(it.rate || 0).toLocaleString('en-IN')}</td>
-          <td style="padding: 12px 14px; color: #34d399; font-weight: 700; font-size: 13px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">₹${(it.totalAmount || (it.rate || 0) * (it.qty || 1)).toLocaleString('en-IN')}</td>
+          <td style="padding: 12px 14px; color: #f3f4f6; font-size: 13px; font-weight: 500;">${it.serviceName}</td>
+          <td style="padding: 12px 14px; color: #9ca3af; font-size: 13px; text-align: center;">${it.qty}</td>
+          <td style="padding: 12px 14px; color: #d1d5db; font-size: 13px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(it.rate)}</td>
+          ${!isNonGstInvoice ? `<td style="padding: 12px 14px; color: #93c5fd; font-size: 12px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${it.itemGstRate}%<br/><span style="color: #9ca3af;">${fmtInr(it.lineTax)}</span></td>` : ''}
+          <td style="padding: 12px 14px; color: #34d399; font-weight: 700; font-size: 13px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(it.lineTotal)}</td>
         </tr>
       `).join('')
     : `
         <tr style="border-bottom: 1px solid #1f2937;">
           <td style="padding: 12px 14px; color: #f3f4f6; font-size: 13px; font-weight: 500;">${project}</td>
           <td style="padding: 12px 14px; color: #9ca3af; font-size: 13px; text-align: center;">1</td>
-          <td style="padding: 12px 14px; color: #d1d5db; font-size: 13px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${totalAmount}</td>
-          <td style="padding: 12px 14px; color: #34d399; font-weight: 700; font-size: 13px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${totalAmount}</td>
+          <td style="padding: 12px 14px; color: #d1d5db; font-size: 13px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(subtotalNum || grandTotalNum)}</td>
+          ${!isNonGstInvoice ? `<td style="padding: 12px 14px; color: #93c5fd; font-size: 12px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${effectiveGstRate}%<br/><span style="color: #9ca3af;">${fmtInr(taxNum)}</span></td>` : ''}
+          <td style="padding: 12px 14px; color: #34d399; font-weight: 700; font-size: 13px; text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(grandTotalNum)}</td>
         </tr>
       `;
 
@@ -600,11 +791,11 @@ async function sendInvoiceDetailsEmail({
     <div style="background-color: #0b0f19; padding: 32px 16px; min-height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <div style="max-width: 600px; margin: 0 auto; background-color: #111827; border: 1px solid #1f2937; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);">
         <!-- Header -->
-        <div style="background: linear-gradient(135deg, #059669, #0f766e); padding: 36px 40px; text-align: center;">
+        <div style="background: ${headerGradient}; padding: 36px 40px; text-align: center;">
           <div style="display: inline-block; padding: 4px 14px; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 11px; font-weight: 700; color: #ffffff; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 12px;">
-            TAX INVOICE • ${brand.shortName}
+            ${docBadge}
           </div>
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.3px;">Official Tax Invoice</h1>
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.3px;">${docHeading}</h1>
           <p style="color: rgba(255,255,255,0.9); margin: 6px 0 0; font-size: 13px;">${brand.fullName}</p>
         </div>
 
@@ -612,7 +803,7 @@ async function sendInvoiceDetailsEmail({
         <div style="padding: 36px 40px; background-color: #111827; color: #e5e7eb;">
           <p style="color: #f9fafb; font-size: 16px; font-weight: 600; margin: 0 0 12px;">Dear <strong>${clientName}</strong>,</p>
           <p style="color: #9ca3af; font-size: 13.5px; line-height: 1.6; margin: 0 0 24px;">
-            Please find your official tax invoice details for <strong style="color: #f9fafb;">${project}</strong> issued by <strong>${brand.fullName}</strong>.
+            Please find your ${docIntroType} details for <strong style="color: #f9fafb;">${project}</strong> issued by <strong>${brand.fullName}</strong>.
           </p>
 
           <!-- Metadata Box -->
@@ -626,9 +817,18 @@ async function sendInvoiceDetailsEmail({
                 <td style="padding: 6px 0; color: #9ca3af;">Issue Date:</td>
                 <td style="padding: 6px 0; text-align: right; color: #f3f4f6;">${billDate || new Date().toLocaleDateString('en-GB')}</td>
               </tr>
+              ${dueDate ? `
               <tr>
                 <td style="padding: 6px 0; color: #9ca3af;">Payment Due Date:</td>
-                <td style="padding: 6px 0; text-align: right; color: #fbbf24; font-weight: 600;">${dueDate || 'Immediate'}</td>
+                <td style="padding: 6px 0; text-align: right; color: #fbbf24; font-weight: 600;">${dueDate}</td>
+              </tr>` : ''}
+              <tr>
+                <td style="padding: 6px 0; color: #9ca3af;">Payment Plan:</td>
+                <td style="padding: 6px 0; text-align: right; color: #f3f4f6; font-weight: 600;">${paymentPlanLabel}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #9ca3af;">Payment Mode:</td>
+                <td style="padding: 6px 0; text-align: right; color: #34d399; font-weight: 600;">${resolvedPaymentModeDisplay}</td>
               </tr>
             </table>
           </div>
@@ -641,6 +841,7 @@ async function sendInvoiceDetailsEmail({
                   <th style="padding: 12px 14px; color: #94a3b8; font-size: 11px; text-align: left; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Service / Item</th>
                   <th style="padding: 12px 14px; color: #94a3b8; font-size: 11px; text-align: center; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Qty</th>
                   <th style="padding: 12px 14px; color: #94a3b8; font-size: 11px; text-align: right; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Rate</th>
+                  ${!isNonGstInvoice ? `<th style="padding: 12px 14px; color: #94a3b8; font-size: 11px; text-align: right; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">GST</th>` : ''}
                   <th style="padding: 12px 14px; color: #94a3b8; font-size: 11px; text-align: right; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Amount</th>
                 </tr>
               </thead>
@@ -650,25 +851,54 @@ async function sendInvoiceDetailsEmail({
             </table>
           </div>
 
-          <!-- Commercial Total Box -->
-          <div style="background-color: #1f2937; border: 1px solid #374151; border-radius: 14px; padding: 22px; margin-bottom: 28px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13.5px; color: #9ca3af;">
-              <span>Grand Total:</span>
-              <strong style="color: #f3f4f6; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${totalAmount}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13.5px; color: #34d399;">
-              <span>Amount Received:</span>
-              <strong style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${receivedAmount}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #374151; font-size: 15px;">
-              <span style="color: #f87171; font-weight: 700;">Balance Due:</span>
-              <strong style="color: #f87171; font-size: 17px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${dueAmount}</strong>
-            </div>
+          <!-- Commercial Total Box (Email-safe table layout) -->
+          <div style="background-color: #1f2937; border: 1px solid #374151; border-radius: 14px; padding: 20px 22px; margin-bottom: 28px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+              <tr>
+                <td style="padding: 6px 0; color: #9ca3af;">Subtotal:</td>
+                <td style="padding: 6px 0; text-align: right; color: #f3f4f6; font-weight: 600; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(subtotalNum)}</td>
+              </tr>
+              ${discountNum > 0 ? `
+              <tr>
+                <td style="padding: 6px 0; color: #f87171;">${discountLabel}</td>
+                <td style="padding: 6px 0; text-align: right; color: #f87171; font-weight: 600; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">-${fmtInr(discountNum)}</td>
+              </tr>` : ''}
+              ${setupChargeNum > 0 ? `
+              <tr>
+                <td style="padding: 6px 0; color: #9ca3af;">Setup / Platform Charge:</td>
+                <td style="padding: 6px 0; text-align: right; color: #f3f4f6; font-weight: 600; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">+${fmtInr(setupChargeNum)}</td>
+              </tr>` : ''}
+              ${!isNonGstInvoice ? `
+              <tr>
+                <td style="padding: 6px 0; color: #93c5fd;">GST (${effectiveGstRate}%):</td>
+                <td style="padding: 6px 0; text-align: right; color: #93c5fd; font-weight: 600; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">+${fmtInr(taxNum)}</td>
+              </tr>` : ''}
+              ${creditDeductionNum > 0 ? `
+              <tr>
+                <td style="padding: 6px 0; color: #a5b4fc;">Credit Note Applied:</td>
+                <td style="padding: 6px 0; text-align: right; color: #a5b4fc; font-weight: 600; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">-${fmtInr(creditDeductionNum)}</td>
+              </tr>` : ''}
+              <tr>
+                <td style="padding: 10px 0 6px; border-top: 1px solid #374151; color: #f9fafb; font-weight: 700;">Grand Total:</td>
+                <td style="padding: 10px 0 6px; border-top: 1px solid #374151; text-align: right; color: #f9fafb; font-weight: 800; font-size: 15px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(grandTotalNum)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #34d399;">Amount Received:</td>
+                <td style="padding: 6px 0; text-align: right; color: #34d399; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(receivedNum)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0 2px; border-top: 1px solid #374151; color: ${dueNum > 0 ? '#f87171' : '#34d399'}; font-weight: 700; font-size: 15px;">Balance Due:</td>
+                <td style="padding: 12px 0 2px; border-top: 1px solid #374151; text-align: right; color: ${dueNum > 0 ? '#f87171' : '#34d399'}; font-weight: 800; font-size: 17px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">${fmtInr(dueNum)}</td>
+              </tr>
+            </table>
           </div>
+
+          ${splitPaymentsHtml}
+          ${emiScheduleHtml}
 
           <!-- CTA Buttons -->
           <div style="text-align: center; margin-bottom: 10px;">
-            <a href="${viewUrl}" style="display: inline-block; background: linear-gradient(135deg, #059669, #0d9488); color: #ffffff; text-decoration: none; padding: 13px 26px; border-radius: 12px; font-weight: 700; font-size: 13px; margin: 4px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);">
+            <a href="${viewUrl}" style="display: inline-block; background: ${headerGradient}; color: #ffffff; text-decoration: none; padding: 13px 26px; border-radius: 12px; font-weight: 700; font-size: 13px; margin: 4px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);">
               💳 View &amp; Settle Invoice →
             </a>
             <a href="${effectiveDownloadUrl}" style="display: inline-block; background: #2563eb; color: #ffffff; text-decoration: none; padding: 13px 26px; border-radius: 12px; font-weight: 700; font-size: 13px; margin: 4px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
@@ -690,7 +920,7 @@ async function sendInvoiceDetailsEmail({
   await transporter.sendMail({
     from,
     to,
-    subject: `📄 Tax Invoice ${invoiceId} for ${project} - ${brand.shortName}`,
+    subject: `📄 ${docHeading} ${invoiceId} for ${project} - ${brand.shortName}`,
     html,
   });
 }

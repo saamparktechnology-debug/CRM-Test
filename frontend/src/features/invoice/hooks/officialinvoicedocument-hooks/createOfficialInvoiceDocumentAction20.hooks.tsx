@@ -149,7 +149,7 @@ export function createOfficialInvoiceDocumentAction20(getCtrl: () => any) {
               <EditableText
                 value={`For ${fullRegisteredCompanyName} ${isSubBranchIssued && activeSubBranch ? `(${activeSubBranch.name})` : isBranchIssued && activeBranch ? `(${activeBranch.name})` : ""}`}
                 interactive={interactive}
-                className="text-[8.5px] font-bold text-zinc-500 uppercase tracking-tight truncate max-w-[175px] block"
+                className="text-[8.5px] font-bold text-zinc-500 uppercase tracking-tight whitespace-normal break-words leading-tight block"
               />
               <div className="h-12 flex items-center justify-center">
                 {resolvedSignatureUrl ? (

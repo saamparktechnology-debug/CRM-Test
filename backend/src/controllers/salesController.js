@@ -338,18 +338,34 @@ const invoiceController = {
       const m = String(now.getMonth() + 1).padStart(2, '0');
       const y = String(now.getFullYear());
       const dateStr = `${d}${m}${y}`;
+      const fyStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+      const finYear = `${fyStart}-${String(fyStart + 1).slice(-2)}`;
       const isNonGst = Boolean(req.body.is_nongst || req.body.is_non_gst || req.body.scheme === 'Non-GST' || req.body.type === 'nongst');
-      const prefix = isNonGst ? `NG-${dateStr}` : `INV-${dateStr}`;
+      const prefix = isNonGst ? `NG-${dateStr}` : `INV-${finYear}-`;
 
       let num = invoice_number;
       if (!num) {
-        const [count] = await conn.execute('SELECT COUNT(*) as cnt FROM invoices WHERE company_id = ? FOR UPDATE', [companyId]).catch(() => [[{ cnt: 0 }]]);
-        const seq = ((count && count[0] ? count[0].cnt : 0) + 1).toString().padStart(3, '0');
-        num = `${prefix}${seq}`;
+        if (!isNonGst) {
+          const [rows] = await conn.execute(
+            'SELECT invoice_number FROM invoices WHERE company_id = ? AND invoice_number LIKE ? FOR UPDATE',
+            [companyId, `${prefix}%`]
+          ).catch(() => [[]]);
+          let maxSeq = 0;
+          for (const r of (rows || [])) {
+            const suffix = String(r.invoice_number || '').substring(prefix.length);
+            const parsed = parseInt(suffix, 10);
+            if (!isNaN(parsed) && parsed > maxSeq) maxSeq = parsed;
+          }
+          num = `${prefix}${String(maxSeq + 1).padStart(4, '0')}`;
+        } else {
+          const [count] = await conn.execute('SELECT COUNT(*) as cnt FROM invoices WHERE company_id = ? FOR UPDATE', [companyId]).catch(() => [[{ cnt: 0 }]]);
+          const seq = ((count && count[0] ? count[0].cnt : 0) + 1).toString().padStart(3, '0');
+          num = `${prefix}${seq}`;
+        }
         // Verify uniqueness
         const [existing] = await conn.execute('SELECT id FROM invoices WHERE invoice_number = ?', [num]);
         if (existing.length > 0) {
-          num = `${prefix}${seq}-${Date.now().toString().slice(-4)}`;
+          num = `${prefix}${Date.now().toString().slice(-4)}`;
         }
       }
 

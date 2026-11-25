@@ -37,7 +37,7 @@ import { type DocumentStudioModalProps, SERVICE_PRESETS } from "@/components/doc
 import { createDocumentStudioModalAction20 } from "@/components/documents/hooks/documentstudiomodal-hooks/createDocumentStudioModalAction20.hooks"
 
 export function runDocumentStudioModalEffect51(getCtrl: () => any) {
-  const { isOpen, fetchCompanies, fetchBranches, fetchSubBranches, setAvailableTeamMembers, setAvailableReferers, setAllClients, initialData, setSelectedClient, setClientMode, setClientName, setClientDesignation, setContactPersonName, setClientEmail, setClientPhone, setClientAddress, setClientCity, setClientState, setClientGst, prefilledClient, handleSelectClient, setDocScheme, setCompanyId, activeCompanyId, setBranchId, setSubBranchId, setDocNumber, setIssueDate, setDueDate, setPaymentPlan, setIsSplitPayment, setSplitPayments, setEmiCustomSchedule, setClientDob, setClientPoliceStation, setReferByCategory, setReferredByName, setProjectTitle, setProjectOverview, setProjectTimeline, setTurnaroundTime, setDeliverables, setScopeInclusions, setScopeExclusions, setPaymentMilestones, setItems, setDiscountValue, setSetupCharge, setNotes, setTerms, setMarketingPackage, setAssignedMembers, activeBranchId, generateDocNumber, docScheme, mode } = getCtrl();
+  const { isOpen, fetchCompanies, fetchBranches, fetchSubBranches, setAvailableTeamMembers, setAvailableReferers, setAllClients, initialData, setSelectedClient, setClientMode, setClientName, setClientDesignation, setContactPersonName, setClientEmail, setClientPhone, setClientAddress, setClientCity, setClientState, setClientGst, prefilledClient, handleSelectClient, setDocScheme, setCompanyId, activeCompanyId, setBranchId, setSubBranchId, setDocNumber, setIssueDate, setDueDate, setPaymentPlan, setSelectedTargetModule, setIsSplitPayment, setSplitPayments, setEmiCustomSchedule, setClientDob, setClientPoliceStation, setReferByCategory, setReferredByName, setProjectTitle, setProjectOverview, setProjectTimeline, setTurnaroundTime, setDeliverables, setScopeInclusions, setScopeExclusions, setPaymentMilestones, setItems, setDiscountValue, setSetupCharge, setNotes, setTerms, setMarketingPackage, setAssignedMembers, activeBranchId, generateDocNumber, docScheme, mode } = getCtrl();
   const __fn: any = () => {
     if (!isOpen) return
 
@@ -74,6 +74,7 @@ export function runDocumentStudioModalEffect51(getCtrl: () => any) {
 
       if (initialData) {
       if (initialData.paymentPlan) setPaymentPlan?.(initialData.paymentPlan)
+      setSelectedTargetModule?.(initialData.targetModule || (initialData.primaryCategory === "Digital Marketing" ? "digital_marketing" : "project"))
       const initSplits = Array.isArray(initialData.splitPayments) ? initialData.splitPayments : []
       setIsSplitPayment?.(initSplits.length > 0)
       setSplitPayments?.(initSplits.length > 0 ? initSplits : [{ id: "sp-1", method: "UPI / Net Banking", amount: "", reference: "" }])
@@ -270,6 +271,7 @@ export function runDocumentStudioModalEffect51(getCtrl: () => any) {
       setDiscountValue("")
       setSetupCharge("")
       setAssignedMembers([])
+      setSelectedTargetModule?.("project")
     }
   };
   return __fn();

@@ -253,6 +253,7 @@ const INITIAL_MASTER_OPTIONS = [
   ['project_type', 'Client Project', 'Client Project', 'CLIENT', null, 1, 1],
   ['project_type', 'Internal Project', 'Internal Project', 'INTERNAL', null, 2, 0],
 
+  ['project_status', 'Unassigned', 'Unassigned', 'UNASSIGNED', null, 0, 0],
   ['project_status', 'Open', 'Open', 'OPEN', null, 1, 1],
   ['project_status', 'In Progress', 'In Progress', 'IN_PROGRESS', null, 2, 0],
   ['project_status', 'Under Review', 'Under Review', 'REVIEW', null, 3, 0],

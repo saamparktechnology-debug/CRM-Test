@@ -219,7 +219,7 @@ export function OfficialInvoiceDocument({
     : "SAAMPARK").toUpperCase()
   let headerSecondaryLine = (resolvedDivisionName !== undefined && resolvedDivisionName !== null
     ? String(resolvedDivisionName)
-    : (activeCompany?.division_name || "")).toUpperCase()
+    : (activeCompany?.division_name || "")).replace(/[ \t]+/g, " ").trim().toUpperCase()
 
   // Helper to validate non-empty string fields (strictly ignores empty, null, and placeholder text)
   const isValidField = (val?: string | null): boolean => {
@@ -504,7 +504,7 @@ export function OfficialInvoiceDocument({
         badgeBg: "bg-sky-50 text-sky-800 border-sky-300",
         accentRing: "ring-[#0ea5e9]",
         sealColor: "text-[#0284c7] border-[#0284c7]",
-        invoiceTypeLabel: "INVOICE",
+        invoiceTypeLabel: "NORMAL INVOICE",
       }
 
   // 3. Financial Computations
@@ -655,7 +655,7 @@ export function OfficialInvoiceDocument({
   const invoiceNumOrId = (invoice as any).invoiceNumber || (invoice as any).invoice_number || invoice.id || "INV"
   const originUrl = typeof window !== "undefined" && window.location.origin
     ? window.location.origin
-    : "https://saampark.com"
+    : "http://localhost:3001"
   const publicInvoiceViewUrl = `${originUrl}/public/invoice?id=${encodeURIComponent(String(invoice.id || invoiceNumOrId))}`
   const invoiceVerificationQrUrl = React.useMemo(() => {
     return getQrCodeDataUri(publicInvoiceViewUrl, 160) || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=1&ecc=M&data=${encodeURIComponent(publicInvoiceViewUrl)}`

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -144,6 +145,27 @@ export function DocumentStudioModal({
     get onClose() {
       try {
         return onClose;
+      } catch {
+        return undefined;
+      }
+    },
+    get router() {
+      try {
+        return router;
+      } catch {
+        return undefined;
+      }
+    },
+    get selectedTargetModule() {
+      try {
+        return selectedTargetModule;
+      } catch {
+        return undefined;
+      }
+    },
+    get setSelectedTargetModule() {
+      try {
+        return setSelectedTargetModule;
       } catch {
         return undefined;
       }
@@ -1581,6 +1603,22 @@ export function DocumentStudioModal({
     fetchBranches,
     fetchSubBranches,
   } = useAuthStore();
+  const router = useRouter();
+  const [selectedTargetModule, setSelectedTargetModule] = React.useState<
+    "project" | "subscription" | "digital_marketing"
+  >(() => {
+    if (
+      initialData?.targetModule === "project" ||
+      initialData?.targetModule === "subscription" ||
+      initialData?.targetModule === "digital_marketing"
+    ) {
+      return initialData.targetModule;
+    }
+    if (initialData?.primaryCategory === "Digital Marketing") {
+      return "digital_marketing";
+    }
+    return "project";
+  });
 
   // 1. Core Document Setup
   const [docScheme, setDocScheme] = React.useState<"gst" | "nongst">(() => {
@@ -1651,8 +1689,15 @@ export function DocumentStudioModal({
           }
         })
         .catch(() => {});
-      getInvoices()
-        .then((res: any) => setAvailableInvoices(res || []))
+      getInvoices("all")
+        .then((res: any) => {
+          const list = Array.isArray(res) ? res : [];
+          setAvailableInvoices(list);
+          if (!initialData?.id && mode === "invoice" && docScheme === "gst") {
+            const d = issueDate ? new Date(issueDate) : new Date();
+            setDocNumber(generateInvoiceNumber(list, isNaN(d.getTime()) ? new Date() : d, false));
+          }
+        })
         .catch(() => {});
     } catch (_) {}
   }, [isOpen]);
@@ -2115,10 +2160,35 @@ export function DocumentStudioModal({
   );
 
   // Generate document number helper
-  const generateDocNumber = (scheme: "gst" | "nongst", targetDate?: string) => {
+  const generateDocNumber = (
+    scheme: "gst" | "nongst",
+    targetDate?: string,
+    invoicesOverride?: any[],
+  ) => {
     const rawD = targetDate || issueDate;
     const d = rawD ? new Date(rawD) : new Date();
     const validD = isNaN(d.getTime()) ? new Date() : d;
+
+    // Tax Invoice sequence: INV-FINYEAR-0001 (e.g. INV-2026-27-0001)
+    if (mode === "invoice" && scheme === "gst") {
+      const list = Array.isArray(invoicesOverride)
+        ? invoicesOverride
+        : availableInvoices;
+      const gen = generateInvoiceNumber(list || [], validD, false);
+      setDocNumber(gen);
+      if (!invoicesOverride && (!availableInvoices || availableInvoices.length === 0)) {
+        getInvoices("all")
+          .then((fresh) => {
+            if (Array.isArray(fresh)) {
+              setAvailableInvoices(fresh);
+              setDocNumber(generateInvoiceNumber(fresh, validD, false));
+            }
+          })
+          .catch(() => {});
+      }
+      return gen;
+    }
+
     const datePart = `${String(validD.getDate()).padStart(2, "0")}${String(validD.getMonth() + 1).padStart(2, "0")}${validD.getFullYear()}`;
     const randPart = Math.floor(1000 + Math.random() * 9000);
 
@@ -2443,8 +2513,8 @@ export function DocumentStudioModal({
         : "Create Digital Marketing Retainer Estimate"
     : mode === "invoice"
       ? docScheme === "gst"
-        ? "Create Official GST Tax Invoice"
-        : "Create Commercial Non-GST Invoice"
+        ? "Create Tax Invoice"
+        : "Create Normal Invoice"
       : mode === "quotation"
         ? "Create Commercial Project Quotation & Tender"
         : "Create Project Cost Estimate";

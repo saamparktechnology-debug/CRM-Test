@@ -53,16 +53,16 @@ function rsRemainder(data: Uint8Array, ecCount: number, generator: Uint8Array): 
 // Version table: [dataCapacityBytes, ecBytes, totalCodewords, blocksGroup1, dataPerBlock1, blocksGroup2, dataPerBlock2]
 // For ECC Level M
 const VERSION_SPECS_M: { [v: number]: { dataCap: number; ecBytes: number; ecPerBlock: number; b1: number; d1: number; b2: number; d2: number; align: number[] } } = {
-  1: { dataCap: 14, ecBytes: 10, ecPerBlock: 10, b1: 1, d1: 16, b2: 0, d2: 0, align: [] },
-  2: { dataCap: 26, ecBytes: 16, ecPerBlock: 16, b1: 1, d1: 28, b2: 0, d2: 0, align: [6, 18] },
-  3: { dataCap: 42, ecBytes: 26, ecPerBlock: 26, b1: 1, d1: 44, b2: 0, d2: 0, align: [6, 22] },
-  4: { dataCap: 62, ecBytes: 36, ecPerBlock: 18, b1: 2, d1: 32, b2: 0, d2: 0, align: [6, 26] },
-  5: { dataCap: 84, ecBytes: 48, ecPerBlock: 24, b1: 2, d1: 43, b2: 0, d2: 0, align: [6, 30] },
-  6: { dataCap: 106, ecBytes: 64, ecPerBlock: 16, b1: 4, d1: 27, b2: 0, d2: 0, align: [6, 34] },
-  7: { dataCap: 122, ecBytes: 72, ecPerBlock: 18, b1: 4, d1: 31, b2: 0, d2: 0, align: [6, 22, 38] },
-  8: { dataCap: 152, ecBytes: 88, ecPerBlock: 22, b1: 2, d1: 38, b2: 2, d2: 39, align: [6, 24, 42] },
-  9: { dataCap: 180, ecBytes: 110, ecPerBlock: 22, b1: 3, d1: 36, b2: 2, d2: 37, align: [6, 26, 46] },
-  10: { dataCap: 213, ecBytes: 130, ecPerBlock: 26, b1: 4, d1: 43, b2: 1, d2: 44, align: [6, 28, 50] },
+  1: { dataCap: 16, ecBytes: 10, ecPerBlock: 10, b1: 1, d1: 16, b2: 0, d2: 0, align: [] },
+  2: { dataCap: 28, ecBytes: 16, ecPerBlock: 16, b1: 1, d1: 28, b2: 0, d2: 0, align: [6, 18] },
+  3: { dataCap: 44, ecBytes: 26, ecPerBlock: 26, b1: 1, d1: 44, b2: 0, d2: 0, align: [6, 22] },
+  4: { dataCap: 64, ecBytes: 36, ecPerBlock: 18, b1: 2, d1: 32, b2: 0, d2: 0, align: [6, 26] },
+  5: { dataCap: 86, ecBytes: 48, ecPerBlock: 24, b1: 2, d1: 43, b2: 0, d2: 0, align: [6, 30] },
+  6: { dataCap: 108, ecBytes: 64, ecPerBlock: 16, b1: 4, d1: 27, b2: 0, d2: 0, align: [6, 34] },
+  7: { dataCap: 124, ecBytes: 72, ecPerBlock: 18, b1: 4, d1: 31, b2: 0, d2: 0, align: [6, 22, 38] },
+  8: { dataCap: 154, ecBytes: 88, ecPerBlock: 22, b1: 2, d1: 38, b2: 2, d2: 39, align: [6, 24, 42] },
+  9: { dataCap: 182, ecBytes: 110, ecPerBlock: 22, b1: 3, d1: 36, b2: 2, d2: 37, align: [6, 26, 46] },
+  10: { dataCap: 216, ecBytes: 130, ecPerBlock: 26, b1: 4, d1: 43, b2: 1, d2: 44, align: [6, 28, 50] },
 }
 
 export function generateQrCodeSvg(text: string, size: number = 160): string {
@@ -73,7 +73,7 @@ export function generateQrCodeSvg(text: string, size: number = 160): string {
 
   // Find minimum version that fits data
   let version = 1
-  while (version <= 10 && (VERSION_SPECS_M[version]?.dataCap || 0) < len + 2) {
+  while (version <= 10 && (VERSION_SPECS_M[version]?.dataCap || 0) < len + (version < 10 ? 2 : 3)) {
     version++
   }
   if (version > 10) version = 10
@@ -273,9 +273,9 @@ export function generateQrCodeSvg(text: string, size: number = 160): string {
     }
   }
 
-  // Format information for Level M, Mask 0: 0b100000011001110
-  const formatBits = [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0]
-  // Top-left
+  // Format information for Level M (00), Mask 0 (000): 00000 -> BCH -> XOR 101010000010010 = 101010000010010
+  const formatBits = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]
+  // Top-left (bits 0..14: MSB at (8,0) -> LSB at (0,8))
   const topPositions = [
     [8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 7], [8, 8],
     [7, 8], [5, 8], [4, 8], [3, 8], [2, 8], [1, 8], [0, 8]
@@ -283,7 +283,7 @@ export function generateQrCodeSvg(text: string, size: number = 160): string {
   for (let i = 0; i < 15; i++) {
     matrix[topPositions[i][0]][topPositions[i][1]] = formatBits[i]
   }
-  // Bottom-left and top-right
+  // Bottom-left (bits 0..6 from bottom upward) and top-right (bits 7..14 from left to right)
   for (let i = 0; i < 7; i++) {
     matrix[moduleCount - 1 - i][8] = formatBits[i]
   }
@@ -291,8 +291,8 @@ export function generateQrCodeSvg(text: string, size: number = 160): string {
     matrix[8][moduleCount - 8 + i] = formatBits[7 + i]
   }
 
-  // Generate SVG with 1 module quiet zone margin
-  const quiet = 1
+  // Generate SVG with standard 4-module quiet zone margin for reliable camera scanning
+  const quiet = 4
   const viewBoxSize = moduleCount + quiet * 2
   const rects: string[] = []
 
@@ -307,7 +307,7 @@ export function generateQrCodeSvg(text: string, size: number = 160): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewBoxSize} ${viewBoxSize}" width="${size}" height="${size}" shape-rendering="crispEdges" style="background:#ffffff;display:block;">${rects.join("")}</svg>`
 }
 
-export function getQrCodeDataUri(text: string, size: number = 160): string {
+export function getQrCodeDataUri(text: string, size: number = 160, _margin?: number): string {
   const svg = generateQrCodeSvg(text, size)
   if (!svg) return ""
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`

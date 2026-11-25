@@ -116,7 +116,7 @@ export function OfficialInvoiceDocumentSection2({ ctrl }: { ctrl: any }) {
                     </div>
                   )}
                   {hasAccountHolder && (
-                    <div className="flex justify-between items-center gap-1">
+                    <div className="flex justify-between items-start gap-2">
                       <span className="text-zinc-500 font-medium shrink-0">A/C Name:</span>
                       <EditableText
                         value={resolvedAccountHolder}
@@ -124,7 +124,7 @@ export function OfficialInvoiceDocumentSection2({ ctrl }: { ctrl: any }) {
                         interactive={interactive}
                         fieldKey="account_holder"
                         placeholder="A/C holder..."
-                        className="text-zinc-900 dark:text-zinc-100 font-bold truncate text-right flex-1"
+                        className="text-zinc-900 dark:text-zinc-100 font-bold text-right flex-1 whitespace-normal break-words leading-snug"
                       />
                     </div>
                   )}

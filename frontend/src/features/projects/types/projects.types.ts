@@ -3,6 +3,7 @@ export type ProjectType =
   | "Internal Project"
   | "Digital Marketing Campaign";
 export type ProjectStatus =
+  | "Unassigned"
   | "Payment Pending"
   | "Open"
   | "In Progress"

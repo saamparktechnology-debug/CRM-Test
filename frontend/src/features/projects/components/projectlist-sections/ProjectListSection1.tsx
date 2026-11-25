@@ -413,11 +413,16 @@ export function ProjectListSection1({ ctrl }: { ctrl: any }) {
                             ? "text-rose-600 border-rose-300"
                             : p.status === "Under Review"
                               ? "text-purple-600 border-purple-300"
-                              : p.status === "Hold"
-                                ? "text-amber-600 border-amber-300"
-                                : "text-blue-600 border-blue-300"
+                              : p.status === "Unassigned"
+                                ? "text-orange-600 border-orange-300 bg-orange-50/70 dark:bg-orange-950/30"
+                                : p.status === "Hold"
+                                  ? "text-amber-600 border-amber-300"
+                                  : "text-blue-600 border-blue-300"
                       }`}
                     >
+                      {!(masterBundle?.options?.["project_status"] || []).some((o: any) => o.value === "Unassigned") && (
+                        <option value="Unassigned">Unassigned</option>
+                      )}
                       {(masterBundle?.options?.["project_status"] || []).map((opt) => (
                   <option key={opt.id} value={opt.value}>{opt.label}</option>
                 ))}

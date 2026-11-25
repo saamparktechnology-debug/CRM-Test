@@ -56,6 +56,15 @@ export function ProjectList({
   const canDeleteProject = typeof canPerformAction === 'function' ? canPerformAction(user, "Projects", "delete") : true
 
   const [activeFilter, setActiveFilter] = React.useState("All projects")
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    const filterParam = params.get("filter") || params.get("status")
+    if (filterParam) {
+      setActiveFilter(filterParam)
+    }
+  }, [])
   const [categoryFilter, setCategoryFilter] = React.useState<"all" | "software" | "marketing">("all")
   const [selectedCategoryFilter, setSelectedCategoryFilter] = React.useState<string>("all")
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -130,6 +139,7 @@ export function ProjectList({
       }
     }
 
+    if (activeFilter === "Unassigned") return matchesSearch && (p.status === "Unassigned" || !Array.isArray(p.members) || p.members.length === 0)
     if (activeFilter === "Digital Marketing") {
       return matchesSearch && isMarketing
     }
@@ -325,8 +335,8 @@ export function ProjectList({
           {/* Filter Pills matching Image 1 */}
           <div className="flex items-center gap-1.5 overflow-x-auto text-xs ml-1">
             {(isMarketingAllowed
-              ? ["All projects", "Digital Marketing", "Open projects", "Completed", "High Priority", "Upcoming"]
-              : ["All projects", "Open projects", "Completed", "High Priority", "Upcoming"]
+              ? ["All projects", "Unassigned", "Digital Marketing", "Open projects", "Completed", "High Priority", "Upcoming"]
+              : ["All projects", "Unassigned", "Open projects", "Completed", "High Priority", "Upcoming"]
             ).map((f) => {
               const isActive = activeFilter === f
               return (
@@ -677,6 +687,7 @@ export function ProjectList({
                                 : "text-blue-600 border-blue-300"
                             }`}
                           >
+                            <option value="Unassigned">Unassigned</option>
                             <option value="Open">Open</option>
                             <option value="In Progress">In Progress</option>
                             <option value="Under Review">Under Review</option>
