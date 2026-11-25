@@ -108,9 +108,11 @@ export interface PromoRibbon {
 export interface DiscountBanner {
   id: string;
   title: string;
+  badge?: string;
   discountPercentage?: number;
   discountText?: string; // e.g. "FLAT 30% OFF THIS MONTH"
   promoCode?: string;
+  showInCheckout?: boolean;
   validUntil?: string;
   ctaText?: string;
   ctaLink?: string;

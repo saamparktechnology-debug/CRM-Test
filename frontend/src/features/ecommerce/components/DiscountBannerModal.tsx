@@ -15,28 +15,35 @@ interface DiscountBannerModalProps {
 export function DiscountBannerModal({ isOpen, onClose, onSave, banner }: DiscountBannerModalProps) {
   const [formData, setFormData] = React.useState<Partial<DiscountBanner>>({
     title: "",
+    badge: "Limited Offer",
     discountPercentage: 20,
     discountText: "",
     promoCode: "",
+    showInCheckout: false,
     validUntil: "2026-12-31",
     ctaText: "Claim Offer",
-    ctaLink: "/services",
+    ctaLink: "/#marketplace-catalog",
     image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
     isActive: true,
   });
 
   React.useEffect(() => {
     if (banner) {
-      setFormData(banner);
+      setFormData({
+        ...banner,
+        showInCheckout: !!banner.showInCheckout,
+      });
     } else {
       setFormData({
         title: "",
+        badge: "Special Offer",
         discountPercentage: 20,
         discountText: "FLAT 20% DISCOUNT THIS MONTH",
         promoCode: "SAVE20",
+        showInCheckout: false,
         validUntil: "2026-12-31",
         ctaText: "Claim Offer",
-        ctaLink: "/services",
+        ctaLink: "/#marketplace-catalog",
         image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
         isActive: true,
       });
@@ -48,15 +55,18 @@ export function DiscountBannerModal({ isOpen, onClose, onSave, banner }: Discoun
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title?.trim()) return;
+    const pct = Number(formData.discountPercentage) || 0;
     const finalBanner: DiscountBanner = {
       id: banner?.id || `banner-${Date.now().toString(36)}`,
       title: formData.title.trim(),
-      discountPercentage: Number(formData.discountPercentage) || 0,
-      discountText: formData.discountText?.trim() || `FLAT ${formData.discountPercentage}% OFF`,
+      badge: formData.badge?.trim() || (pct > 0 ? `${pct}% OFF` : "Featured"),
+      discountPercentage: pct,
+      discountText: formData.discountText?.trim() || (pct > 0 ? `FLAT ${pct}% OFF` : formData.title.trim()),
       promoCode: formData.promoCode?.trim().toUpperCase() || "",
+      showInCheckout: !!formData.showInCheckout,
       validUntil: formData.validUntil || "",
       ctaText: formData.ctaText?.trim() || "Claim Offer",
-      ctaLink: formData.ctaLink?.trim() || "/services",
+      ctaLink: formData.ctaLink?.trim() || "/#marketplace-catalog",
       image: formData.image?.trim() || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
       isActive: !!formData.isActive,
     };
@@ -145,7 +155,7 @@ export function DiscountBannerModal({ isOpen, onClose, onSave, banner }: Discoun
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Valid Until Date
@@ -159,21 +169,42 @@ export function DiscountBannerModal({ isOpen, onClose, onSave, banner }: Discoun
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                CTA Button Text
+                Badge Label
               </label>
               <input
                 type="text"
-                placeholder="e.g. Claim Offer"
-                value={formData.ctaText || ""}
-                onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+                placeholder="e.g. Limited Offer"
+                value={formData.badge || ""}
+                onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
                 className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                CTA Button &amp; Link
+              </label>
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Claim Offer"
+                  value={formData.ctaText || ""}
+                  onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+                  className="w-1/2 px-2.5 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="/#marketplace-catalog"
+                  value={formData.ctaLink || ""}
+                  onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
+                  className="w-1/2 px-2.5 py-2 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
           </div>
 
           <div>
             <ImageUploadField
-              label="Banner Background Image"
+              label="Banner Slider Image"
               value={formData.image || ""}
               onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
               placeholder="https://... or choose file above"
@@ -182,7 +213,7 @@ export function DiscountBannerModal({ isOpen, onClose, onSave, banner }: Discoun
             />
           </div>
 
-          <div className="flex items-center pt-2">
+          <div className="flex flex-col gap-2 pt-2">
             <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
@@ -190,7 +221,16 @@ export function DiscountBannerModal({ isOpen, onClose, onSave, banner }: Discoun
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                 className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
               />
-              Active Banner (Displayed across Storefront pages)
+              Active Banner (Show in Homepage Slider)
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={!!formData.showInCheckout}
+                onChange={(e) => setFormData({ ...formData, showInCheckout: e.target.checked })}
+                className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+              />
+              Show Promo Coupon in Ordering / Checkout Section
             </label>
           </div>
 
