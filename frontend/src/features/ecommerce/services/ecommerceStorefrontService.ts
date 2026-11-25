@@ -1,8 +1,81 @@
-import { StorefrontConfig, EcommerceCompany, HeroSlide, PromoRibbon, DiscountBanner, LiveStats } from "../types/ecommerce.types";
+import { StorefrontConfig, EcommerceCompany, HeroSlide, CoreCapabilitySlide, PromoRibbon, DiscountBanner, LiveStats } from "../types/ecommerce.types";
 import { fetchModuleDataFromDB, saveModuleDataToDB } from "@/lib/storageSync";
+
+export const DEFAULT_TECH_CORE_SLIDERS: CoreCapabilitySlide[] = [
+  {
+    id: "web-services",
+    title: "Web Development",
+    tag: "Next.js & E-Commerce",
+    description: "Dynamic & high-converting storefronts built for scale.",
+    image: "https://saampark.com/assets/images/services/str-web-dynamic.png",
+    accent: "#EB412C",
+    targetSectionId: "web-services",
+    order: 1,
+    isActive: true,
+  },
+  {
+    id: "application-services",
+    title: "Mobile Applications",
+    tag: "iOS & Android Hybrid",
+    description: "Flutter & React Native ultra-fast mobile applications.",
+    image: "https://saampark.com/assets/images/services/str-app-android.png",
+    accent: "#9CAF88",
+    targetSectionId: "application-services",
+    order: 2,
+    isActive: true,
+  },
+  {
+    id: "ai-services",
+    title: "AI & Automation",
+    tag: "ChatGPT & Agents",
+    description: "Custom AI Chatbots, agentic automation & ERP intelligence.",
+    image: "https://saampark.com/assets/images/services/str-ai-chatbot.png",
+    accent: "#FFC93C",
+    targetSectionId: "ai-services",
+    order: 3,
+    isActive: true,
+  },
+  {
+    id: "software-services",
+    title: "Software & ERP Systems",
+    tag: "Cloud ERP & Portals",
+    description: "Tailored enterprise software, CRM, and billing systems.",
+    image: "https://saampark.com/assets/images/services/res-stock-equity.png",
+    accent: "#9CAF88",
+    targetSectionId: "software-services",
+    order: 4,
+    isActive: true,
+  },
+];
+
+export const DEFAULT_CONSULTANCY_CORE_SLIDERS: CoreCapabilitySlide[] = [
+  {
+    id: "digital-marketing",
+    title: "Digital Marketing",
+    tag: "Meta & Google Ads",
+    description: "High-ROI multi-channel campaigns & verified business leads.",
+    image: "https://saampark.com/assets/images/services/scs-social-standard.png",
+    accent: "#EB412C",
+    targetSectionId: "digital-marketing",
+    order: 5,
+    isActive: true,
+  },
+  {
+    id: "legal",
+    title: "Business & Legal Setup",
+    tag: "Pvt Ltd & GST Filings",
+    description: "ISO-certified legal company formation & tax compliance.",
+    image: "https://saampark.com/assets/images/services/con-pvt-ltd.png",
+    accent: "#9CAF88",
+    targetSectionId: "legal",
+    order: 6,
+    isActive: true,
+  },
+];
 
 export const DEFAULT_TECH_STOREFRONT: StorefrontConfig = {
   companyId: "tech",
+  coreSliders: DEFAULT_TECH_CORE_SLIDERS,
   heroSlides: [
     {
       id: "slide-tech-1",
@@ -69,6 +142,7 @@ export const DEFAULT_TECH_STOREFRONT: StorefrontConfig = {
 
 export const DEFAULT_CONSULTANCY_STOREFRONT: StorefrontConfig = {
   companyId: "consultancy",
+  coreSliders: DEFAULT_CONSULTANCY_CORE_SLIDERS,
   heroSlides: [
     {
       id: "slide-consult-1",
@@ -128,7 +202,14 @@ export async function getStorefrontConfig(companyScope?: string | null): Promise
 
     const data = await fetchModuleDataFromDB<StorefrontConfig>("ecommerce_storefront", defaultConfig, targetScope);
     if (data && typeof data === "object" && data.heroSlides) {
-      return data;
+      return {
+        ...data,
+        coreSliders: Array.isArray(data.coreSliders)
+          ? data.coreSliders
+          : isConsult
+          ? DEFAULT_CONSULTANCY_CORE_SLIDERS
+          : DEFAULT_TECH_CORE_SLIDERS,
+      };
     }
 
     await saveModuleDataToDB("ecommerce_storefront", defaultConfig, targetScope);

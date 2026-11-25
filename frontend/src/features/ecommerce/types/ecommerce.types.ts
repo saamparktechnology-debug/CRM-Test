@@ -127,9 +127,22 @@ export interface LiveStats {
   avgDeliveryDays: string; // e.g. "7 Days"
 }
 
+export interface CoreCapabilitySlide {
+  id: string;
+  title: string;
+  tag: string;
+  description: string;
+  image: string;
+  accent?: string;
+  targetSectionId?: string;
+  order: number;
+  isActive: boolean;
+}
+
 export interface StorefrontConfig {
   companyId: EcommerceCompany;
   heroSlides: HeroSlide[];
+  coreSliders?: CoreCapabilitySlide[];
   promoRibbon: PromoRibbon;
   discountBanners: DiscountBanner[];
   liveStats: LiveStats;

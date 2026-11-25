@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Sliders, Image, Tag, Plus, Trash2, Edit2, Save, CheckCircle2, RefreshCw, BarChart2, Bell, ExternalLink, ArrowRight } from "lucide-react";
+import { Sparkles, Sliders, Image, Tag, Plus, Trash2, Edit2, Save, CheckCircle2, RefreshCw, BarChart2, Bell, ExternalLink, ArrowRight, Layers } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { usePermissionStore } from "@/store/usePermissionStore";
-import { StorefrontConfig, HeroSlide, DiscountBanner, LiveStats } from "@/features/ecommerce/types/ecommerce.types";
+import { StorefrontConfig, HeroSlide, CoreCapabilitySlide, DiscountBanner, LiveStats } from "@/features/ecommerce/types/ecommerce.types";
 import { getStorefrontConfig, saveStorefrontConfig } from "@/features/ecommerce/services/ecommerceStorefrontService";
 import { HeroSlideModal } from "@/features/ecommerce/components/HeroSlideModal";
 import { DiscountBannerModal } from "@/features/ecommerce/components/DiscountBannerModal";
+import { CoreSliderModal } from "@/features/ecommerce/components/CoreSliderModal";
 
 export default function EcommerceStorefrontPage() {
   const { user, activeCompanyId } = useAuthStore();
@@ -28,6 +29,9 @@ export default function EcommerceStorefrontPage() {
 
   const [isBannerModalOpen, setIsBannerModalOpen] = React.useState(false);
   const [editingBanner, setEditingBanner] = React.useState<DiscountBanner | null>(null);
+
+  const [isCoreModalOpen, setIsCoreModalOpen] = React.useState(false);
+  const [editingCoreSlide, setEditingCoreSlide] = React.useState<CoreCapabilitySlide | null>(null);
 
   const loadConfig = React.useCallback(async () => {
     setIsLoading(true);
@@ -120,6 +124,31 @@ export default function EcommerceStorefrontPage() {
     if (!config) return;
     const updated = (config.discountBanners || []).filter((b) => b.id !== bannerId);
     const newConfig: StorefrontConfig = { ...config, discountBanners: updated };
+    setConfig(newConfig);
+    await handleSaveWholeConfig(newConfig);
+  };
+
+  // Explore Our Core Slider CRUD
+  const handleSaveCoreSlide = async (coreSlide: CoreCapabilitySlide) => {
+    if (!config) return;
+    const existing = config.coreSliders || [];
+    const idx = existing.findIndex((s) => s.id === coreSlide.id);
+    let updated: CoreCapabilitySlide[];
+    if (idx >= 0) {
+      updated = [...existing];
+      updated[idx] = coreSlide;
+    } else {
+      updated = [...existing, coreSlide];
+    }
+    const newConfig: StorefrontConfig = { ...config, coreSliders: updated };
+    setConfig(newConfig);
+    await handleSaveWholeConfig(newConfig);
+  };
+
+  const handleDeleteCoreSlide = async (slideId: string) => {
+    if (!config) return;
+    const updated = (config.coreSliders || []).filter((s) => s.id !== slideId);
+    const newConfig: StorefrontConfig = { ...config, coreSliders: updated };
     setConfig(newConfig);
     await handleSaveWholeConfig(newConfig);
   };
@@ -287,6 +316,98 @@ export default function EcommerceStorefrontPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ── Section 1B: Explore Our Core Capability Sliders ── */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Layers className="w-4 h-4 text-emerald-500" />
+              Explore Our Core Sliders (3D Coverflow)
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Add, edit, or remove the rotating domain cards shown under &ldquo;Explore Our Core&rdquo;
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setEditingCoreSlide(null);
+              setIsCoreModalOpen(true);
+            }}
+            className="px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Core Slider
+          </button>
+        </div>
+
+        {(config.coreSliders || []).length === 0 ? (
+          <div className="p-6 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-xs text-slate-400">
+            No core sliders configured for this division yet. Click &ldquo;Add Core Slider&rdquo; above.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(config.coreSliders || []).map((cs, idx) => (
+              <div
+                key={cs.id || idx}
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-4 flex flex-col gap-3 justify-between"
+              >
+                <div className="flex items-start gap-3">
+                  <img
+                    src={cs.image || "https://saampark.com/assets/images/services/str-web-dynamic.png"}
+                    alt={cs.title}
+                    className="w-14 h-14 rounded-xl object-contain bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-1 flex-shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 truncate">
+                        {cs.tag}
+                      </span>
+                      {cs.isActive === false && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">
+                          Hidden
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1 truncate">
+                      {cs.title}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                      {cs.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-mono truncate">
+                    #{cs.order || idx + 1} &bull; {cs.targetSectionId || cs.id}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCoreSlide(cs);
+                        setIsCoreModalOpen(true);
+                      }}
+                      className="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
+                      title="Edit Core Slider"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCoreSlide(cs.id)}
+                      className="p-1.5 text-slate-500 hover:text-red-600 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
+                      title="Delete Core Slider"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Section 2: Top Promo Ribbon / Announcement Bar ── */}
@@ -524,6 +645,14 @@ export default function EcommerceStorefrontPage() {
         onClose={() => setIsBannerModalOpen(false)}
         onSave={handleSaveBanner}
         banner={editingBanner}
+      />
+
+      {/* Core Capability Slider Modal */}
+      <CoreSliderModal
+        isOpen={isCoreModalOpen}
+        onClose={() => setIsCoreModalOpen(false)}
+        onSave={handleSaveCoreSlide}
+        slide={editingCoreSlide}
       />
     </div>
   );
