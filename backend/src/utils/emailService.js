@@ -475,7 +475,7 @@ async function sendAdminCreatedAccountEmail(email, name = 'Team Member', role = 
         </div>
 
         <div style="text-align: center;">
-          <a href="https://crm.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #0f766e); color: #ffffff; text-decoration: none; padding: 14px 34px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
+          <a href="https://crm2.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #0f766e); color: #ffffff; text-decoration: none; padding: 14px 34px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
             Sign In to Client Portal →
           </a>
         </div>
@@ -523,7 +523,7 @@ async function sendAdminCreatedAccountEmail(email, name = 'Team Member', role = 
         </div>
 
         <div style="text-align: center;">
-          <a href="https://crm.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 14px;">
+          <a href="https://crm2.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 14px;">
             Sign In to SAAMPARK CRM →
           </a>
         </div>
@@ -586,7 +586,7 @@ async function sendInvoiceDetailsEmail({
   emiCustomSchedule = [],
   status = undefined,
   items = [],
-  viewUrl = `https://crm.saampark.com/sales/invoices?view=${invoiceId}`,
+  viewUrl = `https://crm2.saampark.com/sales/invoices?view=${invoiceId}`,
   downloadUrl = null,
   companyId = null,
 }) {
@@ -948,7 +948,7 @@ async function sendQuotationDetailsEmail({
   const brand = getCompanyBranding(companyId);
 
   const displayNum = quotationNumber || quotationId;
-  const vUrl = viewUrl || `https://crm.saampark.com/public/quotation?id=${quotationId}`;
+  const vUrl = viewUrl || `https://crm2.saampark.com/public/quotation?id=${quotationId}`;
   const dUrl = downloadUrl || `${vUrl}&action=download`;
   const aUrl = acceptUrl || `${vUrl}&action=accept`;
   const mUrl = modifyUrl || `${vUrl}&action=modify`;
@@ -1106,7 +1106,7 @@ async function sendEstimateDetailsEmail({
   const brand = getCompanyBranding(companyId);
 
   const displayNum = estimateNumber || estimateId;
-  const vUrl = viewUrl || `https://crm.saampark.com/public/estimate?id=${estimateId}`;
+  const vUrl = viewUrl || `https://crm2.saampark.com/public/estimate?id=${estimateId}`;
   const dUrl = downloadUrl || `${vUrl}&action=download`;
   const aUrl = acceptUrl || `${vUrl}&action=accept`;
   const mUrl = modifyUrl || `${vUrl}&action=modify`;
@@ -1351,7 +1351,7 @@ async function sendProjectCompletionEmail({
           </div>
 
           <div style="text-align: center; margin-bottom: 20px;">
-            <a href="https://crm.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; text-decoration: none; padding: 13px 30px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
+            <a href="https://crm2.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; text-decoration: none; padding: 13px 30px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
               Access Your Project Workspace →
             </a>
           </div>
@@ -1411,7 +1411,7 @@ async function sendClientWelcomeEmail({
           </div>
 
           <div style="text-align: center; margin-bottom: 20px;">
-            <a href="https://crm.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #0f766e); color: #ffffff; text-decoration: none; padding: 13px 30px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
+            <a href="https://crm2.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #0284c7, #0f766e); color: #ffffff; text-decoration: none; padding: 13px 30px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
               Access Client Portal →
             </a>
           </div>
@@ -1498,7 +1498,7 @@ async function sendPaymentReceiptEmail({
           `}
 
           <div style="text-align: center; margin-bottom: 10px;">
-            <a href="https://crm.saampark.com/sales/invoices?view=${invoiceId}" style="display: inline-block; background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; text-decoration: none; padding: 13px 28px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+            <a href="https://crm2.saampark.com/sales/invoices?view=${invoiceId}" style="display: inline-block; background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; text-decoration: none; padding: 13px 28px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
               View Ledger &amp; Invoice →
             </a>
           </div>
@@ -1569,7 +1569,7 @@ async function sendPaymentDueReminderEmail({
           </div>
 
           <div style="text-align: center; margin-bottom: 10px;">
-            <a href="https://crm.saampark.com/sales/invoices?view=${invoiceId}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; text-decoration: none; padding: 13px 30px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);">
+            <a href="https://crm2.saampark.com/sales/invoices?view=${invoiceId}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; text-decoration: none; padding: 13px 30px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);">
               View Invoice &amp; Settle Due →
             </a>
           </div>
@@ -1660,7 +1660,7 @@ async function sendRetainerExpiryEmail({
           </div>
 
           <div style="text-align: center; margin-bottom: 12px;">
-            <a href="https://crm.saampark.com/sales/invoices${invoiceId ? `?view=${invoiceId}` : ''}" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);">
+            <a href="https://crm2.saampark.com/sales/invoices${invoiceId ? `?view=${invoiceId}` : ''}" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #ffffff; text-decoration: none; padding: 13px 32px; border-radius: 12px; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);">
               Review Campaign &amp; Renew Retainer →
             </a>
           </div>
@@ -1781,7 +1781,7 @@ async function sendKycSuccessEmail({
         </div>
 
         <div style="text-align: center;">
-          <a href="https://crm.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+          <a href="https://crm2.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
             Enter CRM Workspace →
           </a>
         </div>
@@ -1839,7 +1839,7 @@ async function sendKycRejectedEmail({
         </p>
 
         <div style="text-align: center;">
-          <a href="https://crm.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #e11d48, #be123c); color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 14px;">
+          <a href="https://crm2.saampark.com/login" style="display: inline-block; background: linear-gradient(135deg, #e11d48, #be123c); color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 14px;">
             Sign In & Re-upload Documents →
           </a>
         </div>

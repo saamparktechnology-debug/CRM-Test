@@ -87,7 +87,7 @@ export async function sendQuotationDetailsEmailNotification(
     return { success: false, message: "Client email is required to send quotation." }
   }
 
-  const originUrl = typeof window !== "undefined" ? window.location.origin : "https://crm.saampark.com"
+  const originUrl = typeof window !== "undefined" ? window.location.origin : "https://crm2.saampark.com"
   const quotationId = quotation.id || quotation.number
   const viewUrl = `${originUrl}/public/quotation?view=${encodeURIComponent(quotationId)}`
   const downloadUrl = `${originUrl}/public/quotation?view=${encodeURIComponent(quotationId)}&action=download`
@@ -146,7 +146,7 @@ export async function sendEstimateDetailsEmailNotification(
     return { success: false, message: "Client email is required to send estimate." }
   }
 
-  const originUrl = typeof window !== "undefined" ? window.location.origin : "https://crm.saampark.com"
+  const originUrl = typeof window !== "undefined" ? window.location.origin : "https://crm2.saampark.com"
   const estimateId = estimate.id || estimate.number
   const viewUrl = `${originUrl}/public/estimate?view=${encodeURIComponent(estimateId)}`
   const downloadUrl = `${originUrl}/public/estimate?view=${encodeURIComponent(estimateId)}&action=download`
@@ -418,7 +418,7 @@ export async function sendMarketingCompletedEmailNotification(params: {
           </table>
         </div>
         <div style="text-align: center; margin: 24px 0;">
-          <a href="https://crm.saampark.com/feature/marketing" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+          <a href="https://crm2.saampark.com/feature/marketing" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
             View Full Campaign Analytics →
           </a>
         </div>

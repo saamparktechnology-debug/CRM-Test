@@ -44,7 +44,7 @@ export async function sendInvoiceDetailsEmailNotification(
 
   const invoiceUrl = typeof window !== "undefined"
     ? `${window.location.origin}/sales/invoices?view=${encodeURIComponent(invoice.id)}`
-    : `https://crm.saampark.com/sales/invoices?view=${encodeURIComponent(invoice.id)}`
+    : `https://crm2.saampark.com/sales/invoices?view=${encodeURIComponent(invoice.id)}`
 
   const parseNum = (val: any): number => {
     if (typeof val === "number") return Number.isFinite(val) ? val : 0

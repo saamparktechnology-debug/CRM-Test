@@ -739,33 +739,78 @@ const createPublicOrder = async (req, res, next) => {
       [JSON.stringify(updatedAll)]
     ).catch(() => {});
 
-    // Non-blocking order confirmation email with Client Portal credentials
+    // Non-blocking branded CRM email confirmation with itemized invoice summary & Client Portal credentials
     try {
       const { getGroupEmailConfig } = require("../utils/emailService");
       const { transporter, from } = getGroupEmailConfig();
-      const itemSummary = (orderObj.items || []).map((it) => `- ${it.name} (Qty ${it.qty})`).join("<br/>");
-      transporter.sendMail({
-        from,
-        to: clientEmail,
-        subject: `Order Confirmed: ${orderNumber} | Saampark Group`,
-        html: `
-          <div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;border:1px solid #e2e8f0;border-radius:16px;">
-            <h2 style="color:#1e293b;margin:0 0 8px;">Order Confirmation - ${orderNumber}</h2>
-            <p style="color:#475569;font-size:14px;">Dear ${clientName}, thank you for choosing Saampark Group. Your order has been registered in our CRM system for prompt invoice generation.</p>
-            <div style="background:#f8fafc;padding:16px;border-radius:12px;margin:16px 0;font-size:13px;">
-              <strong>Ordered Services:</strong><br/>${itemSummary}<br/><br/>
-              <strong>Total Amount (Incl. GST):</strong> ₹${orderObj.totalAmount.toLocaleString("en-IN")}
+      const itemRows = (orderObj.items || [])
+        .map(
+          (it) => `
+          <tr>
+            <td style="padding:10px 12px;border-bottom:1px solid #334155;color:#f1f5f9;font-size:13px;">${it.name}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #334155;color:#94a3b8;font-size:13px;text-align:center;">${it.qty || 1}</td>
+            <td style="padding:10px 12px;border-bottom:1px solid #334155;color:#38bdf8;font-size:13px;font-weight:700;text-align:right;">₹${((it.price || 0) * (it.qty || 1)).toLocaleString("en-IN")}</td>
+          </tr>`
+        )
+        .join("");
+
+      const divisionTitle = isConsult ? "SAAMPARK CONSULTANCY SERVICE" : "SAAMPARK TECHNOLOGY &amp; RESEARCH";
+      transporter
+        .sendMail({
+          from,
+          to: clientEmail,
+          subject: `Order Confirmed: ${orderNumber} | ${divisionTitle}`,
+          html: `
+          <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#0b1120;border-radius:16px;overflow:hidden;border:1px solid #1e293b;box-shadow:0 12px 30px rgba(0,0,0,0.45);">
+            <div style="background:linear-gradient(135deg,#2563eb,#0284c7);padding:28px 36px;text-align:center;">
+              <p style="color:rgba(255,255,255,0.88);margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;">${divisionTitle}</p>
+              <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:800;">Order Confirmed: ${orderNumber}</h1>
             </div>
-            <div style="background:#eff6ff;padding:16px;border-radius:12px;margin:16px 0;font-size:13px;border:1px solid #bfdbfe;">
-              <strong>CRM Client Portal Access:</strong><br/>
-              Portal URL: <a href="https://crm2.saampark.com/login">https://crm2.saampark.com/login</a><br/>
-              Track Online: <a href="https://saampark.com/track?order=${orderNumber}">https://saampark.com/track?order=${orderNumber}</a><br/>
-              Email: <strong>${clientEmail}</strong><br/>
-              Default Password: <strong>${defaultPassword}</strong>
+            <div style="padding:30px 34px;background:#0f172a;">
+              <p style="color:#f1f5f9;font-size:15px;margin:0 0 12px;">Dear <strong>${clientName}</strong>,</p>
+              <p style="color:#94a3b8;font-size:13.5px;line-height:1.6;margin:0 0 20px;">
+                Thank you for choosing Saampark Group. Your service order has been registered in our CRM billing &amp; delivery system for prompt invoice generation.
+              </p>
+
+              <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+                <table style="width:100%;border-collapse:collapse;">
+                  <thead>
+                    <tr style="background:#0f172a;">
+                      <th style="padding:10px 12px;text-align:left;font-size:11px;color:#94a3b8;text-transform:uppercase;">Service</th>
+                      <th style="padding:10px 12px;text-align:center;font-size:11px;color:#94a3b8;text-transform:uppercase;">Qty</th>
+                      <th style="padding:10px 12px;text-align:right;font-size:11px;color:#94a3b8;text-transform:uppercase;">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>${itemRows}</tbody>
+                </table>
+                <div style="padding:14px 16px;background:#162032;font-size:13px;color:#cbd5e1;">
+                  ${orderObj.urgencyFee > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Express Kickoff (+10%):</span><span>+₹${orderObj.urgencyFee.toLocaleString("en-IN")}</span></div>` : ""}
+                  ${orderObj.discountAmount > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#34d399;"><span>Promo Discount (${orderObj.couponCode || "APPLIED"}):</span><span>-₹${orderObj.discountAmount.toLocaleString("en-IN")}</span></div>` : ""}
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>GST (${orderObj.gstType}):</span><span>+₹${orderObj.gstAmount.toLocaleString("en-IN")}</span></div>
+                  <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px dashed #334155;font-size:15px;font-weight:800;color:#ffffff;">
+                    <span>Total Amount (Incl. GST):</span>
+                    <span style="color:#38bdf8;">₹${orderObj.totalAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px 20px;margin-bottom:24px;">
+                <p style="color:#38bdf8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;">Your CRM Client Portal Access</p>
+                <p style="color:#e2e8f0;font-size:13px;margin:4px 0;">Login Email: <strong>${clientEmail}</strong></p>
+                <p style="color:#e2e8f0;font-size:13px;margin:4px 0;">Portal Password: <strong style="color:#34d399;">${defaultPassword}</strong></p>
+              </div>
+
+              <div style="text-align:center;">
+                <a href="https://crm2.saampark.com/login" style="display:inline-block;background:linear-gradient(135deg,#2563eb,#0284c7);color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:700;font-size:13px;margin:4px;">Open CRM2 Client Portal</a>
+                <a href="https://saampark.com/track?order=${orderNumber}" style="display:inline-block;background:#1e293b;border:1px solid #475569;color:#f8fafc;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:700;font-size:13px;margin:4px;">Track Order Status</a>
+              </div>
             </div>
-          </div>
-        `,
-      }).catch((mailErr) => console.warn("Order email send skipped:", mailErr.message));
+            <div style="padding:18px 34px;background:#0b1120;text-align:center;border-top:1px solid #1e293b;">
+              <p style="color:#64748b;font-size:11.5px;margin:0;">© ${new Date().getFullYear()} Saampark Group. ISO 9001:2015 Certified.</p>
+            </div>
+          </div>`,
+        })
+        .catch((mailErr) => console.warn("Order email send skipped:", mailErr.message));
     } catch {}
 
     return successResponse(res, 201, "Order created successfully", {
@@ -811,22 +856,27 @@ const requestClientEmailOtp = async (req, res, next) => {
         to: email,
         subject: subjectLabel,
         html: `
-          <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:28px;border:1px solid #e2e8f0;border-radius:20px;background:#ffffff;">
-            <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;color:#2563eb;text-transform:uppercase;margin-bottom:6px;">
-              SAAMPARK GROUP OFFICIAL VERIFICATION
+          <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:540px;margin:0 auto;background:#0b1120;border-radius:16px;overflow:hidden;border:1px solid #1e293b;box-shadow:0 12px 30px rgba(0,0,0,0.45);">
+            <div style="background:linear-gradient(135deg,#2563eb,#0f766e);padding:26px 34px;text-align:center;">
+              <p style="color:rgba(255,255,255,0.88);margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;">SAAMPARK GROUP OFFICIAL VERIFICATION</p>
+              <h1 style="color:#ffffff;margin:0;font-size:21px;font-weight:800;">
+                ${purpose === "register" ? "Complete Your Client Registration" : "Sign In Verification Code"}
+              </h1>
             </div>
-            <h2 style="margin:0 0 10px;color:#0f172a;font-size:20px;">
-              ${purpose === "register" ? "Complete Your Client Registration" : "Sign In Verification Code"}
-            </h2>
-            <p style="color:#475569;font-size:14px;line-height:1.5;">
-              ${clientName ? `Hello ${clientName}, ` : ""}Use the 6-digit security code below to verify your email address for Saampark Storefront &amp; CRM Client Portal:
-            </p>
-            <div style="font-size:32px;font-weight:800;letter-spacing:8px;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;padding:18px;text-align:center;border-radius:14px;margin:20px 0;">
-              ${code}
+            <div style="padding:30px 34px;background:#0f172a;">
+              <p style="color:#e2e8f0;font-size:14px;line-height:1.6;margin:0 0 18px;">
+                ${clientName ? `Dear <strong>${clientName}</strong>,<br/><br/>` : ""}Use the 6-digit security verification code below for Saampark Storefront &amp; CRM2 Client Portal:
+              </p>
+              <div style="font-size:32px;font-weight:800;letter-spacing:10px;color:#38bdf8;background:#1e293b;border:1px solid #334155;padding:18px;text-align:center;border-radius:12px;margin:20px 0;font-family:monospace;">
+                ${code}
+              </div>
+              <p style="color:#94a3b8;font-size:12.5px;line-height:1.5;margin:0;">
+                This verification code expires in 10 minutes. Never share your OTP with anyone.
+              </p>
             </div>
-            <p style="color:#64748b;font-size:12px;margin:0;">
-              This verification code expires in 10 minutes. Sent via Saampark Group Official Mail Server.
-            </p>
+            <div style="padding:16px 34px;background:#0b1120;text-align:center;border-top:1px solid #1e293b;">
+              <p style="color:#64748b;font-size:11.5px;margin:0;">Sent via Saampark Group Official Mail Server • crm2.saampark.com</p>
+            </div>
           </div>
         `,
       });
