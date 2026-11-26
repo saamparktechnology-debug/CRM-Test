@@ -504,28 +504,170 @@ const createPublicOrder = async (req, res, next) => {
       gstNumber,
       panNumber,
       items,
-      subtotal,
-      gstAmount,
-      gstType,
-      discountAmount,
       couponCode,
       urgency,
-      totalAmount,
+      discountAmount: clientDiscountAmount,
       companyId,
       notes,
+      idempotencyKey,
     } = req.body;
 
     if (!email || !clientName) {
       return errorResponse(res, 400, "Customer name and email are required.");
     }
 
+    const rawItems = Array.isArray(items) ? items : [];
+    if (rawItems.length === 0) {
+      return errorResponse(res, 400, "Order must include at least one selected service item.");
+    }
+
     const scope = resolveCompanyScope(companyId || req.body.group);
+    const key = `ecommerce_orders_${scope}`;
+    const clientEmail = String(email).toLowerCase().trim();
+    const cleanIdempotencyKey = idempotencyKey ? String(idempotencyKey).trim() : "";
+
+    // Load live catalog, storefront coupons & existing scoped orders in parallel
+    const [existingOrdersRaw, catalogProducts, storefrontCfg] = await Promise.all([
+      fetchParsedModule(key, []),
+      fetchParsedModule(`ecommerce_products_${scope}`, []),
+      fetchParsedModule(`ecommerce_storefront_${scope}`, null),
+    ]);
+    const existingOrders = Array.isArray(existingOrdersRaw) ? existingOrdersRaw : [];
+
+    // 1. Check strict idempotencyKey match first (blocks network retry / double click duplicates)
+    if (cleanIdempotencyKey) {
+      const existingByKey = existingOrders.find(
+        (o) => o && o.idempotencyKey && o.idempotencyKey === cleanIdempotencyKey
+      );
+      if (existingByKey) {
+        return successResponse(res, 200, "Order already recorded", {
+          order: existingByKey,
+          duplicatePrevented: true,
+          clientPortal: {
+            loginUrl: "https://crm2.saampark.com/login",
+            email: clientEmail,
+            defaultPassword: "Client@123",
+            role: "Clients",
+          },
+        });
+      }
+    }
+
+    // 2. Sanitize & calculate authoritative line items using live DB prices when matched
+    const prodMap = new Map();
+    if (Array.isArray(catalogProducts)) {
+      catalogProducts.forEach((p) => {
+        if (!p) return;
+        if (p.id) prodMap.set(String(p.id), p);
+        if (p.slug) prodMap.set(String(p.slug), p);
+      });
+    }
+
+    const cleanItems = [];
+    for (const rawItem of rawItems) {
+      const sid = String(rawItem?.serviceId || "").trim();
+      const matched = sid ? prodMap.get(sid) : null;
+      const dbPrice =
+        matched && typeof matched.discountPrice === "number" && matched.discountPrice > 0
+          ? matched.discountPrice
+          : matched && typeof matched.startingPrice === "number" && matched.startingPrice > 0
+          ? matched.startingPrice
+          : 0;
+      const submittedPrice = Number(rawItem?.price);
+      const unitPrice =
+        dbPrice > 0
+          ? Math.round(dbPrice)
+          : Number.isFinite(submittedPrice) && submittedPrice > 0
+          ? Math.round(submittedPrice)
+          : 0;
+      const qty = Math.min(99, Math.max(1, parseInt(String(rawItem?.qty ?? rawItem?.quantity ?? 1), 10) || 1));
+
+      if (unitPrice <= 0) continue;
+      cleanItems.push({
+        serviceId: sid || `item-${cleanItems.length + 1}`,
+        name: String(rawItem?.name || matched?.name || "Service Package"),
+        price: unitPrice,
+        qty,
+        priceType: rawItem?.priceType || matched?.priceType || "one-time",
+        deliveryDays: rawItem?.deliveryDays || matched?.deliveryDays || "3-5 Days",
+      });
+    }
+
+    if (cleanItems.length === 0) {
+      return errorResponse(res, 400, "Order contains no billable items above ₹0.");
+    }
+
+    const baseSubtotal = cleanItems.reduce((sum, it) => sum + it.price * it.qty, 0);
+    const isPriority = String(urgency || "Standard").toLowerCase() === "priority";
+    const urgencyFee = isPriority ? Math.round(baseSubtotal * 0.1) : 0;
+    const grossSubtotal = baseSubtotal + urgencyFee;
+
+    // Resolve coupon percentage cleanly (live DB banners -> known defaults -> bounded fallback)
+    const cleanCoupon = couponCode ? String(couponCode).toUpperCase().trim() : "";
+    let couponPct = 0;
+    if (cleanCoupon) {
+      const banners = Array.isArray(storefrontCfg?.discountBanners)
+        ? storefrontCfg.discountBanners
+        : [];
+      const matchedBanner = banners.find(
+        (b) => b && b.isActive !== false && String(b.promoCode || "").toUpperCase().trim() === cleanCoupon
+      );
+      if (matchedBanner && Number(matchedBanner.discountPercentage) > 0) {
+        couponPct = Math.min(90, Number(matchedBanner.discountPercentage));
+      } else {
+        const knownPct = { TECH20: 20, DIWALI25: 25, STARTUP30: 30, SAAMPARK10: 10 }[cleanCoupon];
+        if (knownPct) {
+          couponPct = knownPct;
+        } else if (Number(clientDiscountAmount) > 0 && grossSubtotal > 0) {
+          couponPct = Math.min(50, Math.round((Number(clientDiscountAmount) / grossSubtotal) * 100));
+        }
+      }
+    }
+
+    const calcDiscount = couponPct > 0 ? Math.min(grossSubtotal, Math.round((grossSubtotal * couponPct) / 100)) : 0;
+    const taxableBase = Math.max(0, grossSubtotal - calcDiscount);
+    const isIntraState = String(state || "West Bengal").toLowerCase().includes("west bengal");
+    const calcGstType = isIntraState ? "CGST (9%) + SGST (9%)" : "IGST (18%)";
+    const calcGst = isIntraState
+      ? Math.round(taxableBase * 0.09) + Math.round(taxableBase * 0.09)
+      : Math.round(taxableBase * 0.18);
+    const calcTotal = taxableBase + calcGst;
+
+    if (calcTotal <= 0) {
+      return errorResponse(res, 400, "Calculated order total must be greater than ₹0.");
+    }
+
+    // 3. Time-window duplicate guard (45 seconds for identical email + totalAmount + item signature)
+    const itemSig = cleanItems.map((it) => `${it.serviceId}:${it.qty}`).join("|");
+    const nowMs = Date.now();
+    const recentDup = existingOrders.find((o) => {
+      if (!o || String(o.email || "").toLowerCase().trim() !== clientEmail) return false;
+      if (Number(o.totalAmount) !== calcTotal) return false;
+      const oSig = (Array.isArray(o.items) ? o.items : [])
+        .map((it) => `${it.serviceId}:${it.qty || 1}`)
+        .join("|");
+      if (oSig !== itemSig) return false;
+      const createdMs = Date.parse(o.createdAt || o.orderDate || "");
+      return Number.isFinite(createdMs) && nowMs - createdMs >= 0 && nowMs - createdMs <= 45000;
+    });
+    if (recentDup) {
+      return successResponse(res, 200, "Duplicate submission prevented", {
+        order: recentDup,
+        duplicatePrevented: true,
+        clientPortal: {
+          loginUrl: "https://crm2.saampark.com/login",
+          email: clientEmail,
+          defaultPassword: "Client@123",
+          role: "Clients",
+        },
+      });
+    }
+
     const isConsult = scope === "consultancy";
     const compCode = isConsult ? "SCS" : "STR";
     const seq = Math.floor(1000 + Math.random() * 9000);
     const orderNumber = `ORD-${compCode}-${new Date().getFullYear()}-${seq}`;
 
-    const clientEmail = String(email).toLowerCase().trim();
     let clientUserId = null;
     const defaultPassword = "Client@123";
 
@@ -549,6 +691,7 @@ const createPublicOrder = async (req, res, next) => {
     const orderObj = {
       id: `ord-${scope}-${Date.now().toString(36)}`,
       orderNumber,
+      idempotencyKey: cleanIdempotencyKey || undefined,
       companyId: scope,
       clientName,
       businessName: businessName || "",
@@ -560,14 +703,15 @@ const createPublicOrder = async (req, res, next) => {
       pincode: pincode || "700001",
       gstNumber: gstNumber ? String(gstNumber).toUpperCase().trim() : "",
       panNumber: panNumber ? String(panNumber).toUpperCase().trim() : "",
-      items: Array.isArray(items) ? items : [],
-      subtotal: Number(subtotal) || 0,
-      gstAmount: Number(gstAmount) || 0,
-      gstType: gstType || (String(state || "").toLowerCase().includes("west bengal") ? "CGST+SGST" : "IGST"),
-      discountAmount: Number(discountAmount) || 0,
-      couponCode: couponCode ? String(couponCode).toUpperCase().trim() : "",
+      items: cleanItems,
+      subtotal: grossSubtotal,
+      urgencyFee,
+      gstAmount: calcGst,
+      gstType: calcGstType,
+      discountAmount: calcDiscount,
+      couponCode: cleanCoupon,
       urgency: urgency || "Standard",
-      totalAmount: Number(totalAmount) || 0,
+      totalAmount: calcTotal,
       status: "Order Pending",
       clientUserId: clientUserId ? String(clientUserId) : undefined,
       clientPassword: defaultPassword,
@@ -577,9 +721,7 @@ const createPublicOrder = async (req, res, next) => {
       updatedAt: new Date().toISOString(),
     };
 
-    const key = `ecommerce_orders_${scope}`;
-    const existingOrders = await fetchParsedModule(key, []);
-    const updatedScoped = [orderObj, ...(Array.isArray(existingOrders) ? existingOrders : [])];
+    const updatedScoped = [orderObj, ...existingOrders];
 
     await pool.execute(
       `INSERT INTO app_data (module_key, data_json, updated_at) 
