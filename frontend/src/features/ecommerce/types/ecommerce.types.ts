@@ -160,5 +160,6 @@ export interface EcommerceCategoryItem {
   icon?: string;
   description?: string;
   isDefault?: boolean;
+  deletedIds?: string[];
   createdAt?: string;
 }

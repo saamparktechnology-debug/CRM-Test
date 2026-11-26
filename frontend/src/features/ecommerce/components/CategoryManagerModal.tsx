@@ -1,14 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { X, Plus, Trash2, Layers, Sparkles, Check } from "lucide-react";
+import { X, Plus, Trash2, Layers, Sparkles, RotateCcw } from "lucide-react";
 import { EcommerceCategoryItem, EcommerceCompany } from "../types/ecommerce.types";
 import {
   getEcommerceCategories,
   saveEcommerceCategory,
   deleteEcommerceCategory,
+  restoreDefaultCategories,
   slugifyCategoryId,
 } from "../services/ecommerceCategoryService";
+import { confirmTwoStepDelete } from "@/lib/confirmDialog";
 
 interface CategoryManagerModalProps {
   isOpen: boolean;
@@ -100,10 +102,25 @@ export function CategoryManagerModal({
     }
   };
 
-  const handleDelete = async (catId: string) => {
+  const handleDelete = async (cat: EcommerceCategoryItem) => {
+    const confirmed = await confirmTwoStepDelete(
+      `Delete category "${cat.name}"? It will be removed from Admin dropdowns and the live storefront.`
+    );
+    if (!confirmed) return;
     setSaving(true);
     try {
-      const updated = await deleteEcommerceCategory(catId);
+      const updated = await deleteEcommerceCategory(cat.id);
+      setCategories(updated);
+      onCategoriesUpdated?.(updated);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRestoreDefaults = async () => {
+    setSaving(true);
+    try {
+      const updated = await restoreDefaultCategories();
       setCategories(updated);
       onCategoriesUpdated?.(updated);
     } finally {
@@ -217,8 +234,19 @@ export function CategoryManagerModal({
           </form>
 
           <div className="space-y-4">
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Active Storefront Categories ({categories.length})
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Active Storefront Categories ({categories.length})
+              </div>
+              <button
+                type="button"
+                onClick={handleRestoreDefaults}
+                disabled={saving}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                title="Restore any deleted default categories"
+              >
+                <RotateCcw className="w-3 h-3" /> Restore Defaults
+              </button>
             </div>
 
             {loading ? (
@@ -252,21 +280,15 @@ export function CategoryManagerModal({
                       </div>
                     </div>
 
-                    {cat.isDefault ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
-                        <Check className="w-3 h-3" /> Core
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(cat.id)}
-                        disabled={saving}
-                        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete custom category"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(cat)}
+                      disabled={saving}
+                      className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex-shrink-0"
+                      title={`Delete ${cat.name}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
