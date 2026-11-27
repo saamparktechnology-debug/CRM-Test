@@ -978,6 +978,11 @@ export function ProductModal({
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
         defaultCompanyId={formData.companyId || defaultComp}
+        companyScope={
+          !activeCompanyId || activeCompanyId === "all" || activeCompanyId === "group" || activeCompanyId === "saampark-group"
+            ? "all"
+            : defaultComp
+        }
         products={products}
         onCategoriesUpdated={(updated, created) => {
           setCategories(updated);

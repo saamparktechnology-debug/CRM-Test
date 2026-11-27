@@ -111,6 +111,9 @@ export default function EcommerceProductsPage() {
   const canAdd = user?.role === "Super Admin" || canPerformAction(user, "Ecommerce", "add");
   const canEdit = user?.role === "Super Admin" || canPerformAction(user, "Ecommerce", "edit");
   const canDelete = user?.role === "Super Admin" || canPerformAction(user, "Ecommerce", "delete");
+  const scopedCategories = categories.filter((cat) =>
+    companyScope === "all" ? true : cat.companyId === companyScope
+  );
 
   return (
     <div className="max-w-[1600px] mx-auto p-4 sm:p-6 space-y-6">
@@ -170,7 +173,7 @@ export default function EcommerceProductsPage() {
                 onClick={() => setIsCategoryModalOpen(true)}
                 className="px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-1.5"
               >
-                <Layers className="w-4 h-4 text-blue-600" /> Categories ({categories.length})
+                <Layers className="w-4 h-4 text-blue-600" /> Categories ({scopedCategories.length})
               </button>
               <button
                 onClick={() => {
@@ -456,6 +459,7 @@ export default function EcommerceProductsPage() {
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
         defaultCompanyId={companyScope === "consultancy" ? "consultancy" : "tech"}
+        companyScope={companyScope}
         products={products}
         onCategoriesUpdated={(updated) => setCategories(updated)}
       />

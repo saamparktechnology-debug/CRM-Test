@@ -13,6 +13,7 @@ interface CategoryManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultCompanyId?: EcommerceCompany;
+  companyScope?: EcommerceCompany | "all";
   products?: EcommerceProduct[];
   onCategoriesUpdated?: (categories: EcommerceCategoryItem[], created?: EcommerceCategoryItem) => void;
 }
@@ -21,21 +22,25 @@ export function CategoryManagerModal({
   isOpen,
   onClose,
   defaultCompanyId = "tech",
+  companyScope = "all",
   products = [],
   onCategoriesUpdated,
 }: CategoryManagerModalProps) {
+  const isScoped = companyScope === "tech" || companyScope === "consultancy";
+  const effectiveDefaultCompany: EcommerceCompany = isScoped ? companyScope : defaultCompanyId;
+
   const [categories, setCategories] = React.useState<EcommerceCategoryItem[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
 
   const [name, setName] = React.useState("");
-  const [companyId, setCompanyId] = React.useState<EcommerceCompany>(defaultCompanyId);
+  const [companyId, setCompanyId] = React.useState<EcommerceCompany>(effectiveDefaultCompany);
   const [confirmDeleteId, setConfirmDeleteId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    setCompanyId(defaultCompanyId);
-  }, [defaultCompanyId]);
+    setCompanyId(effectiveDefaultCompany);
+  }, [effectiveDefaultCompany]);
 
   const loadCats = React.useCallback(async () => {
     setLoading(true);
@@ -63,16 +68,19 @@ export function CategoryManagerModal({
       setError("Please enter a category name.");
       return;
     }
+    const targetCompanyId: EcommerceCompany = isScoped ? companyScope : companyId;
     setSaving(true);
     setError(null);
     try {
       const updated = await saveEcommerceCategory(
-        { name: name.trim(), companyId },
+        { name: name.trim(), companyId: targetCompanyId },
         products.length > 0 ? products : undefined
       );
       setCategories(updated);
       const created = updated.find(
-        (c) => c.name.toLowerCase() === name.trim().toLowerCase()
+        (c) =>
+          c.name.toLowerCase() === name.trim().toLowerCase() &&
+          c.companyId === targetCompanyId
       );
       setName("");
       onCategoriesUpdated?.(updated, created);
@@ -101,8 +109,16 @@ export function CategoryManagerModal({
     }
   };
 
-  const countFor = (catId: string) =>
-    products.filter((p) => p.primaryCategory === catId || p.category === catId).length;
+  const visibleCategories = isScoped
+    ? categories.filter((c) => c.companyId === companyScope)
+    : categories;
+
+  const countFor = (cat: EcommerceCategoryItem) =>
+    products.filter(
+      (p) =>
+        (p.primaryCategory === cat.id || p.category === cat.id) &&
+        (!isScoped ? p.companyId === cat.companyId : true)
+    ).length;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
@@ -150,14 +166,26 @@ export function CategoryManagerModal({
                 onChange={(e) => setName(e.target.value)}
                 className="flex-1 px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
               />
-              <select
-                value={companyId}
-                onChange={(e) => setCompanyId(e.target.value as EcommerceCompany)}
-                className="px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold"
-              >
-                <option value="tech">Technology (STR)</option>
-                <option value="consultancy">Consultancy (SCS)</option>
-              </select>
+              {isScoped ? (
+                <div
+                  className={`px-3.5 py-2.5 text-sm rounded-xl border font-semibold flex items-center whitespace-nowrap ${
+                    companyScope === "consultancy"
+                      ? "bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400"
+                      : "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400"
+                  }`}
+                >
+                  {companyScope === "consultancy" ? "Consultancy (SCS)" : "Technology (STR)"}
+                </div>
+              ) : (
+                <select
+                  value={companyId}
+                  onChange={(e) => setCompanyId(e.target.value as EcommerceCompany)}
+                  className="px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold"
+                >
+                  <option value="tech">Technology (STR)</option>
+                  <option value="consultancy">Consultancy (SCS)</option>
+                </select>
+              )}
               <button
                 type="submit"
                 disabled={saving}
@@ -172,19 +200,19 @@ export function CategoryManagerModal({
           {/* Simple Active Categories List */}
           <div className="space-y-2">
             <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Active Categories ({categories.length})
+              Active Categories ({visibleCategories.length})
             </div>
 
             {loading ? (
               <div className="py-8 text-center text-xs text-slate-400">Loading categories...</div>
-            ) : categories.length === 0 ? (
+            ) : visibleCategories.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-400 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl">
                 No categories added yet. Add your first category above.
               </div>
             ) : (
               <div className="divide-y divide-slate-200 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
-                {categories.map((cat) => {
-                  const pCount = countFor(cat.id);
+                {visibleCategories.map((cat) => {
+                  const pCount = countFor(cat);
                   const isConfirming = confirmDeleteId === cat.id;
                   return (
                     <div
