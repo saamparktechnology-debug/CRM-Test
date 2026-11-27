@@ -25,9 +25,17 @@ interface ProductModalProps {
   onSave: (product: EcommerceProduct) => Promise<void>;
   product?: EcommerceProduct | null;
   activeCompanyId: string;
+  products?: EcommerceProduct[];
 }
 
-export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId }: ProductModalProps) {
+export function ProductModal({
+  isOpen,
+  onClose,
+  onSave,
+  product,
+  activeCompanyId,
+  products = [],
+}: ProductModalProps) {
   const isConsultancy = activeCompanyId === "2" || activeCompanyId === "consultancy" || activeCompanyId?.includes("consult");
   const defaultComp: EcommerceCompany = isConsultancy ? "consultancy" : "tech";
 
@@ -79,8 +87,10 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
 
   React.useEffect(() => {
     if (!isOpen) return;
-    getEcommerceCategories().then(setCategories).catch(() => {});
-  }, [isOpen]);
+    getEcommerceCategories(products.length > 0 ? products : undefined)
+      .then(setCategories)
+      .catch(() => {});
+  }, [isOpen, products]);
 
   React.useEffect(() => {
     if (product) {
@@ -968,6 +978,7 @@ export function ProductModal({ isOpen, onClose, onSave, product, activeCompanyId
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
         defaultCompanyId={formData.companyId || defaultComp}
+        products={products}
         onCategoriesUpdated={(updated, created) => {
           setCategories(updated);
           if (created && created.companyId === (formData.companyId || defaultComp)) {

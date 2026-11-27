@@ -22,7 +22,7 @@ export default function EcommerceProductsPage() {
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingProduct, setEditingProduct] = React.useState<EcommerceProduct | null>(null);
-  const [categories, setCategories] = React.useState<EcommerceCategoryItem[]>(DEFAULT_ECOMMERCE_CATEGORIES);
+  const [categories, setCategories] = React.useState<EcommerceCategoryItem[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = React.useState(false);
 
   // Compute normalized operating company
@@ -34,6 +34,8 @@ export default function EcommerceProductsPage() {
     try {
       const data = await getEcommerceProducts(companyScope);
       setProducts(data);
+      const realCats = await getEcommerceCategories(data);
+      setCategories(realCats);
     } catch (err) {
       console.error("Failed to load products:", err);
     } finally {
@@ -46,9 +48,11 @@ export default function EcommerceProductsPage() {
 
     const handleDataSync = () => loadProducts();
     const handleCompSwitch = () => loadProducts();
-    const loadCats = () => getEcommerceCategories().then(setCategories).catch(() => {});
-
-    loadCats();
+    const loadCats = () => {
+      getEcommerceCategories(products.length > 0 ? products : undefined)
+        .then(setCategories)
+        .catch(() => {});
+    };
 
     window.addEventListener("saampark_ecommerce_updated", handleDataSync);
     window.addEventListener("saampark_ecommerce_categories_updated", loadCats);
@@ -249,12 +253,21 @@ export default function EcommerceProductsPage() {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="w-full sm:w-auto px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium"
           >
-            <option value="all">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
+            <option value="all">All Categories ({products.length})</option>
+            {categories
+              .filter((cat) =>
+                companyScope === "all" ? true : cat.companyId === companyScope
+              )
+              .map((cat) => {
+                const cnt = products.filter(
+                  (p) => p.primaryCategory === cat.id || p.category === cat.id
+                ).length;
+                return (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name} ({cnt})
+                  </option>
+                );
+              })}
           </select>
         </div>
       </div>
@@ -435,6 +448,7 @@ export default function EcommerceProductsPage() {
         onSave={handleSaveProduct}
         product={editingProduct}
         activeCompanyId={companyScope}
+        products={products}
       />
 
       {/* Category Manager Modal */}
@@ -442,6 +456,7 @@ export default function EcommerceProductsPage() {
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
         defaultCompanyId={companyScope === "consultancy" ? "consultancy" : "tech"}
+        products={products}
         onCategoriesUpdated={(updated) => setCategories(updated)}
       />
     </div>
